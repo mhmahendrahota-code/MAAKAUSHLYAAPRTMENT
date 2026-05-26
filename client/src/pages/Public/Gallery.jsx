@@ -36,6 +36,7 @@ export const Gallery = () => {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [deleteId, setDeleteId] = useState(null);
+  const [imageProcessing, setImageProcessing] = useState(false);
 
   const fetchGalleryEvents = async () => {
     setLoading(true);
@@ -387,7 +388,7 @@ export const Gallery = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3">
                 <div className="flex flex-col gap-1">
                   <label className="font-bold text-slate-400 uppercase text-[10px]">इवेंट तिथि (Event Date) *</label>
                   <input 
@@ -395,18 +396,80 @@ export const Gallery = () => {
                     required 
                     value={eventDate} 
                     onChange={(e) => setEventDate(e.target.value)} 
-                    className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors" 
+                    className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors w-full" 
                   />
                 </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-bold text-slate-400 uppercase text-[10px]">चित्र यूआरएल (Image URL)</label>
-                  <input 
-                    type="url" 
-                    placeholder="https://images.unsplash.com/..." 
-                    value={imageUrl} 
-                    onChange={(e) => setImageUrl(e.target.value)} 
-                    className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors" 
-                  />
+              </div>
+
+              {/* Premium Direct Base64 File Uploader */}
+              <div className="flex flex-col gap-1 border-t border-white/5 pt-3">
+                <label className="font-bold text-slate-400 uppercase text-[10px]">इवेंट फोटो अपलोड करें (Upload Event Photo)</label>
+                <div className="flex items-center gap-3.5 bg-slate-950/40 border border-white/10 rounded-2xl p-3">
+                  <div className="w-16 h-16 rounded-xl bg-brand-500/10 border border-brand-500/25 flex items-center justify-center overflow-hidden shrink-0 relative group shadow-premium">
+                    {imageUrl ? (
+                      <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xl">📸</span>
+                    )}
+                    {imageUrl && (
+                      <button 
+                        type="button" 
+                        onClick={() => setImageUrl('')} 
+                        className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-rose-400 text-[10px] font-bold transition-all"
+                      >
+                        हटाएं
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex-1 flex flex-col gap-1 text-left">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="gallery-file-upload"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+
+                        // Max 8MB raw file size guard
+                        if (file.size > 8 * 1024 * 1024) {
+                          setError('फ़ाइल बहुत बड़ी है। कृपया 8MB से छोटी छवि चुनें।');
+                          setImageProcessing(false);
+                          e.target.value = '';
+                          return;
+                        }
+
+                        setError('');
+                        setImageProcessing(true);
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          const img = new window.Image();
+                          img.onload = () => {
+                            // Compress: resize to max 1200px wide, quality 0.82
+                            const MAX_W = 1200;
+                            const scale = img.width > MAX_W ? MAX_W / img.width : 1;
+                            const canvas = document.createElement('canvas');
+                            canvas.width  = Math.round(img.width  * scale);
+                            canvas.height = Math.round(img.height * scale);
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            const compressed = canvas.toDataURL('image/jpeg', 0.82);
+                            setImageUrl(compressed);
+                            setImageProcessing(false);
+                          };
+                          img.src = reader.result;
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="gallery-file-upload"
+                      className={`px-3.5 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider text-center cursor-pointer transition-colors shadow-premium w-fit ${imageProcessing ? 'opacity-60 pointer-events-none' : ''}`}
+                    >
+                      {imageProcessing ? '⏳ संसाधित हो रही है...' : 'फ़ाइल चुनें (Choose Image)'}
+                    </label>
+                    <p className="text-[8px] text-slate-500 leading-normal">PNG, JPG, JPEG या GIF (अधिकतम 8MB)। फोटो स्वतः संकुचित होकर गैलरी में सहेजी जाएगी।</p>
+                  </div>
                 </div>
               </div>
 

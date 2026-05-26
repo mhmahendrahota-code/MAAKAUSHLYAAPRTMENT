@@ -622,6 +622,14 @@ const initializeSchema = async () => {
         console.warn("⚠️ Non-blocking column check warning:", colErr.message);
       }
 
+      // Ensure gallery_events image_url is TYPE TEXT for Base64 uploads
+      try {
+        await dbPool.query("ALTER TABLE gallery_events ALTER COLUMN image_url TYPE TEXT");
+        console.log("🛡️ Ensured gallery_events.image_url is TYPE TEXT.");
+      } catch (galleryColErr) {
+        console.warn("⚠️ Non-blocking gallery columns migration check warning:", galleryColErr.message);
+      }
+
       // Check if database is empty to seed it
       const userCountRes = await dbPool.query("SELECT COUNT(*) FROM users");
       if (parseInt(userCountRes.rows[0].count) === 0) {
