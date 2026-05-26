@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { 
-  Users, 
-  Phone, 
-  Mail, 
-  Home, 
-  PlusCircle, 
-  Trash2, 
-  Edit3, 
-  UserCheck, 
-  Clock, 
-  ChevronRight, 
-  X, 
-  Save, 
-  AlertTriangle 
+import {
+  Users,
+  Phone,
+  Mail,
+  Home,
+  PlusCircle,
+  Trash2,
+  Edit3,
+  UserCheck,
+  Clock,
+  ChevronRight,
+  X,
+  Save,
+  AlertTriangle
 } from 'lucide-react';
 
 export const Committee = () => {
@@ -52,36 +52,8 @@ export const Committee = () => {
         throw new Error(data.message || 'विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, using fallback simulated RWA committee.");
-      setMembers([
-        {
-          id: 1,
-          name: "नौशाद अहमद (Naushad Ahmad)",
-          designation: "अध्यक्ष (President)",
-          phone: "9770779072",
-          email: "naushad@maakaushalya.com",
-          flat_no: "A-101",
-          display_order: 1
-        },
-        {
-          id: 2,
-          name: "स्वदेश कटियार (Swadesh Katiyar)",
-          designation: "सचिव (Secretary)",
-          phone: "8966996677",
-          email: "swadesh@maakaushalya.com",
-          flat_no: "C-102",
-          display_order: 2
-        },
-        {
-          id: 3,
-          name: "आरडब्ल्यूए प्रशासक (RWA Admin)",
-          designation: "कोषाध्यक्ष (Treasurer)",
-          phone: "9876543210",
-          email: "admin@maakaushalya.com",
-          flat_no: "A-100",
-          display_order: 3
-        }
-      ]);
+      console.warn("⚠️ Server offline, could not fetch committee data.");
+      setMembers([]);
     } finally {
       setLoading(false);
     }
@@ -274,7 +246,7 @@ export const Committee = () => {
                   <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-black border uppercase tracking-wider ${getRoleLabel(member.designation)}`}>
                     {member.designation}
                   </span>
-                  
+
                   {user?.role === 'Admin' && (
                     <div className="flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
                       <button
@@ -354,8 +326,8 @@ export const Committee = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
           <div className="bg-slate-900 border border-white/10 rounded-3xl max-w-md w-full p-6 text-left shadow-2xl relative">
-            <button 
-              onClick={() => setShowModal(false)} 
+            <button
+              onClick={() => setShowModal(false)}
               className="absolute top-4 right-4 text-slate-500 hover:text-white"
             >
               <X size={18} />
@@ -374,47 +346,47 @@ export const Committee = () => {
             <form onSubmit={handleFormSubmit} className="flex flex-col gap-4 text-xs">
               <div className="flex flex-col gap-1">
                 <label className="font-bold text-slate-400 uppercase text-[10px]">पदाधिकारी का नाम (FullName) *</label>
-                <input 
-                  type="text" 
-                  required 
-                  placeholder="जैसे: नौशाद अहमद" 
-                  value={name} 
-                  onChange={(e) => setName(e.target.value)} 
-                  className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors" 
+                <input
+                  type="text"
+                  required
+                  placeholder="जैसे: नौशाद अहमद"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors"
                 />
               </div>
 
               <div className="flex flex-col gap-1">
                 <label className="font-bold text-slate-400 uppercase text-[10px]">पद / डेसिग्नेशन (Designation) *</label>
-                <input 
-                  type="text" 
-                  required 
-                  placeholder="जैसे: अध्यक्ष (President)" 
-                  value={designation} 
-                  onChange={(e) => setDesignation(e.target.value)} 
-                  className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors" 
+                <input
+                  type="text"
+                  required
+                  placeholder="जैसे: अध्यक्ष (President)"
+                  value={designation}
+                  onChange={(e) => setDesignation(e.target.value)}
+                  className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
                   <label className="font-bold text-slate-400 uppercase text-[10px]">फोन नंबर (Phone)</label>
-                  <input 
-                    type="tel" 
-                    placeholder="+91 97707..." 
-                    value={phone} 
-                    onChange={(e) => setPhone(e.target.value)} 
-                    className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors" 
+                  <input
+                    type="tel"
+                    placeholder="+91 97707..."
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="font-bold text-slate-400 uppercase text-[10px]">फ्लैट संख्या (Flat No)</label>
-                  <input 
-                    type="text" 
-                    placeholder="जैसे: A-101" 
-                    value={flatNo} 
-                    onChange={(e) => setFlatNo(e.target.value)} 
-                    className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors" 
+                  <input
+                    type="text"
+                    placeholder="जैसे: A-101"
+                    value={flatNo}
+                    onChange={(e) => setFlatNo(e.target.value)}
+                    className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors"
                   />
                 </div>
               </div>
@@ -422,24 +394,24 @@ export const Committee = () => {
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-2 flex flex-col gap-1">
                   <label className="font-bold text-slate-400 uppercase text-[10px]">ईमेल पता (Email)</label>
-                  <input 
-                    type="email" 
-                    placeholder="naushad@maakaushalya.com" 
-                    value={email} 
-                    onChange={(e) => setEmail(e.target.value)} 
-                    className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors" 
+                  <input
+                    type="email"
+                    placeholder="naushad@maakaushalya.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="font-bold text-slate-400 uppercase text-[10px]">प्रदर्शन क्रम *</label>
-                  <input 
-                    type="number" 
-                    required 
-                    min="1" 
-                    placeholder="1" 
-                    value={displayOrder} 
-                    onChange={(e) => setDisplayOrder(e.target.value)} 
-                    className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors text-center font-bold" 
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    placeholder="1"
+                    value={displayOrder}
+                    onChange={(e) => setDisplayOrder(e.target.value)}
+                    className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors text-center font-bold"
                   />
                 </div>
               </div>
