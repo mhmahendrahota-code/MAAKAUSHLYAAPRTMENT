@@ -1,4 +1,5 @@
 import { queries } from '../models/queries.js';
+import bcrypt from 'bcryptjs';
 
 // @desc    Get current logged in user profile
 // @route   GET /api/users/profile
@@ -234,6 +235,51 @@ export const approveUser = async (req, res, next) => {
       success: true,
       message: 'Account approved successfully',
       data: approved
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update current user's email/password (Own account update)
+// @route   PUT /api/users/update-profile
+// @access  Private
+export const updateOwnProfile = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const userId = req.user.id;
+
+    if (!email) {
+      res.status(400);
+      throw new Error('Email/UserID is required');
+    }
+
+    let passwordHash = null;
+    if (password) {
+      if (password.length < 6) {
+        res.status(400);
+        throw new Error('Password must be at least 6 characters long');
+      }
+      const salt = await bcrypt.genSalt(10);
+      passwordHash = await bcrypt.hash(password, salt);
+    }
+
+    const updated = await queries.updateUserCredentials(userId, email, passwordHash);
+
+    if (!updated) {
+      res.status(404);
+      throw new Error('User account not found');
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile credentials updated successfully',
+      data: {
+        id: updated.id,
+        name: updated.name,
+        email: updated.email,
+        role: updated.role
+      }
     });
   } catch (error) {
     next(error);

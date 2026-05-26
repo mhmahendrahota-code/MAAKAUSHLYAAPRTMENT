@@ -1,16 +1,56 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Home, ShieldCheck, LogOut, LogIn, Menu, User, Crown } from 'lucide-react';
 
 export const Navbar = ({ onMenuClick }) => {
-  const { user, logout } = useAuth();
+  const { user, token, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Settings states
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsError, setSettingsError] = useState('');
+  const [settingsSuccess, setSettingsSuccess] = useState('');
 
   const handleLogoutClick = () => {
     logout();
     navigate('/');
+  };
+
+  const handleSettingsSubmit = async (e) => {
+    e.preventDefault();
+    setSettingsLoading(true);
+    setSettingsError('');
+    setSettingsSuccess('');
+    try {
+      const res = await fetch('/api/users/update-profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ email: newEmail, password: newPassword || undefined })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSettingsSuccess("क्रेडेंशियल सफलतापूर्वक बदल दिए गए हैं! कृपया दोबारा लॉगिन करें।");
+        setTimeout(() => {
+          setShowSettingsModal(false);
+          logout();
+          navigate('/');
+        }, 2000);
+      } else {
+        throw new Error(data.message || "अपडेट विफल");
+      }
+    } catch (err) {
+      setSettingsError(err.message || "सर्वर कनेक्शन एरर");
+    } finally {
+      setSettingsLoading(false);
+    }
   };
 
   const isActive = (path) => location.pathname === path;
@@ -104,6 +144,21 @@ export const Navbar = ({ onMenuClick }) => {
               पोर्टल डेस्क
             </Link>
 
+            {/* Change Credentials Trigger */}
+            <button 
+              onClick={() => {
+                setNewEmail(user.email || '');
+                setNewPassword('');
+                setSettingsError('');
+                setSettingsSuccess('');
+                setShowSettingsModal(true);
+              }}
+              className="p-2 rounded-xl text-slate-400 hover:text-brand-400 bg-white/5 hover:bg-brand-500/10 border border-white/5 hover:border-brand-500/20 transition-all"
+              title="क्रेडेंशियल बदलें (Change UserID / Password)"
+            >
+              <User size={16} />
+            </button>
+
             {/* Logout Trigger */}
             <button 
               onClick={handleLogoutClick}
@@ -125,7 +180,66 @@ export const Navbar = ({ onMenuClick }) => {
           </div>
         )}
       </div>
+
+      {/* Credentials Change Settings Modal */}
+      {showSettingsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm animate-fadeIn">
+          <div className="glass-panel p-6 rounded-3xl border border-white/10 w-full max-w-sm flex flex-col gap-4 text-left relative animate-scaleIn">
+            <h3 className="text-sm font-extrabold text-white uppercase tracking-wider border-b border-white/5 pb-2">
+              क्रेडेंशियल बदलें (Change Credentials)
+            </h3>
+            <p className="text-[10px] text-slate-400 leading-normal">
+              यहाँ से आप अपना लॉगिन **ईमेल (UserID)** और **पासवर्ड** सुरक्षित रूप से बदल सकते हैं।
+            </p>
+            
+            <form onSubmit={handleSettingsSubmit} className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-bold uppercase text-slate-400">लॉगिन ईमेल (New UserID)</label>
+                <input 
+                  type="email" 
+                  required 
+                  value={newEmail} 
+                  onChange={(e) => setNewEmail(e.target.value)} 
+                  className="bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-slate-200 text-xs focus:border-brand-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-bold uppercase text-slate-400">नया पासवर्ड (New Password - Optional)</label>
+                <input 
+                  type="password" 
+                  placeholder="बदलाव न करने के लिए खाली छोड़ें" 
+                  value={newPassword} 
+                  onChange={(e) => setNewPassword(e.target.value)} 
+                  className="bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-slate-200 text-xs focus:border-brand-500 focus:outline-none"
+                />
+              </div>
+
+              {settingsError && <div className="text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-1.5 rounded-xl">{settingsError}</div>}
+              {settingsSuccess && <div className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1.5 rounded-xl">{settingsSuccess}</div>}
+
+              <div className="flex gap-2 justify-end mt-2">
+                <button 
+                  type="button" 
+                  onClick={() => { setShowSettingsModal(false); setSettingsError(''); setSettingsSuccess(''); }} 
+                  className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 border border-white/5 rounded-xl text-[10px] font-bold text-slate-400 hover:text-white uppercase transition-all"
+                >
+                  रद्द करें
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={settingsLoading}
+                  className="px-3.5 py-2 bg-brand-600 hover:bg-brand-500 border border-brand-500/20 rounded-xl text-[10px] font-bold text-white uppercase transition-all shadow-premium"
+                >
+                  {settingsLoading ? 'सहेज रहे हैं...' : 'सुरक्षित करें'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
+
 export default Navbar;

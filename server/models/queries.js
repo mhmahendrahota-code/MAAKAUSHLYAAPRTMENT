@@ -155,6 +155,27 @@ export const queries = {
     return res.rows[0] || null;
   },
 
+  updateUserCredentials: async (id, email, passwordHash) => {
+    if (isFallback()) {
+      const idx = mockDb.users.findIndex(u => u.id === parseInt(id));
+      if (idx !== -1) {
+        mockDb.users[idx].email = email;
+        if (passwordHash) {
+          mockDb.users[idx].password_hash = passwordHash;
+        }
+        return mockDb.users[idx];
+      }
+      return null;
+    }
+    if (passwordHash) {
+      const res = await query('UPDATE users SET email = $1, password_hash = $2 WHERE id = $3 RETURNING *', [email, passwordHash, id]);
+      return res.rows[0] || null;
+    } else {
+      const res = await query('UPDATE users SET email = $1 WHERE id = $2 RETURNING *', [email, id]);
+      return res.rows[0] || null;
+    }
+  },
+
   // --- BACHELOR TENANT ALERT SYSTEM ---
   getBachelorAlerts: async () => {
     if (isFallback()) {
