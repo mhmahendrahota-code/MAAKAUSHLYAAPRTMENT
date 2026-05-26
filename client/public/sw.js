@@ -2,7 +2,7 @@ const CACHE_NAME = 'makaushlya-app-v1';
 const ASSETS = [
   '/',
   '/index.html',
-  '/logo.png',
+  '/logo.jpg',
   '/manifest.json'
 ];
 
