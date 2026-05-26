@@ -57,6 +57,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setLoading(true);
     setError(null);
+    let hasResponse = false;
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -66,6 +67,7 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password }),
       });
 
+      hasResponse = true;
       const result = await response.json();
 
       if (!response.ok || !result.success) {
@@ -80,6 +82,10 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       return userData;
     } catch (err) {
+      if (hasResponse) {
+        setError(err.message);
+        throw err;
+      }
       console.warn("⚠️ Backend server unavailable. Engaging offline mock user credentials bypass.");
       
       // Dynamic offline mock logins for direct testing out-of-the-box
@@ -113,6 +119,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     setLoading(true);
     setError(null);
+    let hasResponse = false;
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
@@ -122,6 +129,7 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify(userData),
       });
 
+      hasResponse = true;
       const result = await response.json();
 
       if (!response.ok || !result.success) {
@@ -129,6 +137,12 @@ export const AuthProvider = ({ children }) => {
       }
 
       const newUserData = result.data;
+      
+      // If registration succeeded but requires approval, do not auto-login
+      if (newUserData && newUserData.is_approved === false) {
+        return newUserData;
+      }
+
       localStorage.setItem('token', newUserData.token);
       localStorage.setItem('user', JSON.stringify(newUserData));
       
@@ -136,6 +150,10 @@ export const AuthProvider = ({ children }) => {
       setUser(newUserData);
       return newUserData;
     } catch (err) {
+      if (hasResponse) {
+        setError(err.message);
+        throw err;
+      }
       console.warn("⚠️ Backend server offline. Simulating registration locally in mock mode.");
       
       const newMockUser = {

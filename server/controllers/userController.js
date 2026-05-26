@@ -52,6 +52,7 @@ export const getSocietyDirectory = async (req, res, next) => {
       police_verification_date: user.police_verification_date || null,
       noc_document_ref: user.noc_document_ref || null,
       bachelor_notes: user.bachelor_notes || null,
+      is_approved: user.is_approved !== false,
       created_at: user.created_at
     }));
 
@@ -204,6 +205,35 @@ export const updateBachelorStatus = async (req, res, next) => {
       success: true,
       message: 'Verification status updated successfully',
       data: updated
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Approve a newly registered user account (Admin only)
+// @route   PUT /api/users/:id/approve
+// @access  Private (Admin)
+export const approveUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      res.status(400);
+      throw new Error('User ID is required');
+    }
+
+    const approved = await queries.approveUser(id);
+
+    if (!approved) {
+      res.status(404);
+      throw new Error('User account not found');
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Account approved successfully',
+      data: approved
     });
   } catch (error) {
     next(error);

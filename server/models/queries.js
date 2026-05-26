@@ -18,7 +18,7 @@ export const queries = {
     return res.rows[0] || null;
   },
 
-  createUser: async ({ name, email, passwordHash, role, gender, flatNo, phone, occupancyStatus, tenantType, ownerName, ownerPhone, aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration, emergencyContactName, emergencyContactPhone, profilePicture, hasPet, petDetails, isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes }) => {
+  createUser: async ({ name, email, passwordHash, role, gender, flatNo, phone, occupancyStatus, tenantType, ownerName, ownerPhone, aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration, emergencyContactName, emergencyContactPhone, profilePicture, hasPet, petDetails, isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes, isApproved }) => {
     if (isFallback()) {
       const newUser = {
         id: mockDb.users.length + 1,
@@ -50,15 +50,16 @@ export const queries = {
         police_verification_date: policeVerificationDate || null,
         noc_document_ref: nocDocumentRef || null,
         bachelor_notes: bachelorNotes || null,
+        is_approved: isApproved !== undefined ? isApproved : true,
         created_at: new Date()
       };
       mockDb.users.push(newUser);
       return newUser;
     }
     const res = await query(
-      `INSERT INTO users (name, email, password_hash, role, gender, flat_no, phone, occupancy_status, tenant_type, owner_name, owner_phone, aadhaar_number, family_members, family_member_names, vehicles, move_in_date, lease_duration, emergency_contact_name, emergency_contact_phone, profile_picture, has_pet, pet_details, is_legacy_bachelor, exemption_ref, police_verification_status, police_verification_date, noc_document_ref, bachelor_notes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28) RETURNING *`,
-      [name, email, passwordHash, role, gender || 'Male', flatNo || null, phone || null, occupancyStatus || 'Self-Occupied', tenantType || 'Family', ownerName || null, ownerPhone || null, aadhaarNumber || null, familyMembers || null, familyMemberNames || null, vehicles || null, moveInDate || null, leaseDuration || null, emergencyContactName || null, emergencyContactPhone || null, profilePicture || null, hasPet || false, petDetails || null, isLegacyBachelor || false, exemptionRef || null, policeVerificationStatus || 'pending', policeVerificationDate || null, nocDocumentRef || null, bachelorNotes || null]
+      `INSERT INTO users (name, email, password_hash, role, gender, flat_no, phone, occupancy_status, tenant_type, owner_name, owner_phone, aadhaar_number, family_members, family_member_names, vehicles, move_in_date, lease_duration, emergency_contact_name, emergency_contact_phone, profile_picture, has_pet, pet_details, is_legacy_bachelor, exemption_ref, police_verification_status, police_verification_date, noc_document_ref, bachelor_notes, is_approved)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29) RETURNING *`,
+      [name, email, passwordHash, role, gender || 'Male', flatNo || null, phone || null, occupancyStatus || 'Self-Occupied', tenantType || 'Family', ownerName || null, ownerPhone || null, aadhaarNumber || null, familyMembers || null, familyMemberNames || null, vehicles || null, moveInDate || null, leaseDuration || null, emergencyContactName || null, emergencyContactPhone || null, profilePicture || null, hasPet || false, petDetails || null, isLegacyBachelor || false, exemptionRef || null, policeVerificationStatus || 'pending', policeVerificationDate || null, nocDocumentRef || null, bachelorNotes || null, isApproved !== undefined ? isApproved : true]
     );
     return res.rows[0];
   },
@@ -67,11 +68,11 @@ export const queries = {
     if (isFallback()) {
       return mockDb.users;
     }
-    const res = await query('SELECT id, name, email, role, gender, flat_no, phone, occupancy_status, tenant_type, owner_name, owner_phone, aadhaar_number, family_members, family_member_names, vehicles, move_in_date, lease_duration, emergency_contact_name, emergency_contact_phone, profile_picture, has_pet, pet_details, is_legacy_bachelor, exemption_ref, police_verification_status, police_verification_date, noc_document_ref, bachelor_notes, created_at FROM users ORDER BY id ASC');
+    const res = await query('SELECT id, name, email, role, gender, flat_no, phone, occupancy_status, tenant_type, owner_name, owner_phone, aadhaar_number, family_members, family_member_names, vehicles, move_in_date, lease_duration, emergency_contact_name, emergency_contact_phone, profile_picture, has_pet, pet_details, is_legacy_bachelor, exemption_ref, police_verification_status, police_verification_date, noc_document_ref, bachelor_notes, is_approved, created_at FROM users ORDER BY id ASC');
     return res.rows;
   },
 
-  updateUser: async (id, { name, email, phone, role, gender, flatNo, occupancyStatus, tenantType, ownerName, ownerPhone, aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration, emergencyContactName, emergencyContactPhone, profilePicture, hasPet, petDetails, isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes }) => {
+  updateUser: async (id, { name, email, phone, role, gender, flatNo, occupancyStatus, tenantType, ownerName, ownerPhone, aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration, emergencyContactName, emergencyContactPhone, profilePicture, hasPet, petDetails, isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes, isApproved }) => {
     if (isFallback()) {
       const idx = mockDb.users.findIndex(u => u.id === parseInt(id));
       if (idx !== -1) {
@@ -103,7 +104,8 @@ export const queries = {
           police_verification_status: policeVerificationStatus || mockDb.users[idx].police_verification_status || 'pending',
           police_verification_date: policeVerificationDate || mockDb.users[idx].police_verification_date || null,
           noc_document_ref: nocDocumentRef || mockDb.users[idx].noc_document_ref || null,
-          bachelor_notes: bachelorNotes || mockDb.users[idx].bachelor_notes || null
+          bachelor_notes: bachelorNotes || mockDb.users[idx].bachelor_notes || null,
+          is_approved: isApproved !== undefined ? isApproved : (mockDb.users[idx].is_approved !== false)
         };
         return mockDb.users[idx];
       }
@@ -119,9 +121,9 @@ export const queries = {
         profile_picture = $19, has_pet = $20, pet_details = $21, 
         is_legacy_bachelor = $22, exemption_ref = $23,
         police_verification_status = $24, police_verification_date = $25,
-        noc_document_ref = $26, bachelor_notes = $27
-      WHERE id = $28 RETURNING *`,
-      [name, email, phone || null, role, gender || 'Male', flatNo || null, occupancyStatus || 'Self-Occupied', tenantType || 'Family', ownerName || null, ownerPhone || null, aadhaarNumber || null, familyMembers || null, familyMemberNames || null, vehicles || null, moveInDate || null, leaseDuration || null, emergencyContactName || null, emergencyContactPhone || null, profilePicture || null, hasPet || false, petDetails || null, isLegacyBachelor || false, exemptionRef || null, policeVerificationStatus || 'pending', policeVerificationDate || null, nocDocumentRef || null, bachelorNotes || null, id]
+        noc_document_ref = $26, bachelor_notes = $27, is_approved = $28
+      WHERE id = $29 RETURNING *`,
+      [name, email, phone || null, role, gender || 'Male', flatNo || null, occupancyStatus || 'Self-Occupied', tenantType || 'Family', ownerName || null, ownerPhone || null, aadhaarNumber || null, familyMembers || null, familyMemberNames || null, vehicles || null, moveInDate || null, leaseDuration || null, emergencyContactName || null, emergencyContactPhone || null, profilePicture || null, hasPet || false, petDetails || null, isLegacyBachelor || false, exemptionRef || null, policeVerificationStatus || 'pending', policeVerificationDate || null, nocDocumentRef || null, bachelorNotes || null, isApproved !== undefined ? isApproved : true, id]
     );
     return res.rows[0] || null;
   },
@@ -137,6 +139,19 @@ export const queries = {
       return null;
     }
     const res = await query('DELETE FROM users WHERE id = $1 RETURNING *', [id]);
+    return res.rows[0] || null;
+  },
+
+  approveUser: async (id) => {
+    if (isFallback()) {
+      const idx = mockDb.users.findIndex(u => u.id === parseInt(id));
+      if (idx !== -1) {
+        mockDb.users[idx].is_approved = true;
+        return mockDb.users[idx];
+      }
+      return null;
+    }
+    const res = await query('UPDATE users SET is_approved = true WHERE id = $1 RETURNING *', [id]);
     return res.rows[0] || null;
   },
 

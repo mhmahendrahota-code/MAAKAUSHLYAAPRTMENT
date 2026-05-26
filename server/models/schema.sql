@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS users (
     police_verification_date DATE,
     noc_document_ref VARCHAR(200),
     bachelor_notes TEXT,
+    is_approved BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -68,35 +68,19 @@ export const registerUser = async (req, res, next) => {
       hasPet,
       petDetails,
       isLegacyBachelor,
-      exemptionRef
+      exemptionRef,
+      isApproved: false // Self-registered accounts require admin approval
     });
 
     res.status(201).json({
       success: true,
-      message: 'Account registered successfully',
+      message: 'रजिस्ट्रेशन सफल रहा। आपका अकाउंट एडमिन के अप्रूवल के लिए लंबित है।',
       data: {
         id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
-        gender: user.gender,
-        flat_no: user.flat_no,
-        phone: user.phone,
-        occupancy_status: user.occupancy_status,
-        owner_name: user.owner_name,
-        owner_phone: user.owner_phone,
-        aadhaar_number: user.aadhaar_number,
-        family_members: user.family_members,
-        family_member_names: user.family_member_names,
-        vehicles: user.vehicles,
-        move_in_date: user.move_in_date,
-        lease_duration: user.lease_duration,
-        emergency_contact_name: user.emergency_contact_name,
-        emergency_contact_phone: user.emergency_contact_phone,
-        profile_picture: user.profile_picture,
-        has_pet: user.has_pet,
-        pet_details: user.pet_details,
-        token: generateToken(user.id)
+        is_approved: false
       }
     });
   } catch (error) {
@@ -122,6 +106,12 @@ export const loginUser = async (req, res, next) => {
     if (!user) {
       res.status(401);
       throw new Error('Invalid email or password credentials');
+    }
+
+    // Check if user is approved by RWA Admin
+    if (user.is_approved === false) {
+      res.status(403);
+      throw new Error('आपका अकाउंट एडमिन के अप्रूवल (अनुमोदन) के लिए लंबित है। कृपया एडमिन से संपर्क करें।');
     }
 
     // Match hashed passwords
