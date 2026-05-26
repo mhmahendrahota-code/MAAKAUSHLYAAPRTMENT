@@ -590,6 +590,11 @@ export const saveMockDb = () => {
 // Automatic SQL Schema and Seeding Utility
 const initializeSchema = async () => {
   try {
+    if (process.env.FORCE_DB_RESET === 'true') {
+      console.log("⚠️ FORCE_DB_RESET is enabled. Dropping all existing tables for clean sync...");
+      await dbPool.query("DROP TABLE IF EXISTS gallery_events, helplines, committee_members, visitor_logs, tickets, bills, notices, users CASCADE;");
+    }
+
     if (fs.existsSync(SCHEMA_PATH)) {
       const schemaSql = fs.readFileSync(SCHEMA_PATH, 'utf-8');
       
@@ -608,6 +613,14 @@ const initializeSchema = async () => {
       }
       
       console.log("🚀 PostgreSQL Database tables initialized successfully from schema.sql.");
+
+      // Ensure "is_approved" column exists dynamically in case the schema wasn't dropped
+      try {
+        await dbPool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT TRUE");
+        console.log("🛡️ Ensured column 'is_approved' exists on users table.");
+      } catch (colErr) {
+        console.warn("⚠️ Non-blocking column check warning:", colErr.message);
+      }
 
       // Check if database is empty to seed it
       const userCountRes = await dbPool.query("SELECT COUNT(*) FROM users");
