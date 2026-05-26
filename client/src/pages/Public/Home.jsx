@@ -51,7 +51,7 @@ export const Home = () => {
     setFamilyMemberNames(prev => {
       const newArr = [...prev];
       if (safeCount > newArr.length) {
-        for (let i = newArr.length; i < safeCount; i++) newArr.push({ name: '', phone: '' });
+        for (let i = newArr.length; i < safeCount; i++) newArr.push({ name: '', phone: '', gender: 'Male' });
       } else if (safeCount < newArr.length) {
         newArr.splice(safeCount);
       }
@@ -510,7 +510,7 @@ export const Home = () => {
                         {familyMemberNames.map((member, idx) => (
                           <div key={idx} className="p-2.5 bg-slate-950/40 border border-white/5 rounded-xl flex flex-col gap-1.5">
                             <p className="text-[8px] font-extrabold uppercase text-brand-400 tracking-wider text-left">सदस्य {idx + 1}</p>
-                            <div className="grid grid-cols-2 gap-1.5">
+                            <div className="grid grid-cols-3 gap-1.5">
                               <div className="flex flex-col gap-1 text-left">
                                 <label className="text-[8px] font-bold uppercase text-slate-400">नाम (Name)</label>
                                 <input type="text" placeholder="नाम दर्ज करें" required
@@ -522,6 +522,18 @@ export const Home = () => {
                                 <input type="tel" placeholder="मोबाइल नंबर" required
                                   value={member.phone || ''} onChange={(e) => handleFamilyMemberChange(idx, 'phone', e.target.value)}
                                   className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-slate-200 placeholder-slate-600 text-[10px] focus:border-brand-500 focus:outline-none transition-colors w-full" />
+                              </div>
+                              <div className="flex flex-col gap-1 text-left">
+                                <label className="text-[8px] font-bold uppercase text-slate-400">जेंडर (Gender)</label>
+                                <select
+                                  value={member.gender || 'Male'}
+                                  onChange={(e) => handleFamilyMemberChange(idx, 'gender', e.target.value)}
+                                  className="bg-slate-900 border border-white/10 rounded-lg px-2 py-2 text-slate-200 text-[10px] focus:border-brand-500 focus:outline-none w-full appearance-none transition-colors"
+                                >
+                                  <option value="Male">Male</option>
+                                  <option value="Female">Female</option>
+                                  <option value="Other">Other</option>
+                                </select>
                               </div>
                             </div>
                           </div>
