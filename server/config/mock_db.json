@@ -1,0 +1,477 @@
+{
+  "users": [
+    {
+      "id": 100,
+      "name": "आरडब्ल्यूए प्रशासक (RWA Admin)",
+      "email": "admin@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Admin",
+      "flat_no": "A-100",
+      "phone": "9876543210",
+      "aadhaar_number": null,
+      "family_members": null,
+      "family_member_names": null,
+      "vehicles": null,
+      "move_in_date": null,
+      "lease_duration": null,
+      "emergency_contact_name": null,
+      "emergency_contact_phone": null,
+      "profile_picture": null,
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 1,
+      "name": "नौशाद अहमद (Naushad Ahmad)",
+      "email": "naushad@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "A-101",
+      "phone": "9770779072",
+      "aadhaar_number": "4321 8765 9900",
+      "family_members": 4,
+      "family_member_names": "[{\"name\":\"शबाना अहमद\",\"phone\":\"9770779073\"},{\"name\":\"आसिफ अहमद\",\"phone\":\"9770779074\"}]",
+      "vehicles": "[{\"type\":\"Car\",\"number\":\"CG 04 MB 0101\",\"sticker\":true},{\"type\":\"Bike\",\"number\":\"CG 04 K 9876\",\"sticker\":false}]",
+      "move_in_date": "2021-08-10T00:00:00.000Z",
+      "lease_duration": null,
+      "emergency_contact_name": null,
+      "emergency_contact_phone": null,
+      "profile_picture": null,
+      "has_pet": true,
+      "pet_details": "1 Labra Dog (Jack)",
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 2,
+      "name": "सूफी इलियास चिश्ती (Sufi Illias Chisti)",
+      "email": "resident@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "B-304",
+      "phone": "7869551226",
+      "aadhaar_number": null,
+      "family_members": null,
+      "family_member_names": null,
+      "vehicles": null,
+      "move_in_date": null,
+      "lease_duration": null,
+      "emergency_contact_name": null,
+      "emergency_contact_phone": null,
+      "profile_picture": null,
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 3,
+      "name": "सुरक्षा गार्ड शिंदे (Gatekeeper)",
+      "email": "guard@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Security",
+      "flat_no": null,
+      "phone": "+918888877777",
+      "aadhaar_number": null,
+      "family_members": null,
+      "family_member_names": null,
+      "vehicles": null,
+      "move_in_date": null,
+      "lease_duration": null,
+      "emergency_contact_name": null,
+      "emergency_contact_phone": null,
+      "profile_picture": null,
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 4,
+      "name": "स्वदेश कटियार (Swadesh Katiyar)",
+      "email": "swadesh@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-102",
+      "phone": "8966996677",
+      "aadhaar_number": null,
+      "family_members": null,
+      "family_member_names": null,
+      "vehicles": null,
+      "move_in_date": null,
+      "lease_duration": null,
+      "emergency_contact_name": null,
+      "emergency_contact_phone": null,
+      "profile_picture": null,
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 5,
+      "name": "आलोक बारिया (Alok Bariya)",
+      "email": "alok@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-103",
+      "phone": "9109328032",
+      "occupancy_status": "Rented",
+      "owner_name": "प्रकाश बारिया",
+      "owner_phone": "9988776655",
+      "aadhaar_number": "5544 3322 1100",
+      "family_members": 2,
+      "lease_duration": "11 months",
+      "move_in_date": "2023-05-01T00:00:00.000Z",
+      "has_pet": true,
+      "pet_details": "1 Persian Cat",
+      "is_legacy_bachelor": true,
+      "exemption_ref": "RWA-2024-U72 (Date: 12-May-2024)",
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 6,
+      "name": "अयाज़ भाई (Ayaz Bhai)",
+      "email": "ayaz@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-104",
+      "phone": "7879553997",
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 7,
+      "name": "डॉ. अमित सिंह (Dr. Amit Singh)",
+      "email": "amit@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-105",
+      "phone": "9926974248",
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 8,
+      "name": "हेमलाल पाल (Hemlal Pal)",
+      "email": "hemlal@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-106",
+      "phone": "9575836600",
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 9,
+      "name": "सर्वेश मिश्रा (Sarvesh Mishra)",
+      "email": "sarvesh@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-107",
+      "phone": "9907749456",
+      "occupancy_status": "Rented",
+      "owner_name": "गोपाल मिश्रा",
+      "owner_phone": "9111222333",
+      "aadhaar_number": "7766 5544 3322",
+      "family_members": 3,
+      "lease_duration": "24 months",
+      "move_in_date": "2022-10-01T00:00:00.000Z",
+      "has_pet": true,
+      "pet_details": "2 Lovebirds",
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 10,
+      "name": "आकाश दुबे (Akash Dubey)",
+      "email": "akash@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-108",
+      "phone": "8823006747",
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 11,
+      "name": "लाल बहादुर यादव (Lal Bahadur Yadav)",
+      "email": "lalbahadur@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-109",
+      "phone": "9329995551",
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 12,
+      "name": "भरत कुमार अग्रवाल (Bharat Kumar Agrawal)",
+      "email": "bharat@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-111",
+      "phone": "7778889990",
+      "aadhaar_number": null,
+      "family_members": null,
+      "family_member_names": null,
+      "vehicles": null,
+      "move_in_date": null,
+      "lease_duration": null,
+      "emergency_contact_name": null,
+      "emergency_contact_phone": null,
+      "profile_picture": null,
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 13,
+      "name": "चंद्रकांत बुरांडे (Chandrakant Burande)",
+      "email": "chandrakant@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-111",
+      "phone": "8602451035",
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 14,
+      "name": "नरेंद्र परमार (Narendra Parmar)",
+      "email": "narendra@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-112",
+      "phone": "9827920102",
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 15,
+      "name": "हिमांशु (Himanshu)",
+      "email": "himanshu@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-113",
+      "phone": "7240889708",
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 16,
+      "name": "नरेश (Naresh)",
+      "email": "naresh@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-114",
+      "phone": "8602333455",
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 17,
+      "name": "अशोक निषाद (Ashok Nishad)",
+      "email": "ashok@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-115",
+      "phone": "9827928559",
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 18,
+      "name": "हेमंत पांडे (Hemant Pandey)",
+      "email": "hemant@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-116",
+      "phone": "9981112078",
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 19,
+      "name": "केदार हंडघोरे (Kedar Handghore)",
+      "email": "kedar@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-117",
+      "phone": "9022544971",
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    },
+    {
+      "id": 20,
+      "name": "राजू दास (Raju Das)",
+      "email": "raju@maakaushalya.com",
+      "password_hash": "$2a$10$sO7JsRFGkmx2mZ6Qg0ZNReaWgwcngSmtGLoKWsC3joOQ0fuzyFIb2",
+      "role": "Resident",
+      "flat_no": "C-118",
+      "phone": "7697187098",
+      "created_at": "2026-05-25T11:37:07.547Z",
+      "gender": "Male"
+    }
+  ],
+  "notices": [
+    {
+      "id": 1,
+      "title": "वार्षिक आम बैठक - एजीएम (AGM)",
+      "content": "माँ कौशल्या अपार्टमेंट, सेक्टर 1 की वार्षिक आम बैठक (AGM) रविवार, 14 जून 2026 को सुबह 10:00 बजे क्लबहाउस में निर्धारित की गई है। सभी फ्लैट मालिकों से बैठक में भाग लेने का विनम्र अनुरोध है।",
+      "created_by": 1,
+      "created_at": "2026-05-23T11:47:44.347Z"
+    },
+    {
+      "id": 2,
+      "title": "लिफ्ट मरम्मत व रख-रखाव कार्यक्रम (Elevator Servicing)",
+      "content": "ब्लॉक B की लिफ्ट की सर्विसिंग कल दोपहर 2:00 बजे से शाम 5:00 बजे तक की जाएगी। कृपया इस अवधि के दौरान सीढ़ियों या ब्लॉक A की लिफ्ट का उपयोग करें। असुविधा के लिए खेद है।",
+      "created_by": 1,
+      "created_at": "2026-05-25T11:47:44.347Z"
+    }
+  ],
+  "bills": [
+    {
+      "id": 1,
+      "resident_id": 2,
+      "amount": 4500,
+      "status": "unpaid",
+      "billing_month": "मई 2026",
+      "due_date": "2026-05-29T18:30:00.000Z",
+      "created_at": "2026-04-30T18:30:00.000Z"
+    },
+    {
+      "id": 2,
+      "resident_id": 2,
+      "amount": 4200,
+      "status": "paid",
+      "billing_month": "अप्रैल 2026",
+      "due_date": "2026-04-29T18:30:00.000Z",
+      "paid_at": "2026-04-09T18:30:00.000Z",
+      "payment_reference": "TXN1029384756",
+      "created_at": "2026-03-31T18:30:00.000Z"
+    }
+  ],
+  "tickets": [
+    {
+      "id": 1,
+      "title": "बाथरूम की छत से पानी का रिसाव (Water Seepage)",
+      "description": "बाथरूम की सीलिंग से लगातार पानी टपक रहा है। ऊपर वाले फ्लैट के पाइप से रिसाव होने की आशंका है। कृपया प्लंबर भेजने की कृपा करें।",
+      "category": "Plumbing",
+      "status": "open",
+      "created_by": 2,
+      "created_at": "2026-05-24T11:47:50.162Z",
+      "updated_at": "2026-05-24T11:47:50.162Z"
+    },
+    {
+      "id": 2,
+      "title": "कॉरिडोर की लाइट खराब (Hallway Light Fused)",
+      "description": "फ्लैट B-304 के ठीक सामने लगी कॉरिडोर की सीलिंग ट्यूबलाइट फ्यूज हो गई है, इसे बदलने की कृपा करें।",
+      "category": "Electrical",
+      "status": "resolved",
+      "created_by": 2,
+      "created_at": "2026-05-20T11:47:50.162Z",
+      "updated_at": "2026-05-21T11:47:50.162Z"
+    }
+  ],
+  "visitor_logs": [
+    {
+      "id": 1,
+      "name": "रमेश शर्मा",
+      "phone": "+919876543210",
+      "purpose": "अमेज़न डिलीवरी (Amazon Delivery)",
+      "flat_no": "B-304",
+      "check_in": "2026-05-25T09:47:50.162Z",
+      "check_out": "2026-05-25T09:57:50.162Z",
+      "logged_by": 3,
+      "gender": "Male"
+    },
+    {
+      "id": 2,
+      "name": "डॉ. विनय मेहता",
+      "phone": "+918887776665",
+      "purpose": "अतिथि (Guest)",
+      "flat_no": "A-101",
+      "check_in": "2026-05-25T10:47:50.162Z",
+      "check_out": null,
+      "logged_by": 3,
+      "gender": "Male"
+    }
+  ],
+  "committee_members": [
+    {
+      "id": 1,
+      "name": "नौशाद अहमद (Naushad Ahmad)",
+      "designation": "अध्यक्ष (President)",
+      "phone": "9770779072",
+      "email": "naushad@maakaushalya.com",
+      "flat_no": "A-101",
+      "display_order": 1
+    },
+    {
+      "id": 2,
+      "name": "स्वदेश कटियार (Swadesh Katiyar)",
+      "designation": "सचिव (Secretary)",
+      "phone": "8966996677",
+      "email": "swadesh@maakaushalya.com",
+      "flat_no": "C-102",
+      "display_order": 2
+    },
+    {
+      "id": 3,
+      "name": "आरडब्ल्यूए प्रशासक (RWA Admin)",
+      "designation": "कोषाध्यक्ष (Treasurer)",
+      "phone": "9876543210",
+      "email": "admin@maakaushalya.com",
+      "flat_no": "A-100",
+      "display_order": 3
+    }
+  ],
+  "helplines": [
+    {
+      "id": 1,
+      "title": "मुख्य गार्ड गेट हाउस (Gate)",
+      "number": "+91 80 4910291",
+      "note": "इंटरकॉम: 99 / 24 घंटे आपातकालीन",
+      "display_order": 1
+    },
+    {
+      "id": 2,
+      "title": "सोसायटी एडमिन डेस्क (Resident Welfare Association)",
+      "number": "+91 80 4910292",
+      "note": "सोम - शनि: सुबह 9:30 - शाम 5:30",
+      "display_order": 2
+    },
+    {
+      "id": 3,
+      "title": "विद्युत रखरखाव (Electricity)",
+      "number": "+91 9988010291",
+      "note": "बिजली कट, प्लग, जनरेटर हेल्प",
+      "display_order": 3
+    },
+    {
+      "id": 4,
+      "title": "जल एवं प्लम्बर हेल्पलाइन (Water)",
+      "number": "+91 9988010292",
+      "note": "पानी रिसाव, टैंक शेड्यूल",
+      "display_order": 4
+    }
+  ],
+  "gallery_events": [
+    {
+      "id": 1,
+      "title": "गणेश चतुर्थी उत्सव (Ganesh Chaturthi Utsav)",
+      "content": "माँ कौशल्या अपार्टमेंट में गणेश चतुर्थी के पावन अवसर पर भव्य गणेश स्थापना और दैनिक संध्या आरती का आयोजन किया गया। अंतिम दिन सभी निवासियों की सहभागिता के साथ भंडारा और विसर्जन यात्रा निकाली गई।",
+      "image_url": "https://images.unsplash.com/photo-1567591974584-f18551452228?w=800&auto=format&fit=crop&q=60",
+      "event_date": "2025-09-14T18:30:00.000Z"
+    },
+    {
+      "id": 2,
+      "title": "स्वतंत्रता दिवस ध्वजारोहण (Independence Day Flag Hoisting)",
+      "content": "15 अगस्त के शुभ अवसर पर सोसायटी परिसर में आरडब्ल्यूए समिति द्वारा ध्वजारोहण कार्यक्रम आयोजित किया गया। बच्चों के लिए देशभक्ति गीत व सांस्कृतिक प्रतियोगिताएं रखी गईं और अंत में मिठाई वितरित की गई।",
+      "image_url": "https://images.unsplash.com/photo-1532375811409-905115e3b5a9?w=800&auto=format&fit=crop&q=60",
+      "event_date": "2025-08-14T18:30:00.000Z"
+    },
+    {
+      "id": 3,
+      "title": "स्वच्छता एवं वृक्षारोपण अभियान (Green & Clean Drive)",
+      "content": "माँ कौशल्या अपार्टमेंट को हरा-भरा और स्वच्छ बनाने के लिए आरडब्ल्यूए और युवा विंग द्वारा विशेष वृक्षारोपण अभियान चलाया गया। परिसर के विभिन्न कोनों में 50+ छायादार और औषधीय पौधे रोपे गए।",
+      "image_url": "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop&q=60",
+      "event_date": "2026-05-09T18:30:00.000Z"
+    }
+  ]
+}
