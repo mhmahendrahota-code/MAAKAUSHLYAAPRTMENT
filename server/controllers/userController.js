@@ -73,7 +73,7 @@ export const getSocietyDirectory = async (req, res, next) => {
 export const updateUser = async (req, res, next) => {
   try {
     const {
-      userId, name, email, phone, role, gender, flatNo, occupancyStatus, tenantType, ownerName, ownerPhone,
+      userId, name, email, password, phone, role, gender, flatNo, occupancyStatus, tenantType, ownerName, ownerPhone,
       aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration,
       emergencyContactName, emergencyContactPhone, profilePicture, hasPet, petDetails,
       isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes
@@ -84,11 +84,22 @@ export const updateUser = async (req, res, next) => {
       throw new Error('userId, name, email, and role are required');
     }
 
+    let passwordHash = null;
+    if (password && password.trim() !== '') {
+      if (password.length < 6) {
+        res.status(400);
+        throw new Error('Password must be at least 6 characters long');
+      }
+      const salt = await bcrypt.genSalt(10);
+      passwordHash = await bcrypt.hash(password, salt);
+    }
+
     const updatedUser = await queries.updateUser(userId, {
       name, email, phone, role, gender, flatNo, occupancyStatus, tenantType, ownerName, ownerPhone,
       aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration,
       emergencyContactName, emergencyContactPhone, profilePicture, hasPet, petDetails,
-      isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes
+      isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes,
+      passwordHash
     });
 
     if (!updatedUser) {

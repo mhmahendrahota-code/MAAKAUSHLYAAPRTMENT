@@ -72,7 +72,7 @@ export const queries = {
     return res.rows;
   },
 
-  updateUser: async (id, { name, email, phone, role, gender, flatNo, occupancyStatus, tenantType, ownerName, ownerPhone, aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration, emergencyContactName, emergencyContactPhone, profilePicture, hasPet, petDetails, isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes, isApproved }) => {
+  updateUser: async (id, { name, email, phone, role, gender, flatNo, occupancyStatus, tenantType, ownerName, ownerPhone, aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration, emergencyContactName, emergencyContactPhone, profilePicture, hasPet, petDetails, isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes, isApproved, passwordHash }) => {
     if (isFallback()) {
       const idx = mockDb.users.findIndex(u => u.id === parseInt(id));
       if (idx !== -1) {
@@ -107,25 +107,47 @@ export const queries = {
           bachelor_notes: bachelorNotes || mockDb.users[idx].bachelor_notes || null,
           is_approved: isApproved !== undefined ? isApproved : (mockDb.users[idx].is_approved !== false)
         };
+        if (passwordHash) {
+          mockDb.users[idx].password_hash = passwordHash;
+        }
         return mockDb.users[idx];
       }
       return null;
     }
-    const res = await query(
-      `UPDATE users SET 
-        name = $1, email = $2, phone = $3, role = $4, gender = $5, flat_no = $6, 
-        occupancy_status = $7, tenant_type = $8, owner_name = $9, owner_phone = $10, 
-        aadhaar_number = $11, family_members = $12, family_member_names = $13, 
-        vehicles = $14, move_in_date = $15, lease_duration = $16, 
-        emergency_contact_name = $17, emergency_contact_phone = $18, 
-        profile_picture = $19, has_pet = $20, pet_details = $21, 
-        is_legacy_bachelor = $22, exemption_ref = $23,
-        police_verification_status = $24, police_verification_date = $25,
-        noc_document_ref = $26, bachelor_notes = $27, is_approved = $28
-      WHERE id = $29 RETURNING *`,
-      [name, email, phone || null, role, gender || 'Male', flatNo || null, occupancyStatus || 'Self-Occupied', tenantType || 'Family', ownerName || null, ownerPhone || null, aadhaarNumber || null, familyMembers || null, familyMemberNames || null, vehicles || null, moveInDate || null, leaseDuration || null, emergencyContactName || null, emergencyContactPhone || null, profilePicture || null, hasPet || false, petDetails || null, isLegacyBachelor || false, exemptionRef || null, policeVerificationStatus || 'pending', policeVerificationDate || null, nocDocumentRef || null, bachelorNotes || null, isApproved !== undefined ? isApproved : true, id]
-    );
-    return res.rows[0] || null;
+    if (passwordHash) {
+      const res = await query(
+        `UPDATE users SET 
+          name = $1, email = $2, phone = $3, role = $4, gender = $5, flat_no = $6, 
+          occupancy_status = $7, tenant_type = $8, owner_name = $9, owner_phone = $10, 
+          aadhaar_number = $11, family_members = $12, family_member_names = $13, 
+          vehicles = $14, move_in_date = $15, lease_duration = $16, 
+          emergency_contact_name = $17, emergency_contact_phone = $18, 
+          profile_picture = $19, has_pet = $20, pet_details = $21, 
+          is_legacy_bachelor = $22, exemption_ref = $23,
+          police_verification_status = $24, police_verification_date = $25,
+          noc_document_ref = $26, bachelor_notes = $27, is_approved = $28,
+          password_hash = $29
+        WHERE id = $30 RETURNING *`,
+        [name, email, phone || null, role, gender || 'Male', flatNo || null, occupancyStatus || 'Self-Occupied', tenantType || 'Family', ownerName || null, ownerPhone || null, aadhaarNumber || null, familyMembers || null, familyMemberNames || null, vehicles || null, moveInDate || null, leaseDuration || null, emergencyContactName || null, emergencyContactPhone || null, profilePicture || null, hasPet || false, petDetails || null, isLegacyBachelor || false, exemptionRef || null, policeVerificationStatus || 'pending', policeVerificationDate || null, nocDocumentRef || null, bachelorNotes || null, isApproved !== undefined ? isApproved : true, passwordHash, id]
+      );
+      return res.rows[0] || null;
+    } else {
+      const res = await query(
+        `UPDATE users SET 
+          name = $1, email = $2, phone = $3, role = $4, gender = $5, flat_no = $6, 
+          occupancy_status = $7, tenant_type = $8, owner_name = $9, owner_phone = $10, 
+          aadhaar_number = $11, family_members = $12, family_member_names = $13, 
+          vehicles = $14, move_in_date = $15, lease_duration = $16, 
+          emergency_contact_name = $17, emergency_contact_phone = $18, 
+          profile_picture = $19, has_pet = $20, pet_details = $21, 
+          is_legacy_bachelor = $22, exemption_ref = $23,
+          police_verification_status = $24, police_verification_date = $25,
+          noc_document_ref = $26, bachelor_notes = $27, is_approved = $28
+        WHERE id = $29 RETURNING *`,
+        [name, email, phone || null, role, gender || 'Male', flatNo || null, occupancyStatus || 'Self-Occupied', tenantType || 'Family', ownerName || null, ownerPhone || null, aadhaarNumber || null, familyMembers || null, familyMemberNames || null, vehicles || null, moveInDate || null, leaseDuration || null, emergencyContactName || null, emergencyContactPhone || null, profilePicture || null, hasPet || false, petDetails || null, isLegacyBachelor || false, exemptionRef || null, policeVerificationStatus || 'pending', policeVerificationDate || null, nocDocumentRef || null, bachelorNotes || null, isApproved !== undefined ? isApproved : true, id]
+      );
+      return res.rows[0] || null;
+    }
   },
 
   deleteUser: async (id) => {

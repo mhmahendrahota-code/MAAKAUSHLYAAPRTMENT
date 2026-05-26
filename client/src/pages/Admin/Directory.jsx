@@ -905,7 +905,8 @@ export const Directory = () => {
         hasPet: editUser.role === 'Resident' ? editUser.has_pet : false,
         petDetails: (editUser.role === 'Resident' && editUser.has_pet) ? editUser.pet_details : null,
         isLegacyBachelor: editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' ? editUser.is_legacy_bachelor : false,
-        exemptionRef: (editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' && editUser.is_legacy_bachelor) ? editUser.exemption_ref : null
+        exemptionRef: (editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' && editUser.is_legacy_bachelor) ? editUser.exemption_ref : null,
+        password: editUser.password || undefined
       };
 
       const res = await fetch('/api/users/update', {
@@ -2550,6 +2551,25 @@ export const Directory = () => {
                       <option value="Female">महिला (Female)</option>
                       <option value="Other">अन्य (Other)</option>
                     </select>
+                  </div>
+                </div>
+
+                {/* Admin Password Override */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-1 border-t border-white/5 pt-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold uppercase text-slate-400 text-left">लॉगिन पासवर्ड बदलें (New Password)</label>
+                    <input 
+                      type="password" 
+                      placeholder="बदलाव न करने के लिए खाली छोड़ें" 
+                      value={editUser.password || ''} 
+                      onChange={(e) => setEditUser({ ...editUser, password: e.target.value })} 
+                      className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:border-brand-500 outline-none" 
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1 justify-center">
+                    <span className="text-[9px] text-slate-500 italic mt-4">
+                      * नोट: यदि आप निवासी का लॉगिन पासवर्ड बदलना चाहते हैं, तो ही यहाँ दर्ज करें। अन्यथा खाली छोड़ें।
+                    </span>
                   </div>
                 </div>
               </div>
