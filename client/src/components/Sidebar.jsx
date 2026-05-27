@@ -11,6 +11,7 @@ import {
   DollarSign, 
   User, 
   AlertCircle,
+  Download,
   Image,
   X,
   Terminal
