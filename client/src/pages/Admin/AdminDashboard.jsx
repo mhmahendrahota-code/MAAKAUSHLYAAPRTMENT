@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LayoutDashboard, Users, FileText, FolderSync, DollarSign, ChevronRight, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, FolderSync, DollarSign, ChevronRight, TrendingUp, Image } from 'lucide-react';
 
 export const AdminDashboard = () => {
   const { token, user } = useAuth();
@@ -11,6 +11,7 @@ export const AdminDashboard = () => {
     activeVisitors: 0,
     totalFunds: 0,
     unpaidAmount: 0,
+    galleryCount: 0,
     bachelorAlerts: []
   });
   const [loading, setLoading] = useState(true);
@@ -48,6 +49,12 @@ export const AdminDashboard = () => {
         });
         const bachelorsData = await bachelorsRes.json();
 
+        // Fetch gallery events count
+        const galleryRes = await fetch('/api/gallery', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const galleryData = await galleryRes.json();
+
         if (dirData.success && ticketsData.success && visitorsData.success && billsData.success) {
           const residents = dirData.data.filter(u => u.role === 'Resident').length;
           const openTk = ticketsData.data.filter(t => t.status !== 'resolved').length;
@@ -55,6 +62,7 @@ export const AdminDashboard = () => {
           const collected = billsData.data.filter(b => b.status === 'paid').reduce((s, b) => s + parseFloat(b.amount), 0);
           const unpaid = billsData.data.filter(b => b.status === 'unpaid').reduce((s, b) => s + parseFloat(b.amount), 0);
           const bachelorList = bachelorsData.success ? bachelorsData.data : [];
+          const totalEvents = galleryData.success ? galleryData.data.length : 0;
 
           setStats({
             activeResidents: residents,
@@ -62,6 +70,7 @@ export const AdminDashboard = () => {
             activeVisitors: insideVisitors,
             totalFunds: collected,
             unpaidAmount: unpaid,
+            galleryCount: totalEvents,
             bachelorAlerts: bachelorList
           });
         }
@@ -73,6 +82,7 @@ export const AdminDashboard = () => {
           activeVisitors: 1,
           totalFunds: 4200.00,
           unpaidAmount: 4500.00,
+          galleryCount: 3,
           bachelorAlerts: [
             { id: 9, name: "सर्वेश मिश्रा", police_verification_status: "pending", is_expiring_soon: false }
           ]
@@ -227,6 +237,17 @@ export const AdminDashboard = () => {
             >
               <h4 className="font-bold text-white text-xs uppercase tracking-wider group-hover:text-brand-300 transition-colors">सूचना बुलेटिन</h4>
               <p className="text-[10px] text-slate-400">सभी निवासियों को नोटिस और आपातकालीन घोषणाएं प्रसारित करें।</p>
+            </Link>
+
+            <Link 
+              to="/gallery"
+              className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/25 hover:bg-brand-500/5 transition-all text-left flex flex-col gap-1.5 group sm:col-span-2"
+            >
+              <div className="flex items-center gap-2">
+                <Image size={15} className="text-brand-400 group-hover:scale-105 transition-transform" />
+                <h4 className="font-bold text-white text-xs uppercase tracking-wider group-hover:text-brand-300 transition-colors">सोसायटी गैलरी एवं समाचार (Events Gallery CMS)</h4>
+              </div>
+              <p className="text-[10px] text-slate-400">सोसायटी के त्योहारों, उत्सवों और समाचारों की तस्वीरें प्रकाशित व प्रबंधित करें। (वर्तमान में <strong>{stats.galleryCount}</strong> इवेंट्स लाइव हैं)</p>
             </Link>
           </div>
         </div>
