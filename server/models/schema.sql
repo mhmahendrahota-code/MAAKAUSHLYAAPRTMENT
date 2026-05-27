@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS gallery_events (
     id SERIAL PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
     content TEXT,
-    image_url VARCHAR(300),
+    image_url TEXT,
     event_date DATE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
