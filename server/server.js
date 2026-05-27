@@ -4,6 +4,11 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import csurf from 'csurf';
+import rateLimit from 'express-rate-limit';
+import { v4 as uuidv4 } from 'uuid';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,7 +38,7 @@ const PORT = process.env.PORT || 5000;
 
 // Enable CORS
 app.use(cors({
-  origin: '*', // For dev, allow all. Customize in production
+  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -42,10 +47,44 @@ app.use(cors({
 if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
+// Request ID middleware
+app.use((req, res, next) => {
+  req.id = uuidv4();
+  res.setHeader('X-Request-ID', req.id);
+  next();
+});
+// Security middlewares
+app.use(helmet());
+app.use(cookieParser());
+// Apply CSRF protection only to non-API routes
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+  return csurf({ cookie: true })(req, res, next);
+});
+// Global rate limiter: 100 requests per 15 minutes
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(globalLimiter);
+// HTTPS redirect (if behind proxy handling TLS)
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV === 'production' && req.headers['x-forwarded-proto'] !== 'https') {
+    return res.redirect(`https://${req.headers.host}${req.originalUrl}`);
+  }
+  next();
+});
+if (process.env.NODE_ENV !== 'production') {
+  app.use(morgan('dev'));
+}
 
-// Body parsers — limit raised to 10MB for Base64 image uploads in gallery CMS
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Body parsers — limit set to 1mb for security
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Root health check endpoint
 app.get('/health', (req, res) => {
@@ -82,8 +121,12 @@ if (process.env.NODE_ENV === 'production') {
 // Global Exception & Error Interceptor
 app.use(errorHandler);
 
-// Launch Node server listener
-app.listen(PORT, () => {
-  console.log(`📡 Express server active on http://localhost:${PORT}`);
-  console.log(`🔐 Authentication & RBAC rules applied.`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  // Launch Node server listener
+  app.listen(PORT, () => {
+    console.log(`📡 Express server active on http://localhost:${PORT}`);
+    console.log(`🔐 Authentication & RBAC rules applied.`);
+  });
+}
+// Export app for testing
+export default app;

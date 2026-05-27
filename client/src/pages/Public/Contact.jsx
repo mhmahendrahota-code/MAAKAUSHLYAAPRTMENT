@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { 
-  PhoneCall, 
-  Mail, 
-  MapPin, 
-  Send, 
-  HelpCircle, 
-  PlusCircle, 
-  Trash2, 
-  Edit3, 
-  X, 
-  Save, 
-  ShieldAlert, 
-  Sparkles 
+import { useNavigate } from 'react-router-dom';
+import RulesPoster from './RulesPoster';
+import {
+  PhoneCall,
+  Mail,
+  MapPin,
+  Send,
+  HelpCircle,
+  PlusCircle,
+  Trash2,
+  Edit3,
+  X,
+  Save,
+  ShieldAlert,
+  Sparkles
 } from 'lucide-react';
 
 export const Contact = () => {
@@ -226,7 +228,7 @@ export const Contact = () => {
                 </button>
               )}
             </div>
-            
+
             {loading ? (
               <div className="flex justify-center items-center py-6">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brand-500"></div>
@@ -241,7 +243,7 @@ export const Contact = () => {
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <a 
+                      <a
                         href={`tel:${item.number}`}
                         className="flex items-center gap-1 px-3 py-1 bg-brand-500/10 border border-brand-500/20 rounded-lg text-[10px] font-bold text-brand-300 hover:bg-brand-500/20 hover:text-brand-200 transition-all"
                       >
@@ -279,10 +281,10 @@ export const Contact = () => {
               <MapPin size={16} className="text-indigo-400 shrink-0" />
               <div className="flex flex-col gap-1.5">
                 <span>कमल विहार, सेक्टर 1, पचपेड़ी नाका, बोरियाखुर्द, रायपुर, छत्तीसगढ़ - 492015 (Kamal Vihar, Sector 1, Pachpedi Naka, Boriyakhurd, Raipur, Chhattisgarh 492015)</span>
-                <a 
-                  href="https://maps.app.goo.gl/dQR5gd3dgzAz59BTA" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href="https://maps.app.goo.gl/dQR5gd3dgzAz59BTA"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-xs font-semibold text-brand-400 hover:text-brand-300 transition-colors"
                 >
                   गूगल मैप्स पर देखें &rarr;
@@ -300,13 +302,13 @@ export const Contact = () => {
         <div className="glass-panel p-8 rounded-3xl border border-white/5">
           <h3 className="text-lg font-bold text-white uppercase tracking-wider mb-4">सीधा संदेश भेजें</h3>
           <p className="text-xs text-slate-400 mb-6">कोई प्रतिक्रिया या पूछताछ है? हमारे Resident Welfare Association प्रशासनिक कर्मचारियों को संदेश भेजें।</p>
-          
+
           <form onSubmit={handleInquirySubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold uppercase text-slate-400">आपका नाम</label>
-              <input 
-                type="text" 
-                required 
+              <input
+                type="text"
+                required
                 placeholder="पूरा नाम"
                 value={inquiryName}
                 onChange={(e) => setInquiryName(e.target.value)}
@@ -316,9 +318,9 @@ export const Contact = () => {
 
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold uppercase text-slate-400">ईमेल पता</label>
-              <input 
-                type="email" 
-                required 
+              <input
+                type="email"
+                required
                 placeholder="email@example.com"
                 value={inquiryEmail}
                 onChange={(e) => setInquiryEmail(e.target.value)}
@@ -328,9 +330,9 @@ export const Contact = () => {
 
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold uppercase text-slate-400">पूछताछ संदेश</label>
-              <textarea 
-                rows="4" 
-                required 
+              <textarea
+                rows="4"
+                required
                 placeholder="अपनी पूछताछ या प्रतिक्रिया का विवरण लिखें..."
                 value={inquiryMessage}
                 onChange={(e) => setInquiryMessage(e.target.value)}
@@ -344,7 +346,7 @@ export const Contact = () => {
               </div>
             )}
 
-            <button 
+            <button
               type="submit"
               className="py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 rounded-xl text-xs font-bold text-white uppercase tracking-wider shadow-premium hover:shadow-premium-hover transition-all flex items-center justify-center gap-1.5"
             >
@@ -358,8 +360,8 @@ export const Contact = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
           <div className="bg-slate-900 border border-white/10 rounded-3xl max-w-md w-full p-6 text-left shadow-2xl relative">
-            <button 
-              onClick={() => setShowModal(false)} 
+            <button
+              onClick={() => setShowModal(false)}
               className="absolute top-4 right-4 text-slate-500 hover:text-white"
             >
               <X size={18} />
@@ -378,49 +380,49 @@ export const Contact = () => {
             <form onSubmit={handleCmsSubmit} className="flex flex-col gap-4 text-xs">
               <div className="flex flex-col gap-1">
                 <label className="font-bold text-slate-400 uppercase text-[10px]">हेल्पलाइन का शीर्षक (Title) *</label>
-                <input 
-                  type="text" 
-                  required 
-                  placeholder="जैसे: मुख्य गार्ड गेट हाउस (Gate)" 
-                  value={title} 
-                  onChange={(e) => setTitle(e.target.value)} 
-                  className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors" 
+                <input
+                  type="text"
+                  required
+                  placeholder="जैसे: मुख्य गार्ड गेट हाउस (Gate)"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors"
                 />
               </div>
 
               <div className="flex flex-col gap-1">
                 <label className="font-bold text-slate-400 uppercase text-[10px]">संपर्क नंबर (Phone Number) *</label>
-                <input 
-                  type="text" 
-                  required 
-                  placeholder="जैसे: +91 80 4910291" 
-                  value={number} 
-                  onChange={(e) => setNumber(e.target.value)} 
-                  className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors" 
+                <input
+                  type="text"
+                  required
+                  placeholder="जैसे: +91 80 4910291"
+                  value={number}
+                  onChange={(e) => setNumber(e.target.value)}
+                  className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-2 flex flex-col gap-1">
                   <label className="font-bold text-slate-400 uppercase text-[10px]">अतिरिक्त विवरण (Note)</label>
-                  <input 
-                    type="text" 
-                    placeholder="जैसे: 24 घंटे आपातकालीन" 
-                    value={note} 
-                    onChange={(e) => setNote(e.target.value)} 
-                    className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors" 
+                  <input
+                    type="text"
+                    placeholder="जैसे: 24 घंटे आपातकालीन"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="font-bold text-slate-400 uppercase text-[10px]">प्रदर्शन क्रम *</label>
-                  <input 
-                    type="number" 
-                    required 
-                    min="1" 
-                    placeholder="1" 
-                    value={displayOrder} 
-                    onChange={(e) => setDisplayOrder(e.target.value)} 
-                    className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors text-center font-bold" 
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    placeholder="1"
+                    value={displayOrder}
+                    onChange={(e) => setDisplayOrder(e.target.value)}
+                    className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors text-center font-bold"
                   />
                 </div>
               </div>

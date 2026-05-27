@@ -121,6 +121,16 @@ export const loginUser = async (req, res, next) => {
       throw new Error('Invalid email or password credentials');
     }
 
+    // Generate JWT token
+    const token = generateToken(user.id);
+    // Set httpOnly cookie
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+    // Respond without sensitive PII and without token in body
     res.status(200).json({
       success: true,
       message: 'Login successful',
@@ -131,22 +141,7 @@ export const loginUser = async (req, res, next) => {
         role: user.role,
         gender: user.gender,
         flat_no: user.flat_no,
-        phone: user.phone,
-        occupancy_status: user.occupancy_status,
-        owner_name: user.owner_name,
-        owner_phone: user.owner_phone,
-        aadhaar_number: user.aadhaar_number,
-        family_members: user.family_members,
-        family_member_names: user.family_member_names,
-        vehicles: user.vehicles,
-        move_in_date: user.move_in_date,
-        lease_duration: user.lease_duration,
-        emergency_contact_name: user.emergency_contact_name,
-        emergency_contact_phone: user.emergency_contact_phone,
-        profile_picture: user.profile_picture,
-        has_pet: user.has_pet,
-        pet_details: user.pet_details,
-        token: generateToken(user.id)
+        // Add any other non‑PII fields you wish to expose
       }
     });
   } catch (error) {

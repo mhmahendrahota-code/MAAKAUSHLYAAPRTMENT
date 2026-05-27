@@ -4,23 +4,15 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Validate session on startup
   useEffect(() => {
     const initializeAuth = async () => {
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
       try {
         const response = await fetch('/api/users/profile', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          credentials: 'include'
         });
 
         const result = await response.json();
@@ -32,26 +24,16 @@ export const AuthProvider = ({ children }) => {
           handleLogout();
         }
       } catch (err) {
-        console.warn("⚠️ Network failed to verify session. Falling back to local offline user mock validation.");
-        // Try decoding or using existing offline user cached in localStorage if any
-        try {
-          const cachedUser = localStorage.getItem('user');
-          if (cachedUser && cachedUser !== 'undefined') {
-            setUser(JSON.parse(cachedUser));
-          } else {
-            handleLogout();
-          }
-        } catch (parseErr) {
-          console.error("⚠️ Failed to parse cached user:", parseErr);
-          handleLogout();
-        }
+        // If the backend is unavailable, show a clear error to the user.
+        setError('Unable to reach the authentication server. Please try again later.');
+        handleLogout();
       } finally {
         setLoading(false);
       }
     };
 
     initializeAuth();
-  }, [token]);
+  }, []);
 
   // Login handler
   const login = async (email, password) => {
@@ -65,6 +47,7 @@ export const AuthProvider = ({ children }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
+        credentials: 'include'
       });
 
       hasResponse = true;
@@ -75,10 +58,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       const userData = result.data;
-      localStorage.setItem('token', userData.token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      setToken(userData.token);
+      // Token is set as httpOnly cookie by server; no localStorage usage.
       setUser(userData);
       return userData;
     } catch (err) {
@@ -86,30 +66,9 @@ export const AuthProvider = ({ children }) => {
         setError(err.message);
         throw err;
       }
-      console.warn("⚠️ Backend server unavailable. Engaging offline mock user credentials bypass.");
-      
-      // Dynamic offline mock logins for direct testing out-of-the-box
-      let mockUser = null;
-      if (email === 'admin@maakaushalya.com' && password === 'password123') {
-        mockUser = { id: 100, name: "आरडब्ल्यूए प्रशासक (RWA Admin)", email: "admin@maakaushalya.com", role: "Admin", flat_no: "A-100", phone: "9876543210", token: "mock-admin-token" };
-      } else if (email === 'naushad@maakaushalya.com' && password === 'password123') {
-        mockUser = { id: 1, name: "नौशाद अहमद (Naushad Ahmad)", email: "naushad@maakaushalya.com", role: "Resident", flat_no: "A-101", phone: "9770779072", token: "mock-naushad-token" };
-      } else if (email === 'resident@maakaushalya.com' && password === 'password123') {
-        mockUser = { id: 2, name: "सूफी इलियास चिश्ती (Sufi Illias Chisti)", email: "resident@maakaushalya.com", role: "Resident", flat_no: "B-304", phone: "7869551226", token: "mock-resident-token" };
-      } else if (email === 'guard@maakaushalya.com' && password === 'password123') {
-        mockUser = { id: 3, name: "सुरक्षा गार्ड शिंदे (Gatekeeper)", email: "guard@maakaushalya.com", role: "Security", flat_no: null, phone: "+918888877777", token: "mock-security-token" };
-      }
-
-      if (mockUser) {
-        localStorage.setItem('token', mockUser.token);
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        setToken(mockUser.token);
-        setUser(mockUser);
-        return mockUser;
-      } else {
-        setError(err.message || 'Connection failed, and invalid offline credentials. Try: admin@maakaushalya.com / password123');
-        throw err;
-      }
+      // Offline mock login is removed for security. Show error.
+      setError('Authentication server is unavailable. Please try again later.');
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -143,10 +102,7 @@ export const AuthProvider = ({ children }) => {
         return newUserData;
       }
 
-      localStorage.setItem('token', newUserData.token);
-      localStorage.setItem('user', JSON.stringify(newUserData));
-      
-      setToken(newUserData.token);
+      // Server sets httpOnly cookie; no localStorage usage.
       setUser(newUserData);
       return newUserData;
     } catch (err) {
@@ -162,13 +118,9 @@ export const AuthProvider = ({ children }) => {
         email: userData.email,
         role: userData.role,
         flat_no: userData.flatNo || null,
-        phone: userData.phone || null,
-        token: `mock-token-${Date.now()}`
+        phone: userData.phone || null
       };
 
-      localStorage.setItem('token', newMockUser.token);
-      localStorage.setItem('user', JSON.stringify(newMockUser));
-      setToken(newMockUser.token);
       setUser(newMockUser);
       return newMockUser;
     } finally {
@@ -178,14 +130,14 @@ export const AuthProvider = ({ children }) => {
 
   // Logout handler
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setToken(null);
+    // Clear client state; server should clear cookie via logout endpoint if needed.
     setUser(null);
+    // Note: token state no longer exists.
+
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, error, login, register, logout: handleLogout }}>
+    <AuthContext.Provider value={{ user, loading, error, login, register, logout: handleLogout }}>
       {children}
     </AuthContext.Provider>
   );

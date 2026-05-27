@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, ShieldCheck, LogOut, LogIn, Menu, User, Crown } from 'lucide-react';
+import { Home, ShieldCheck, LogOut, LogIn, Menu, User } from 'lucide-react';
 
 export const Navbar = ({ onMenuClick }) => {
   const { user, token, logout } = useAuth();
@@ -71,11 +71,11 @@ export const Navbar = ({ onMenuClick }) => {
         
         {/* Brand Logo */}
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-600 via-yellow-500 to-amber-800 p-[1.5px] shadow-[0_0_15px_rgba(245,158,11,0.25)] group-hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] group-hover:scale-105 transition-all duration-300">
-            <div className="w-full h-full rounded-[10px] bg-slate-950 flex items-center justify-center text-amber-400">
-              <Crown size={18} className="animate-pulse" />
-            </div>
-          </div>
+          <img
+            src="/logo.jpg"
+            alt="माँ कौशल्या अपार्टमेंट लोगो"
+            className="w-10 h-10 rounded-full object-cover shadow-[0_0_15px_rgba(245,158,11,0.3)] group-hover:shadow-[0_0_22px_rgba(245,158,11,0.5)] group-hover:scale-105 transition-all duration-300 border-2 border-amber-500/40"
+          />
           <div className="flex flex-col">
             <span className="font-extrabold text-base tracking-wide bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-400 bg-clip-text text-transparent group-hover:from-yellow-100 group-hover:via-white group-hover:to-yellow-200 transition-all">
               माँ कौशल्या
@@ -104,6 +104,18 @@ export const Navbar = ({ onMenuClick }) => {
             className={`text-sm font-medium transition-all ${isActive('/about') ? 'text-brand-300 font-bold' : 'text-slate-300 hover:text-white'}`}
           >
             हमारे बारे में
+          </Link>
+          <Link 
+            to="/gallery" 
+            className={`text-sm font-medium transition-all ${isActive('/gallery') ? 'text-brand-300 font-bold' : 'text-slate-300 hover:text-white'}`}
+          >
+            गैलरी एवं समाचार
+          </Link>
+          <Link 
+            to="/downloads" 
+            className={`text-sm font-medium transition-all ${isActive('/downloads') ? 'text-brand-300 font-bold' : 'text-slate-300 hover:text-white'}`}
+          >
+            दस्तावेज़ डाउनलोड
           </Link>
           <Link 
             to="/contact" 

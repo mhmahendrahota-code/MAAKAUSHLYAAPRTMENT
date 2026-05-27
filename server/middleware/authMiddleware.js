@@ -4,13 +4,21 @@ import { queries } from '../models/queries.js';
 export const protect = async (req, res, next) => {
   let token;
 
-  // Check for Bearer token in headers
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    try {
-      token = req.headers.authorization.split(' ')[1];
-      
-      // Verify JWT token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'super_secret_key_change_me_in_production');
+  // Retrieve token from httpOnly cookie or Authorization header
+  token = req.cookies?.auth_token;
+  if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+  if (!token) {
+    res.status(401);
+    return next(new Error('Not authorized, no token provided'));
+  }
+  try {
+    // Verify JWT token using required secret
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET environment variable is missing');
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
       // Fetch user profile and attach to request
       const user = await queries.findUserById(decoded.id);
@@ -28,12 +36,8 @@ export const protect = async (req, res, next) => {
     } catch (error) {
       console.error('JWT Verification Error:', error.message);
       res.status(401);
-      next(new Error('Not authorized, token validation failed'));
+      return next(new Error('Not authorized, token validation failed'));
     }
-  } else {
-    res.status(401);
-    next(new Error('Not authorized, no token provided'));
-  }
 };
 
 // Enforce Role-Based Access Control

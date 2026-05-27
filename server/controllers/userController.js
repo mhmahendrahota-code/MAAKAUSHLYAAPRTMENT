@@ -25,37 +25,12 @@ export const getSocietyDirectory = async (req, res, next) => {
     
     // Format a directory of residents and admins, hiding sensitive credentials
     const directory = allUsers.map(user => ({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      gender: user.gender,
-      flat_no: user.flat_no,
-      phone: user.phone,
-      occupancy_status: user.occupancy_status,
-      owner_name: user.owner_name,
-      owner_phone: user.owner_phone,
-      aadhaar_number: user.aadhaar_number,
-      family_members: user.family_members,
-      family_member_names: user.family_member_names,
-      vehicles: user.vehicles,
-      move_in_date: user.move_in_date,
-      lease_duration: user.lease_duration,
-      emergency_contact_name: user.emergency_contact_name,
-      emergency_contact_phone: user.emergency_contact_phone,
-      profile_picture: user.profile_picture,
-      has_pet: user.has_pet,
-      pet_details: user.pet_details,
-      is_legacy_bachelor: user.is_legacy_bachelor || false,
-      exemption_ref: user.exemption_ref || '',
-      tenant_type: user.tenant_type || 'Family',
-      police_verification_status: user.police_verification_status || 'pending',
-      police_verification_date: user.police_verification_date || null,
-      noc_document_ref: user.noc_document_ref || null,
-      bachelor_notes: user.bachelor_notes || null,
-      is_approved: user.is_approved !== false,
-      created_at: user.created_at
-    }));
+        id: user.id,
+        name: user.name,
+        flat_no: user.flat_no,
+        role: user.role,
+        // Additional non-PII fields can be added here if needed
+      }));
 
     res.status(200).json({
       success: true,

@@ -34,13 +34,13 @@ const AppLayout = () => {
     <div className="min-h-screen bg-transparent flex flex-col">
       {/* Top sticky Navbar */}
       <Navbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-      
+
       {/* Flex container for sidebar & nested content portal */}
       <div className="flex-1 flex relative">
         {user && (
           <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         )}
-        
+
         {/* Dynamic content rendering zone */}
         <main className="flex-1 min-w-0 overflow-y-auto bg-transparent flex flex-col items-center">
           <Routes>
@@ -51,105 +51,105 @@ const AppLayout = () => {
             <Route path="/contact" element={<Contact />} />
 
             {/* Resident Protected Portal Routes */}
-            <Route 
-              path="/dashboard" 
+            <Route
+              path="/dashboard"
               element={
                 <ProtectedRoute allowedRoles={['Resident']}>
                   <Dashboard />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/maintenance-bills" 
+            <Route
+              path="/maintenance-bills"
               element={
                 <ProtectedRoute allowedRoles={['Resident']}>
                   <MaintenanceBills />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/complaints" 
+            <Route
+              path="/complaints"
               element={
                 <ProtectedRoute allowedRoles={['Resident', 'Admin']}>
                   <Complaints />
                 </ProtectedRoute>
-              } 
+              }
             />
 
             {/* Shared Board Notices - readable by all authenticated members */}
-            <Route 
-              path="/notices" 
+            <Route
+              path="/notices"
               element={
                 <ProtectedRoute allowedRoles={['Resident', 'Admin', 'Security']}>
                   <Notices />
                 </ProtectedRoute>
-              } 
+              }
             />
 
             {/* Shared Committee Section - readable by all authenticated members */}
-            <Route 
-              path="/committee" 
+            <Route
+              path="/committee"
               element={
                 <ProtectedRoute allowedRoles={['Resident', 'Admin', 'Security']}>
                   <Committee />
                 </ProtectedRoute>
-              } 
+              }
             />
 
             {/* Shared Gallery Section - readable by all authenticated members */}
-            <Route 
-              path="/gallery" 
+            <Route
+              path="/gallery"
               element={
                 <ProtectedRoute allowedRoles={['Resident', 'Admin', 'Security']}>
                   <Gallery />
                 </ProtectedRoute>
-              } 
+              }
             />
 
             {/* Shared Downloads Section - readable by all authenticated members */}
-            <Route 
-              path="/downloads" 
+            <Route
+              path="/downloads"
               element={
                 <ProtectedRoute allowedRoles={['Resident', 'Admin', 'Security']}>
                   <Downloads />
                 </ProtectedRoute>
-              } 
+              }
             />
 
             {/* Admin Protected Portal Routes */}
-            <Route 
-              path="/admin" 
+            <Route
+              path="/admin"
               element={
                 <ProtectedRoute allowedRoles={['Admin']}>
                   <AdminDashboard />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/directory" 
+            <Route
+              path="/directory"
               element={
                 <ProtectedRoute allowedRoles={['Admin']}>
                   <Directory />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/finance" 
+            <Route
+              path="/finance"
               element={
                 <ProtectedRoute allowedRoles={['Admin']}>
                   <Finance />
                 </ProtectedRoute>
-              } 
+              }
             />
 
             {/* Security/Gatekeeper Protected Portal Routes (readable by Admin as well) */}
-            <Route 
-              path="/visitor-logs" 
+            <Route
+              path="/visitor-logs"
               element={
                 <ProtectedRoute allowedRoles={['Security', 'Admin', 'Resident']}>
                   <VisitorLogs />
                 </ProtectedRoute>
-              } 
+              }
             />
 
             {/* Redirect anything else back to Home */}

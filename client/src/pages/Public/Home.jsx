@@ -1,119 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { ShieldCheck, Building, KeyRound, ChevronRight, UserCheck, Home as HomeIcon, Users, ShieldAlert, Image, Calendar, FileText, Download, BookOpen, Car, Phone, AlertTriangle, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Building, KeyRound, ChevronRight, UserCheck, Home as HomeIcon, Users, ShieldAlert, Car, Phone, ArrowRight, X } from 'lucide-react';
+import RulesPoster from './RulesPoster';
 import { SOCIETY_FLATS } from '../../utils/flats';
 
-// ─── Society documents list (static, downloadable as print-page) ───
-const SOCIETY_DOCS = [
-  {
-    id: 'bylaws',
-    icon: BookOpen,
-    color: 'brand',
-    title: 'आरडब्ल्यूए उपनियम (RWA Bye-Laws)',
-    desc: 'सोसायटी के सभी नियम एवं विनियम — सदस्यता, बैठकें, शुल्क, अनुशासन।',
-    pages: '12 पृष्ठ',
-    content: `<h2>माँ कौशल्या अपार्टमेंट — RWA उपनियम</h2>
-<h3>धारा 1 — सदस्यता</h3><p>सोसायटी के प्रत्येक फ्लैट धारक को अनिवार्य रूप से सदस्य माना जाएगा।</p>
-<h3>धारा 2 — मासिक रखरखाव शुल्क</h3><p>प्रत्येक फ्लैट से मासिक ₹1500/- (एक हजार पाँच सौ रुपए) रखरखाव शुल्क देय है। किरायेदारों से ₹2000/- देय।</p>
-<h3>धारा 3 — बैठकें</h3><p>वार्षिक आम बैठक (AGM) प्रतिवर्ष जून माह में आयोजित की जाएगी।</p>
-<h3>धारा 4 — अनुशासन</h3><p>परिसर में शोर, धूम्रपान एवं पालतू पशु को सार्वजनिक क्षेत्रों में बिना पट्टे के लाना वर्जित है।</p>
-<h3>धारा 5 — बैचलर नीति</h3><p>बैचलर/अविवाहित किरायेदारों को फ्लैट किराए पर देना सख्त प्रतिबंधित है।</p>`
-  },
-  {
-    id: 'maintenance',
-    icon: FileText,
-    color: 'emerald',
-    title: 'मासिक रखरखाव शेड्यूल (Maintenance Schedule)',
-    desc: 'पानी टंकी सफाई, लिफ्ट, जनरेटर, परिसर सफाई का मासिक कार्यक्रम।',
-    pages: '4 पृष्ठ',
-    content: `<h2>माँ कौशल्या अपार्टमेंट — मासिक रखरखाव शेड्यूल</h2>
-<table border='1' cellpadding='8' style='border-collapse:collapse;width:100%'><tr><th>सेवा</th><th>आवृत्ति</th><th>जिम्मेदार</th></tr>
-<tr><td>पानी टंकी सफाई</td><td>त्रैमासिक</td><td>RWA टीम</td></tr>
-<tr><td>लिफ्ट सर्विसिंग</td><td>मासिक</td><td>AMC वेंडर</td></tr>
-<tr><td>जनरेटर परीक्षण</td><td>साप्ताहिक (रविवार)</td><td>इलेक्ट्रीशियन</td></tr>
-<tr><td>परिसर सफाई</td><td>दैनिक</td><td>सफाई कर्मी</td></tr>
-<tr><td>गार्डन रखरखाव</td><td>साप्ताहिक</td><td>माली</td></tr>
-<tr><td>CCTV जाँच</td><td>मासिक</td><td>सुरक्षा प्रभारी</td></tr></table>`
-  },
-  {
-    id: 'parking',
-    icon: Car,
-    color: 'amber',
-    title: 'पार्किंग एवं वाहन नीति (Parking & Vehicle Policy)',
-    desc: 'वाहन पंजीकरण, स्टीकर प्रणाली, पार्किंग आवंटन नियम।',
-    pages: '3 पृष्ठ',
-    content: `<h2>माँ कौशल्या अपार्टमेंट — पार्किंग नीति</h2>
-<h3>नियम 1 — वाहन पंजीकरण</h3><p>सोसायटी परिसर में पार्क होने वाले प्रत्येक वाहन का RWA के पास पंजीकरण अनिवार्य है।</p>
-<h3>नियम 2 — स्टीकर प्रणाली</h3><p>पंजीकृत वाहनों को रंगीन स्टीकर जारी किए जाते हैं। बिना स्टीकर वाहन को 24 घंटे में परिसर से बाहर करना होगा।</p>
-<h3>नियम 3 — पार्किंग आवंटन</h3><p>प्रत्येक फ्लैट को अधिकतम 2 पार्किंग स्लॉट आवंटित। अतिरिक्त वाहन हेतु RWA से अनुमति आवश्यक।</p>
-<h3>नियम 4 — आगंतुक पार्किंग</h3><p>आगंतुक वाहन गेट पर पंजीकरण के बाद निर्धारित स्थान पर ही खड़ा होगा, अधिकतम 4 घंटे।</p>`
-  },
-  {
-    id: 'emergency',
-    icon: Phone,
-    color: 'rose',
-    title: 'आपातकालीन संपर्क सूची (Emergency Contacts)',
-    desc: 'गेट, RWA, पुलिस, अग्निशमन, अस्पताल एवं सेवा प्रदाताओं के नंबर।',
-    pages: '2 पृष्ठ',
-    content: `<h2>माँ कौशल्या अपार्टमेंट — आपातकालीन संपर्क सूची</h2>
-<table border='1' cellpadding='8' style='border-collapse:collapse;width:100%'><tr><th>सेवा</th><th>संपर्क नंबर</th><th>समय</th></tr>
-<tr><td>🔒 गेट हाउस (Gate)</td><td>+91 80 4910291</td><td>24×7</td></tr>
-<tr><td>🏢 RWA कार्यालय</td><td>+91 80 4910292</td><td>9:30AM–5:30PM</td></tr>
-<tr><td>⚡ बिजली (Electricity)</td><td>+91 9988010291</td><td>24×7</td></tr>
-<tr><td>💧 पानी / प्लंबर</td><td>+91 9988010292</td><td>24×7</td></tr>
-<tr><td>🚒 अग्निशमन (Fire)</td><td>101</td><td>आपातकाल</td></tr>
-<tr><td>🚓 पुलिस (Police)</td><td>100</td><td>आपातकाल</td></tr>
-<tr><td>🏥 एम्बुलेंस</td><td>108</td><td>आपातकाल</td></tr></table>`
-  }
-];
-
 export const Home = () => {
+  const [showRulePopup, setShowRulePopup] = useState(true);
   const { login, register, token } = useAuth();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('login');
 
-  // Gallery preview state (public — fetched without auth for landing)
-  const [galleryEvents, setGalleryEvents] = useState([]);
-  const [galleryLoading, setGalleryLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchGallery = async () => {
-      try {
-        const res = await fetch('/api/gallery', {
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-        });
-        const data = await res.json();
-        if (data.success) {
-          setGalleryEvents(data.data.slice(0, 3));
-        } else throw new Error('fallback');
-      } catch {
-        // Static fallback preview
-        setGalleryEvents([
-          { id: 1, title: 'गणेश चतुर्थी उत्सव (Ganesh Chaturthi Utsav)', image_url: 'https://images.unsplash.com/photo-1567591974584-f18551452228?w=600&auto=format&fit=crop&q=60', event_date: '2025-09-15', content: 'भव्य गणेश स्थापना और दैनिक आरती का आयोजन किया गया।' },
-          { id: 2, title: 'स्वतंत्रता दिवस ध्वजारोहण', image_url: 'https://images.unsplash.com/photo-1532375811409-905115e3b5a9?w=600&auto=format&fit=crop&q=60', event_date: '2025-08-15', content: 'आरडब्ल्यूए द्वारा ध्वजारोहण और सांस्कृतिक कार्यक्रम।' },
-          { id: 3, title: 'स्वच्छता एवं वृक्षारोपण (Green & Clean Drive)', image_url: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600&auto=format&fit=crop&q=60', event_date: '2026-05-10', content: '50+ पौधे रोपे गए। परिसर को हरा-भरा बनाने का अभियान।' },
-        ]);
-      } finally {
-        setGalleryLoading(false);
-      }
-    };
-    fetchGallery();
-  }, [token]);
 
-  // Download helper — generates printable HTML page in new tab
-  const handleDocDownload = (doc) => {
-    const html = `<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><title>${doc.title}</title>
-    <style>body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;padding:20px;color:#222;}h2{color:#1e3a5f;border-bottom:2px solid #c8a44a;padding-bottom:8px;}h3{color:#2c5282;margin-top:20px;}table{width:100%;border-collapse:collapse;}th{background:#1e3a5f;color:white;padding:10px;}td{padding:8px;border:1px solid #ddd;}tr:nth-child(even){background:#f9f9f9;}.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:30px;}.footer{margin-top:40px;font-size:12px;color:#666;border-top:1px solid #eee;padding-top:12px;text-align:center;}</style></head>
-    <body><div class="header"><div><h1 style="color:#1e3a5f;margin:0">माँ कौशल्या अपार्टमेंट</h1><p style="margin:4px 0 0;color:#666;font-size:14px">सेक्टर 1, Raipur, Chhattisgarh | RWA Official Document</p></div></div>
-    ${doc.content}<div class="footer">📄 दस्तावेज़ आरडब्ल्यूए, माँ कौशल्या अपार्टमेंट द्वारा जारी | Generated: ${new Date().toLocaleDateString('hi-IN')}</div>
-    <script>window.onload=()=>window.print();<\/script></body></html>`;
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
-    setTimeout(() => URL.revokeObjectURL(url), 30000);
-  };
+
 
   // Login states
   const [email, setEmail] = useState('');
@@ -258,6 +159,22 @@ export const Home = () => {
 
   return (
     <>
+    {showRulePopup && (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-slate-900 border border-white/10 rounded-3xl max-w-lg w-full p-6 text-left shadow-2xl relative">
+        <button onClick={() => setShowRulePopup(false)} className="absolute top-4 right-4 text-slate-500 hover:text-white">
+          <X size={18} />
+        </button>
+        <h2 className="text-lg font-bold text-white mb-4">नियमावली पोस्टर</h2>
+        <div className="max-h-96 overflow-y-auto mb-4">
+          <RulesPoster />
+        </div>
+        <button onClick={() => setShowRulePopup(false)} className="w-full py-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-600 text-white rounded-xl text-xs font-bold uppercase">
+          बंद करें (Close)
+        </button>
+      </div>
+    </div>
+  )}
     <div className="container mx-auto px-6 py-12 flex flex-col lg:flex-row items-center gap-12 min-h-[calc(100vh-140px)]">
 
       {/* === LEFT: Hero Section === */}
@@ -783,141 +700,10 @@ export const Home = () => {
       </div>
     </div>
 
-    {/* --- SECTION 2: सोसायटी गैलरी एवं समाचार (Events Gallery) --- */}
-    <div className="w-full px-6 pb-12">
-      <div className="max-w-6xl mx-auto">
-        {/* Section Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center border border-amber-500/25">
-              <Image size={18} className="text-amber-400" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-amber-400">SOCIETY BULLETIN</p>
-              <h2 className="text-xl font-extrabold text-white uppercase tracking-tight">सोसायटी गैलरी एवं समाचार</h2>
-            </div>
-          </div>
-          <button
-            onClick={() => navigate('/gallery')}
-            className="flex items-center gap-1.5 text-xs font-bold text-brand-400 hover:text-white border border-brand-500/25 hover:border-brand-500/60 px-3 py-1.5 rounded-xl transition-all bg-brand-500/5 hover:bg-brand-500/15"
-          >
-            सभी देखें <ArrowRight size={13} />
-          </button>
-        </div>
 
-        {/* Gallery Cards Grid */}
-        {galleryLoading ? (
-          <div className="flex justify-center items-center py-16">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {galleryEvents.map((item, i) => (
-              <div
-                key={item.id}
-                className="glass-panel rounded-3xl border border-white/5 overflow-hidden hover:border-amber-500/25 hover:shadow-[0_8px_30px_rgba(212,175,55,0.1)] transition-all duration-300 group cursor-pointer flex flex-col"
-                onClick={() => navigate('/gallery')}
-                style={{ animationDelay: `${i * 80}ms` }}
-              >
-                {/* Image */}
-                <div className="relative h-44 w-full bg-slate-950 overflow-hidden">
-                  {item.image_url ? (
-                    <img
-                      src={item.image_url}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-600">
-                      <Image size={28} />
-                    </div>
-                  )}
-                  {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
-                  {/* Date badge */}
-                  <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-lg text-[10px] font-bold text-slate-300">
-                    <Calendar size={10} className="text-amber-400" />
-                    {item.event_date ? new Date(item.event_date).toLocaleDateString('hi-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}
-                  </div>
-                </div>
-                {/* Content */}
-                <div className="p-4 flex flex-col gap-1.5 flex-1">
-                  <h3 className="font-extrabold text-white text-sm leading-snug group-hover:text-amber-400 transition-colors line-clamp-2">{item.title}</h3>
-                  <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-2">{item.content || 'आरडब्ल्यूए सोसायटी गतिविधि'}</p>
-                  <div className="mt-auto pt-3 border-t border-white/5 flex items-center justify-between">
-                    <span className="text-[9px] text-slate-600 font-bold uppercase tracking-wider">अपार्टमेंट बुलेटिन</span>
-                    <span className="text-[9px] text-amber-400 font-bold flex items-center gap-1">विवरण देखें <ArrowRight size={9} /></span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
 
-    {/* --- SECTION 3: सोसायटी दस्तावेज़ डाउनलोड --- */}
-    <div className="w-full px-6 pb-16">
-      <div className="max-w-6xl mx-auto">
-        {/* Divider */}
-        <div className="border-t border-white/5 mb-10" />
 
-        {/* Section Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/15 flex items-center justify-center border border-indigo-500/25">
-            <FileText size={18} className="text-indigo-400" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">RWA OFFICIAL DOCUMENTS</p>
-            <h2 className="text-xl font-extrabold text-white uppercase tracking-tight">सोसायटी दस्तावेज़ डाउनलोड</h2>
-          </div>
-        </div>
-
-        {/* Documents Notice Banner */}
-        <div className="mb-5 flex items-start gap-3 bg-indigo-500/5 border border-indigo-500/15 rounded-2xl px-4 py-3">
-          <AlertTriangle size={15} className="text-indigo-400 shrink-0 mt-0.5" />
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            नीचे दिए गए सभी दस्तावेज़ आरडब्ल्यूए द्वारा निवासियों की सुविधा के लिए जारी किए गए हैं। डाउनलोड पर क्लिक करने पर दस्तावेज़ प्रिंट-तैयार रूप में खुलेगा।
-          </p>
-        </div>
-
-        {/* Document Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {SOCIETY_DOCS.map((doc) => {
-            const Icon = doc.icon;
-            const colorMap = {
-              brand:   { bg: 'bg-brand-500/10',   border: 'border-brand-500/20',   text: 'text-brand-400',   btn: 'bg-brand-600 hover:bg-brand-500' },
-              emerald: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', text: 'text-emerald-400', btn: 'bg-emerald-600 hover:bg-emerald-500' },
-              amber:   { bg: 'bg-amber-500/10',   border: 'border-amber-500/20',   text: 'text-amber-400',   btn: 'bg-amber-600 hover:bg-amber-500' },
-              rose:    { bg: 'bg-rose-500/10',     border: 'border-rose-500/20',     text: 'text-rose-400',     btn: 'bg-rose-600 hover:bg-rose-500' },
-            };
-            const c = colorMap[doc.color];
-            return (
-              <div
-                key={doc.id}
-                className={`glass-panel rounded-2xl border ${c.border} p-5 flex flex-col gap-3 hover:scale-[1.02] transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)]`}
-              >
-                <div className={`w-12 h-12 rounded-xl ${c.bg} ${c.border} border flex items-center justify-center`}>
-                  <Icon size={22} className={c.text} />
-                </div>
-                <div className="flex flex-col gap-1 flex-1">
-                  <h3 className="text-sm font-extrabold text-white leading-snug">{doc.title}</h3>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">{doc.desc}</p>
-                  <span className="text-[9px] font-bold text-slate-600 uppercase tracking-wider mt-auto pt-2">{doc.pages}</span>
-                </div>
-                <button
-                  onClick={() => handleDocDownload(doc)}
-                  className={`w-full py-2.5 ${c.btn} text-white rounded-xl text-[10px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-premium`}
-                >
-                  <Download size={12} /> डाउनलोड / प्रिंट
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-    </>
+  </>
   );
 };
 
