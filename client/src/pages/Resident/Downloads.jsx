@@ -77,6 +77,8 @@ export const Downloads = () => {
   const [univOwnerName, setUnivOwnerName] = useState('');
   const [univOwnerPhone, setUnivOwnerPhone] = useState('');
   const [univLeaseDuration, setUnivLeaseDuration] = useState('');
+  const [univTenantAgreement, setUnivTenantAgreement] = useState(false);
+  const [univPoliceVerification, setUnivPoliceVerification] = useState(false);
   const [univHasPet, setUnivHasPet] = useState(false);
   const [univPetDetails, setUnivPetDetails] = useState('');
   const [univProfilePic, setUnivProfilePic] = useState('');
@@ -534,7 +536,9 @@ export const Downloads = () => {
 ${univOccupancyStatus === 'Rented' ? `• किरायेदार श्रेणी: ${univTenantCategory === 'Family' ? 'पारिवारिक (Family)' : 'बैचलर (Bachelor)'}
 • मकान मालिक का नाम: ${univOwnerName || 'N/A'}
 • मालिक का फोन नंबर: ${univOwnerPhone || 'N/A'}
-• पट्टा अनुबंध अवधि: ${univLeaseDuration || 'N/A'}` : '• फ्लैट स्वामी स्वयं रह रहे हैं (Self-Occupied)'}
+• पट्टा अनुबंध अवधि: ${univLeaseDuration || 'N/A'}
+• एग्रीमेंट जमा (Lease Agreement?): ${univTenantAgreement ? 'हाँ (Yes)' : 'नहीं (No)'}
+• पुलिस सत्यापन (Police Verified?): ${univPoliceVerification ? 'हाँ (Yes)' : 'नहीं (No)'}` : '• फ्लैट स्वामी स्वयं रह रहे हैं (Self-Occupied)'}
 
 [3. आपातकालीन संपर्क विवरण]
 • आपातकालीन संपर्क नाम: ${univEmergencyName || 'N/A'}
@@ -589,6 +593,8 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
     setUnivOwnerName('');
     setUnivOwnerPhone('');
     setUnivLeaseDuration('');
+    setUnivTenantAgreement(false);
+    setUnivPoliceVerification(false);
     setUnivHasPet(false);
     setUnivPetDetails('');
     setUnivProfilePic('');
@@ -1003,6 +1009,12 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
             <tr>
               <th>पट्टा अवधि (Lease Period)</th>
               <td colspan="3">${isBlank ? '.............................' : univLeaseDuration}</td>
+            </tr>
+            <tr>
+              <th>एग्रीमेंट जमा? (Lease Agreement?)</th>
+              <td>${isBlank ? 'हाँ (Yes) / नहीं (No)' : (univTenantAgreement ? 'हाँ (Yes)' : 'नहीं (No)')}</td>
+              <th>पुलिस सत्यापन? (Police Verification?)</th>
+              <td>${isBlank ? 'हाँ (Yes) / नहीं (No)' : (univPoliceVerification ? 'हाँ (Yes)' : 'नहीं (No)')}</td>
             </tr>
             ` : `
             <tr>
@@ -1607,6 +1619,36 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
                             <div className="flex flex-col gap-1">
                               <label className="font-bold text-slate-400 uppercase text-[9px]">अनुबंध अवधि (Lease Period) *</label>
                               <input type="text" required placeholder="उदा: 11 महीने" value={univLeaseDuration} onChange={(e) => setUnivLeaseDuration(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-1.5 text-slate-200 focus:border-indigo-500 outline-none transition-colors" />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2.5 border-t border-indigo-500/10 pt-2.5">
+                            <div className="flex flex-col gap-1 text-left">
+                              <label className="font-bold text-slate-400 uppercase text-[9px]">किरायेदार एग्रीमेंट जमा? (Lease Agreement?)</label>
+                              <div className="flex items-center gap-2 bg-slate-950 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-slate-300 w-full justify-between">
+                                <label className="flex items-center gap-1 cursor-pointer select-none">
+                                  <input type="radio" name="agreement-status" checked={univTenantAgreement === true} onChange={() => setUnivTenantAgreement(true)} className="accent-indigo-500 w-3.5 h-3.5 cursor-pointer" />
+                                  <span>हाँ (Yes)</span>
+                                </label>
+                                <label className="flex items-center gap-1 cursor-pointer select-none border-l border-white/10 pl-3">
+                                  <input type="radio" name="agreement-status" checked={univTenantAgreement === false} onChange={() => setUnivTenantAgreement(false)} className="accent-indigo-500 w-3.5 h-3.5 cursor-pointer" />
+                                  <span>नहीं (No)</span>
+                                </label>
+                              </div>
+                            </div>
+                            
+                            <div className="flex flex-col gap-1 text-left">
+                              <label className="font-bold text-slate-400 uppercase text-[9px]">पुलिस सत्यापन पूर्ण? (Police Verification?)</label>
+                              <div className="flex items-center gap-2 bg-slate-950 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-slate-300 w-full justify-between">
+                                <label className="flex items-center gap-1 cursor-pointer select-none">
+                                  <input type="radio" name="police-status" checked={univPoliceVerification === true} onChange={() => setUnivPoliceVerification(true)} className="accent-indigo-500 w-3.5 h-3.5 cursor-pointer" />
+                                  <span>हाँ (Yes)</span>
+                                </label>
+                                <label className="flex items-center gap-1 cursor-pointer select-none border-l border-white/10 pl-3">
+                                  <input type="radio" name="police-status" checked={univPoliceVerification === false} onChange={() => setUnivPoliceVerification(false)} className="accent-indigo-500 w-3.5 h-3.5 cursor-pointer" />
+                                  <span>नहीं (No)</span>
+                                </label>
+                              </div>
                             </div>
                           </div>
                         </div>
