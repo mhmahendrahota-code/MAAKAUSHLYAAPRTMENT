@@ -96,25 +96,11 @@ const AppLayout = () => {
               }
             />
 
-            {/* Shared Gallery Section - readable by all authenticated members */}
-            <Route
-              path="/gallery"
-              element={
-                <ProtectedRoute allowedRoles={['Resident', 'Admin', 'Security']}>
-                  <Gallery />
-                </ProtectedRoute>
-              }
-            />
+            {/* Shared Gallery Section - readable by all authenticated members and public guests */}
+            <Route path="/gallery" element={<Gallery />} />
 
-            {/* Shared Downloads Section - readable by all authenticated members */}
-            <Route
-              path="/downloads"
-              element={
-                <ProtectedRoute allowedRoles={['Resident', 'Admin', 'Security']}>
-                  <Downloads />
-                </ProtectedRoute>
-              }
-            />
+            {/* Shared Downloads Section - readable by all authenticated members and public guests */}
+            <Route path="/downloads" element={<Downloads />} />
 
             {/* Admin Protected Portal Routes */}
             <Route

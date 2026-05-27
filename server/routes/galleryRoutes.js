@@ -9,8 +9,8 @@ import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Read events feed - authenticated roles
-router.get('/', protect, getGalleryEvents);
+// Read events feed - public access
+router.get('/', getGalleryEvents);
 
 // Manage events feed - Admin only
 router.post('/', protect, authorizeRoles('Admin'), addGalleryEvent);
