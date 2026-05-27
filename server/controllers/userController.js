@@ -49,7 +49,7 @@ export const updateUser = async (req, res, next) => {
   try {
     const {
       userId, name, email, password, phone, role, gender, flatNo, occupancyStatus, tenantType, ownerName, ownerPhone,
-      aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration,
+      aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration, leaseAgreementSubmitted,
       emergencyContactName, emergencyContactPhone, profilePicture, hasPet, petDetails,
       isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes
     } = req.body;
@@ -71,7 +71,7 @@ export const updateUser = async (req, res, next) => {
 
     const updatedUser = await queries.updateUser(userId, {
       name, email, phone, role, gender, flatNo, occupancyStatus, tenantType, ownerName, ownerPhone,
-      aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration,
+      aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration, leaseAgreementSubmitted,
       emergencyContactName, emergencyContactPhone, profilePicture, hasPet, petDetails,
       isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes,
       passwordHash

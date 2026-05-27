@@ -186,6 +186,7 @@ export const mockDb = createMockDbProxy({
       is_legacy_bachelor: true,
       exemption_ref: "RWA-2024-U72 (Date: 12-May-2024)",
       tenant_type: "Bachelor",
+      lease_agreement_submitted: true,
       police_verification_status: "verified",
       police_verification_date: "2023-05-10",
       noc_document_ref: "NOC/2023/102",
@@ -244,6 +245,7 @@ export const mockDb = createMockDbProxy({
       has_pet: true,
       pet_details: "2 Lovebirds",
       tenant_type: "Bachelor",
+      lease_agreement_submitted: false,
       police_verification_status: "pending",
       police_verification_date: null,
       noc_document_ref: null,
@@ -622,6 +624,14 @@ const initializeSchema = async () => {
         console.warn("⚠️ Non-blocking column check warning:", colErr.message);
       }
 
+      // Ensure "lease_agreement_submitted" column exists dynamically
+      try {
+        await dbPool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS lease_agreement_submitted BOOLEAN DEFAULT FALSE");
+        console.log("🛡️ Ensured column 'lease_agreement_submitted' exists on users table.");
+      } catch (colErr) {
+        console.warn("⚠️ Non-blocking column check warning:", colErr.message);
+      }
+
       // Ensure gallery_events image_url is TYPE TEXT for Base64 uploads
       try {
         await dbPool.query("ALTER TABLE gallery_events ALTER COLUMN image_url TYPE TEXT");
@@ -638,9 +648,9 @@ const initializeSchema = async () => {
         // --- Seed Users ---
         for (const user of mockDb.users) {
           await dbPool.query(
-            `INSERT INTO users (id, name, email, password_hash, role, gender, flat_no, phone, occupancy_status, tenant_type, owner_name, owner_phone, aadhaar_number, family_members, family_member_names, vehicles, move_in_date, lease_duration, emergency_contact_name, emergency_contact_phone, profile_picture, has_pet, pet_details, is_legacy_bachelor, exemption_ref, police_verification_status, police_verification_date, noc_document_ref, bachelor_notes, is_approved)
-             VALUES ($1::INTEGER, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::VARCHAR, $10::VARCHAR, $11::VARCHAR, $12::VARCHAR, $13::VARCHAR, $14::INTEGER, $15::TEXT, $16::TEXT, $17::DATE, $18::VARCHAR, $19::VARCHAR, $20::VARCHAR, $21::TEXT, $22::BOOLEAN, $23::VARCHAR, $24::BOOLEAN, $25::VARCHAR, $26::VARCHAR, $27::DATE, $28::VARCHAR, $29::TEXT, $30::BOOLEAN) ON CONFLICT (email) DO NOTHING`,
-            [user.id, user.name, user.email, user.password_hash, user.role, user.gender || 'Male', user.flat_no, user.phone, user.occupancy_status || 'Self-Occupied', user.tenant_type || 'Family', user.owner_name, user.owner_phone, user.aadhaar_number, user.family_members, user.family_member_names, user.vehicles, user.move_in_date, user.lease_duration, user.emergency_contact_name, user.emergency_contact_phone, user.profile_picture, user.has_pet || false, user.pet_details, user.is_legacy_bachelor || false, user.exemption_ref, user.police_verification_status || 'pending', user.police_verification_date || null, user.noc_document_ref || null, user.bachelor_notes || null, true]
+            `INSERT INTO users (id, name, email, password_hash, role, gender, flat_no, phone, occupancy_status, tenant_type, owner_name, owner_phone, aadhaar_number, family_members, family_member_names, vehicles, move_in_date, lease_duration, lease_agreement_submitted, emergency_contact_name, emergency_contact_phone, profile_picture, has_pet, pet_details, is_legacy_bachelor, exemption_ref, police_verification_status, police_verification_date, noc_document_ref, bachelor_notes, is_approved)
+             VALUES ($1::INTEGER, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::VARCHAR, $10::VARCHAR, $11::VARCHAR, $12::VARCHAR, $13::VARCHAR, $14::INTEGER, $15::TEXT, $16::TEXT, $17::DATE, $18::VARCHAR, $19::BOOLEAN, $20::VARCHAR, $21::VARCHAR, $22::TEXT, $23::BOOLEAN, $24::VARCHAR, $25::BOOLEAN, $26::VARCHAR, $27::VARCHAR, $28::DATE, $29::VARCHAR, $30::TEXT, $31::BOOLEAN) ON CONFLICT (email) DO NOTHING`,
+            [user.id, user.name, user.email, user.password_hash, user.role, user.gender || 'Male', user.flat_no, user.phone, user.occupancy_status || 'Self-Occupied', user.tenant_type || 'Family', user.owner_name, user.owner_phone, user.aadhaar_number, user.family_members, user.family_member_names, user.vehicles, user.move_in_date, user.lease_duration, user.lease_agreement_submitted || false, user.emergency_contact_name, user.emergency_contact_phone, user.profile_picture, user.has_pet || false, user.pet_details, user.is_legacy_bachelor || false, user.exemption_ref, user.police_verification_status || 'pending', user.police_verification_date || null, user.noc_document_ref || null, user.bachelor_notes || null, true]
           );
         }
         // Reset users sequence to max id

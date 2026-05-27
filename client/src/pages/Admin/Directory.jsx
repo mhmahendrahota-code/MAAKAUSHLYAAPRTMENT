@@ -61,6 +61,10 @@ export const Directory = () => {
   const [isLegacyBachelor, setIsLegacyBachelor] = useState(false);
   const [exemptionRef, setExemptionRef] = useState('');
 
+  // Renter Verification States
+  const [leaseAgreementSubmitted, setLeaseAgreementSubmitted] = useState(false);
+  const [policeVerificationStatus, setPoliceVerificationStatus] = useState('pending');
+
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -211,6 +215,8 @@ export const Directory = () => {
           aadhaar_number: "5544 3322 1100",
           family_members: 2,
           lease_duration: "11 months",
+          lease_agreement_submitted: true,
+          police_verification_status: "verified",
           move_in_date: "2023-05-01",
           has_pet: true,
           pet_details: "1 Persian Cat",
@@ -271,6 +277,8 @@ export const Directory = () => {
           aadhaar_number: "7766 5544 3322",
           family_members: 3,
           lease_duration: "24 months",
+          lease_agreement_submitted: false,
+          police_verification_status: "pending",
           move_in_date: "2022-10-01",
           has_pet: true,
           pet_details: "2 Lovebirds",
@@ -679,6 +687,8 @@ export const Directory = () => {
       vehicles: vehicles.length > 0 ? JSON.stringify(vehicles) : null,
       moveInDate: moveInDate || null,
       leaseDuration: (role === 'Resident' && occupancyStatus === 'Rented') ? leaseDuration : null,
+      leaseAgreementSubmitted: role === 'Resident' && occupancyStatus === 'Rented' ? leaseAgreementSubmitted : false,
+      policeVerificationStatus: role === 'Resident' && occupancyStatus === 'Rented' ? policeVerificationStatus : 'pending',
       emergencyContactName: emergencyContactName || null,
       emergencyContactPhone: emergencyContactPhone || null,
       profilePicture: profilePicture || null,
@@ -703,6 +713,8 @@ export const Directory = () => {
       setVehicles([]);
       setMoveInDate('');
       setLeaseDuration('');
+      setLeaseAgreementSubmitted(false);
+      setPoliceVerificationStatus('pending');
       setEmergencyContactName('');
       setEmergencyContactPhone('');
       setProfilePicture('');
@@ -809,6 +821,7 @@ export const Directory = () => {
       vehicles_arr: Array.isArray(parsedVehicles) ? parsedVehicles : [],
       tenant_type: item.tenant_type || 'Family',
       police_verification_status: item.police_verification_status || 'pending',
+      lease_agreement_submitted: item.lease_agreement_submitted || false,
       bachelor_notes: item.bachelor_notes || ''
     });
   };
@@ -899,6 +912,8 @@ export const Directory = () => {
         vehicles: serializedVehicles,
         moveInDate: editUser.move_in_date || null,
         leaseDuration: (editUser.role === 'Resident' && editUser.occupancy_status === 'Rented') ? editUser.lease_duration : null,
+        leaseAgreementSubmitted: editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' ? editUser.lease_agreement_submitted : false,
+        policeVerificationStatus: editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' ? editUser.police_verification_status : 'pending',
         emergencyContactName: editUser.emergency_contact_name || null,
         emergencyContactPhone: editUser.emergency_contact_phone || null,
         profilePicture: editUser.profile_picture || null,
@@ -937,7 +952,9 @@ export const Directory = () => {
         pet_details: (editUser.role === 'Resident' && editUser.has_pet) ? editUser.pet_details : null,
         is_legacy_bachelor: editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' ? editUser.is_legacy_bachelor : false,
         exemption_ref: (editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' && editUser.is_legacy_bachelor) ? editUser.exemption_ref : null,
-        tenant_type: editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' ? editUser.tenant_type : 'Family'
+        tenant_type: editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' ? editUser.tenant_type : 'Family',
+        lease_agreement_submitted: editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' ? editUser.lease_agreement_submitted : false,
+        police_verification_status: editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' ? editUser.police_verification_status : 'pending'
       };
 
       delete updatedUser.family_member_names_arr;
@@ -1577,6 +1594,61 @@ export const Directory = () => {
                       </div>
                     </div>
 
+                    {/* Lease Agreement and Police Verification switches for Renter */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-950/40 border border-white/5 rounded-2xl animate-fadeIn text-left mb-2">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold uppercase text-slate-300">किराया एग्रीमेंट (Lease Agreement Submitted?)</label>
+                        <div className="flex items-center gap-4 bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 w-fit">
+                          <label className="flex items-center gap-2 cursor-pointer select-none">
+                            <input
+                              type="radio"
+                              name="add-lease-agreement"
+                              checked={leaseAgreementSubmitted === true}
+                              onChange={() => setLeaseAgreementSubmitted(true)}
+                              className="accent-brand-500 w-4 h-4 cursor-pointer"
+                            />
+                            <span>हाँ (Yes)</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer select-none border-l border-white/10 pl-4">
+                            <input
+                              type="radio"
+                              name="add-lease-agreement"
+                              checked={leaseAgreementSubmitted === false}
+                              onChange={() => setLeaseAgreementSubmitted(false)}
+                              className="accent-brand-500 w-4 h-4 cursor-pointer"
+                            />
+                            <span>नहीं (No)</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold uppercase text-slate-300">पुलिस सत्यापन (Police Verification Status)</label>
+                        <div className="flex items-center gap-4 bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 w-fit">
+                          <label className="flex items-center gap-2 cursor-pointer select-none">
+                            <input
+                              type="radio"
+                              name="add-police-verification"
+                              checked={policeVerificationStatus === 'verified'}
+                              onChange={() => setPoliceVerificationStatus('verified')}
+                              className="accent-brand-500 w-4 h-4 cursor-pointer"
+                            />
+                            <span>सत्यापित (Verified)</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer select-none border-l border-white/10 pl-4">
+                            <input
+                              type="radio"
+                              name="add-police-verification"
+                              checked={policeVerificationStatus === 'pending'}
+                              onChange={() => setPoliceVerificationStatus('pending')}
+                              className="accent-brand-500 w-4 h-4 cursor-pointer"
+                            />
+                            <span>लंबित (Pending)</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold uppercase text-slate-400">फ्लैट मालिक का नाम (Owner Name)</label>
@@ -2184,10 +2256,15 @@ export const Directory = () => {
                                   item.occupancy_status === 'Vacant' ? 'खाली (Vacant)' :
                                   'मालिक (Owner)'}
                                 </span>
-                                {item.occupancy_status === 'Rented' && item.tenant_type === 'Bachelor' && (
-                                  <span className={`self-start mt-1 text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider ${item.police_verification_status === 'verified' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/15 text-red-400 border border-red-500/20'}`}>
-                                    {item.police_verification_status === 'verified' ? 'Verified' : 'Verification Pending'}
-                                  </span>
+                                {item.occupancy_status === 'Rented' && (
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    <span className={`text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider ${item.lease_agreement_submitted ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'}`}>
+                                      📜 एग्रीमेंट: {item.lease_agreement_submitted ? 'हाँ' : 'नहीं'}
+                                    </span>
+                                    <span className={`text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider ${item.police_verification_status === 'verified' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'}`}>
+                                      👮 सत्यापन: {item.police_verification_status === 'verified' ? 'हाँ' : 'लंबित'}
+                                    </span>
+                                  </div>
                                 )}
                                 {item.occupancy_status === 'Rented' && item.is_legacy_bachelor && (
                                   <span className="self-start text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/20 shadow-sm animate-fadeIn" title={`घोषणा-पत्र: ${item.exemption_ref || 'N/A'}`}>
@@ -2369,11 +2446,23 @@ export const Directory = () => {
                                     
                                     {/* Lease duration for tenants */}
                                     {item.occupancy_status === 'Rented' && (
-                                      <div className="flex flex-col border-t border-white/5 pt-2 mt-1">
-                                        <span className="text-[9px] uppercase text-slate-500 font-bold">पट्टा अवधि (Lease Period):</span>
-                                        <span className="font-semibold text-sky-400 mt-0.5">
-                                          📅 {item.lease_duration || '11 months (Default)'}
-                                        </span>
+                                      <div className="flex flex-col border-t border-white/5 pt-2 mt-1 gap-1.5 text-[11px]">
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-[9px] uppercase text-slate-500 font-bold">पट्टा अवधि (Lease Period):</span>
+                                          <span className="font-semibold text-sky-400">📅 {item.lease_duration || '11 months (Default)'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center border-t border-white/5 pt-1.5">
+                                          <span className="text-[9px] uppercase text-slate-500 font-bold">किराया एग्रीमेंट (Agreement):</span>
+                                          <span className={`font-extrabold uppercase tracking-wide text-[9px] px-2 py-0.5 rounded ${item.lease_agreement_submitted ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'}`}>
+                                            {item.lease_agreement_submitted ? 'जमा है (Yes)' : 'लंबित (No)'}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between items-center border-t border-white/5 pt-1.5">
+                                          <span className="text-[9px] uppercase text-slate-500 font-bold">पुलिस सत्यापन (Police Status):</span>
+                                          <span className={`font-extrabold uppercase tracking-wide text-[9px] px-2 py-0.5 rounded ${item.police_verification_status === 'verified' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'}`}>
+                                            {item.police_verification_status === 'verified' ? 'पूर्ण (Verified)' : 'लंबित (Pending)'}
+                                          </span>
+                                        </div>
                                       </div>
                                     )}
 
@@ -2730,6 +2819,61 @@ export const Directory = () => {
                           </div>
                         </div>
 
+                        {/* Lease Agreement and Police Verification switches for Renter (Edit) */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-950/40 border border-white/5 rounded-2xl animate-fadeIn text-left mb-2 mt-3">
+                          <div className="flex flex-col gap-2">
+                            <label className="text-xs font-bold uppercase text-slate-300">किराया एग्रीमेंट (Lease Agreement Submitted?)</label>
+                            <div className="flex items-center gap-4 bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 w-fit">
+                              <label className="flex items-center gap-2 cursor-pointer select-none">
+                                <input
+                                  type="radio"
+                                  name="edit-lease-agreement"
+                                  checked={editUser.lease_agreement_submitted === true}
+                                  onChange={() => setEditUser({ ...editUser, lease_agreement_submitted: true })}
+                                  className="accent-brand-500 w-4 h-4 cursor-pointer"
+                                />
+                                <span>हाँ (Yes)</span>
+                              </label>
+                              <label className="flex items-center gap-2 cursor-pointer select-none border-l border-white/10 pl-4">
+                                <input
+                                  type="radio"
+                                  name="edit-lease-agreement"
+                                  checked={editUser.lease_agreement_submitted === false}
+                                  onChange={() => setEditUser({ ...editUser, lease_agreement_submitted: false })}
+                                  className="accent-brand-500 w-4 h-4 cursor-pointer"
+                                />
+                                <span>नहीं (No)</span>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col gap-2">
+                            <label className="text-xs font-bold uppercase text-slate-300">पुलिस सत्यापन (Police Verification Status)</label>
+                            <div className="flex items-center gap-4 bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 w-fit">
+                              <label className="flex items-center gap-2 cursor-pointer select-none">
+                                <input
+                                  type="radio"
+                                  name="edit-police-verification"
+                                  checked={editUser.police_verification_status === 'verified'}
+                                  onChange={() => setEditUser({ ...editUser, police_verification_status: 'verified' })}
+                                  className="accent-brand-500 w-4 h-4 cursor-pointer"
+                                />
+                                <span>सत्यापित (Verified)</span>
+                              </label>
+                              <label className="flex items-center gap-2 cursor-pointer select-none border-l border-white/10 pl-4">
+                                <input
+                                  type="radio"
+                                  name="edit-police-verification"
+                                  checked={editUser.police_verification_status === 'pending'}
+                                  onChange={() => setEditUser({ ...editUser, police_verification_status: 'pending' })}
+                                  className="accent-brand-500 w-4 h-4 cursor-pointer"
+                                />
+                                <span>लंबित (Pending)</span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-1">
                           <div className="flex flex-col gap-1">
                             <label className="text-[10px] font-bold uppercase text-slate-400 text-left">फ्लैट मालिक का नाम (Owner Name)</label>
@@ -2983,11 +3127,30 @@ export const Directory = () => {
               </div>
             </div>
             {selectedUser.role === 'Resident' && selectedUser.occupancy_status === 'Rented' && (
-              <div className="mt-5 p-4 rounded-xl bg-sky-950/20 border border-sky-500/10 text-left animate-fadeIn">
-                <h4 className="text-[10px] font-extrabold text-sky-400 uppercase tracking-wider mb-2">फ्लैट मालिक की जानकारी</h4>
-                <div className="flex justify-between text-xs text-slate-300">
-                  <span>नाम: <span className="text-white font-semibold">{selectedUser.owner_name || 'N/A'}</span></span>
-                  <span>संपर्क: <span className="text-white font-semibold">{selectedUser.owner_phone || 'N/A'}</span></span>
+              <div className="mt-5 p-4 rounded-xl bg-sky-950/20 border border-sky-500/10 text-left animate-fadeIn flex flex-col gap-3">
+                <div>
+                  <h4 className="text-[10px] font-extrabold text-sky-400 uppercase tracking-wider mb-2">फ्लैट किरायेदार व सत्यापन विवरण (Tenant Verification Status)</h4>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-300">
+                    <span className="flex items-center gap-1.5">
+                      📜 एग्रीमेंट: 
+                      <span className={`font-extrabold uppercase tracking-wide text-[8px] px-1.5 py-0.5 rounded ${selectedUser.lease_agreement_submitted ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'}`}>
+                        {selectedUser.lease_agreement_submitted ? 'जमा है (Yes)' : 'लंबित (No)'}
+                      </span>
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      👮 पुलिस सत्यापन: 
+                      <span className={`font-extrabold uppercase tracking-wide text-[8px] px-1.5 py-0.5 rounded ${selectedUser.police_verification_status === 'verified' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'}`}>
+                        {selectedUser.police_verification_status === 'verified' ? 'पूर्ण (Verified)' : 'लंबित (Pending)'}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+                <div className="border-t border-white/5 pt-2">
+                  <h4 className="text-[10px] font-extrabold text-sky-400 uppercase tracking-wider mb-2">फ्लैट मालिक की जानकारी (Owner Details)</h4>
+                  <div className="flex justify-between text-xs text-slate-300">
+                    <span>नाम: <span className="text-white font-semibold">{selectedUser.owner_name || 'N/A'}</span></span>
+                    <span>संपर्क: <span className="text-white font-semibold">{selectedUser.owner_phone || 'N/A'}</span></span>
+                  </div>
                 </div>
               </div>
             )}

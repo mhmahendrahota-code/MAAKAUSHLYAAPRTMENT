@@ -18,7 +18,7 @@ export const registerUser = async (req, res, next) => {
   try {
     const { 
       name, email, password, role, gender, flatNo, phone, occupancyStatus, ownerName, ownerPhone,
-      aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration, emergencyContactName, emergencyContactPhone, profilePicture,
+      aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration, leaseAgreementSubmitted, emergencyContactName, emergencyContactPhone, profilePicture,
       hasPet, petDetails, isLegacyBachelor, exemptionRef
     } = req.body;
 
@@ -62,6 +62,7 @@ export const registerUser = async (req, res, next) => {
       vehicles,
       moveInDate,
       leaseDuration,
+      leaseAgreementSubmitted,
       emergencyContactName,
       emergencyContactPhone,
       profilePicture,

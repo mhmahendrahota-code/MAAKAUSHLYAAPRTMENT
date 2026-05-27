@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
     vehicles TEXT,
     move_in_date DATE,
     lease_duration VARCHAR(50),
+    lease_agreement_submitted BOOLEAN DEFAULT FALSE,
     emergency_contact_name VARCHAR(100),
     emergency_contact_phone VARCHAR(20),
     profile_picture TEXT,
