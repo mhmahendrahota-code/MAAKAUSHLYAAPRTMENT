@@ -10,7 +10,9 @@ import {
   Save, 
   Image, 
   Eye, 
-  AlertCircle 
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight 
 } from 'lucide-react';
 
 export const Gallery = () => {
@@ -20,6 +22,7 @@ export const Gallery = () => {
 
   // Lightbox view state
   const [lightboxEvent, setLightboxEvent] = useState(null);
+  const [activeLightboxImgIndex, setActiveLightboxImgIndex] = useState(0);
 
   // Admin CMS Modal State
   const [showModal, setShowModal] = useState(false);
@@ -29,7 +32,7 @@ export const Gallery = () => {
   // CMS Form Fields
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [imageUrls, setImageUrls] = useState([]);
   const [eventDate, setEventDate] = useState('');
 
   // CMS Feedback
@@ -37,6 +40,18 @@ export const Gallery = () => {
   const [error, setError] = useState('');
   const [deleteId, setDeleteId] = useState(null);
   const [imageProcessing, setImageProcessing] = useState(false);
+
+  // Helper: Safely parse single or multiple images
+  const parseImages = (imgField) => {
+    if (!imgField) return [];
+    try {
+      const parsed = JSON.parse(imgField);
+      if (Array.isArray(parsed)) return parsed;
+      return [imgField];
+    } catch {
+      return [imgField];
+    }
+  };
 
   const fetchGalleryEvents = async () => {
     setLoading(true);
@@ -88,7 +103,7 @@ export const Gallery = () => {
     setModalMode('add');
     setTitle('');
     setContent('');
-    setImageUrl('');
+    setImageUrls([]);
     setEventDate(new Date().toISOString().split('T')[0]);
     setError('');
     setSuccess('');
@@ -100,7 +115,7 @@ export const Gallery = () => {
     setEditingId(item.id);
     setTitle(item.title);
     setContent(item.content || '');
-    setImageUrl(item.image_url || '');
+    setImageUrls(parseImages(item.image_url));
     
     // Parse Date cleanly
     const parsedDate = item.event_date ? new Date(item.event_date).toISOString().split('T')[0] : '';
@@ -119,7 +134,7 @@ export const Gallery = () => {
     const payload = {
       title,
       content: content || null,
-      imageUrl: imageUrl || null,
+      imageUrl: imageUrls.length > 0 ? JSON.stringify(imageUrls) : null,
       eventDate: eventDate || new Date().toISOString().split('T')[0]
     };
 
@@ -243,19 +258,32 @@ export const Gallery = () => {
             >
               {/* Event Image Container with overlay triggers */}
               <div className="relative h-48 w-full bg-slate-950 overflow-hidden">
-                {item.image_url ? (
-                  <img 
-                    src={item.image_url} 
-                    alt={item.title} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
-                    onClick={() => setLightboxEvent(item)}
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-600 gap-2">
-                    <Image size={32} />
-                    <span className="text-[10px] uppercase font-bold tracking-widest">कोई छवि उपलब्ध नहीं</span>
-                  </div>
-                )}
+                {(() => {
+                  const eventImages = parseImages(item.image_url);
+                  return eventImages.length > 0 ? (
+                    <>
+                      <img 
+                        src={eventImages[0]} 
+                        alt={item.title} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                        onClick={() => {
+                          setLightboxEvent(item);
+                          setActiveLightboxImgIndex(0);
+                        }}
+                      />
+                      {eventImages.length > 1 && (
+                        <div className="absolute top-4 left-4 bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded-xl text-[9px] font-extrabold text-brand-300 border border-white/10 shadow-lg z-10">
+                          +{eventImages.length - 1} तस्वीरें
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-600 gap-2">
+                      <Image size={32} />
+                      <span className="text-[10px] uppercase font-bold tracking-widest">कोई छवि उपलब्ध नहीं</span>
+                    </div>
+                  );
+                })()}
 
                 {/* Dark Vignette Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none" />
@@ -269,7 +297,10 @@ export const Gallery = () => {
                 {/* Lightbox Preview Button */}
                 {item.image_url && (
                   <button 
-                    onClick={() => setLightboxEvent(item)}
+                    onClick={() => {
+                      setLightboxEvent(item);
+                      setActiveLightboxImgIndex(0);
+                    }}
                     className="absolute top-4 right-4 p-2 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-xl text-slate-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[9px] uppercase font-bold tracking-wider"
                   >
                     <Eye size={12} /> ज़ूम करें
@@ -334,15 +365,63 @@ export const Gallery = () => {
           >
             <button 
               onClick={() => setLightboxEvent(null)}
-              className="absolute top-[-40px] right-0 text-slate-400 hover:text-white p-2 bg-slate-900 border border-white/10 rounded-full"
+              className="absolute top-[-45px] right-0 text-slate-400 hover:text-white p-2 bg-slate-900 border border-white/10 rounded-full z-10"
             >
               <X size={20} />
             </button>
-            <img 
-              src={lightboxEvent.image_url} 
-              alt={lightboxEvent.title} 
-              className="w-full max-h-[70vh] object-contain rounded-2xl border border-white/10 shadow-2xl bg-slate-950" 
-            />
+
+            {(() => {
+              const lightboxImages = parseImages(lightboxEvent.image_url);
+              return (
+                <div className="relative flex flex-col items-center gap-4 w-full">
+                  {/* Main Active Image Display */}
+                  <div className="relative w-full flex items-center justify-center">
+                    <img 
+                      src={lightboxImages[activeLightboxImgIndex]} 
+                      alt={`${lightboxEvent.title} - ${activeLightboxImgIndex + 1}`} 
+                      className="w-full max-h-[60vh] object-contain rounded-2xl border border-white/10 shadow-2xl bg-slate-950" 
+                    />
+
+                    {/* Navigation Buttons for multi-images */}
+                    {lightboxImages.length > 1 && (
+                      <>
+                        <button
+                          onClick={() => setActiveLightboxImgIndex((activeLightboxImgIndex - 1 + lightboxImages.length) % lightboxImages.length)}
+                          className="absolute left-4 p-2.5 rounded-full bg-slate-950/80 hover:bg-slate-900 border border-white/10 text-white hover:scale-105 transition-all shadow-2xl"
+                          title="पिछला (Prev)"
+                        >
+                          <ChevronLeft size={20} />
+                        </button>
+                        <button
+                          onClick={() => setActiveLightboxImgIndex((activeLightboxImgIndex + 1) % lightboxImages.length)}
+                          className="absolute right-4 p-2.5 rounded-full bg-slate-950/80 hover:bg-slate-900 border border-white/10 text-white hover:scale-105 transition-all shadow-2xl"
+                          title="अगला (Next)"
+                        >
+                          <ChevronRight size={20} />
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Thumbnail indicator Dots/Numbers */}
+                  {lightboxImages.length > 1 && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/90 border border-white/10 rounded-full shadow-lg">
+                      {lightboxImages.map((_, dotIdx) => (
+                        <button
+                          key={dotIdx}
+                          onClick={() => setActiveLightboxImgIndex(dotIdx)}
+                          className={`w-2.5 h-2.5 rounded-full transition-all ${dotIdx === activeLightboxImgIndex ? 'bg-brand-500 scale-125' : 'bg-slate-700 hover:bg-slate-500'}`}
+                        />
+                      ))}
+                      <span className="text-[10px] font-bold text-slate-400 ml-2">
+                        {activeLightboxImgIndex + 1} / {lightboxImages.length}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
             <div className="text-left glass-panel p-5 rounded-2xl border border-white/5 flex flex-col gap-1.5">
               <span className="text-[10px] font-bold text-brand-400 flex items-center gap-1.5">
                 <Calendar size={11} /> {lightboxEvent.event_date ? new Date(lightboxEvent.event_date).toLocaleDateString('hi-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
@@ -403,62 +482,80 @@ export const Gallery = () => {
 
               {/* Premium Direct Base64 File Uploader */}
               <div className="flex flex-col gap-1 border-t border-white/5 pt-3">
-                <label className="font-bold text-slate-400 uppercase text-[10px]">इवेंट फोटो अपलोड करें (Upload Event Photo)</label>
-                <div className="flex items-center gap-3.5 bg-slate-950/40 border border-white/10 rounded-2xl p-3">
-                  <div className="w-16 h-16 rounded-xl bg-brand-500/10 border border-brand-500/25 flex items-center justify-center overflow-hidden shrink-0 relative group shadow-premium">
-                    {imageUrl ? (
-                      <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-xl">📸</span>
-                    )}
-                    {imageUrl && (
+                <label className="font-bold text-slate-400 uppercase text-[10px]">इवेंट फोटो अपलोड करें (Upload Event Photos)</label>
+                
+                {/* List of uploaded previews */}
+                <div className="flex flex-wrap gap-2.5 mb-3 bg-slate-950/20 p-2.5 rounded-2xl border border-white/5">
+                  {imageUrls.map((url, index) => (
+                    <div key={index} className="w-16 h-16 rounded-xl bg-slate-950 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 relative group shadow-premium animate-fadeIn">
+                      <img src={url} alt={`Preview ${index}`} className="w-full h-full object-cover" />
                       <button 
                         type="button" 
-                        onClick={() => setImageUrl('')} 
-                        className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-rose-400 text-[10px] font-bold transition-all"
+                        onClick={() => setImageUrls(imageUrls.filter((_, i) => i !== index))} 
+                        className="absolute inset-0 bg-black/85 opacity-0 group-hover:opacity-100 flex items-center justify-center text-rose-400 text-[10px] font-bold transition-all rounded-xl"
                       >
                         हटाएं
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  ))}
+                  {imageUrls.length === 0 && (
+                    <div className="w-16 h-16 rounded-xl bg-brand-500/10 border border-brand-500/25 flex items-center justify-center overflow-hidden shrink-0 text-lg text-slate-500">
+                      📸
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3.5 bg-slate-950/40 border border-white/10 rounded-2xl p-3">
                   <div className="flex-1 flex flex-col gap-1 text-left">
                     <input
                       type="file"
                       accept="image/*"
+                      multiple
                       id="gallery-file-upload"
                       onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (!file) return;
-
-                        // Max 8MB raw file size guard
-                        if (file.size > 8 * 1024 * 1024) {
-                          setError('फ़ाइल बहुत बड़ी है। कृपया 8MB से छोटी छवि चुनें।');
-                          setImageProcessing(false);
-                          e.target.value = '';
-                          return;
-                        }
+                        const files = Array.from(e.target.files);
+                        if (files.length === 0) return;
 
                         setError('');
                         setImageProcessing(true);
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          const img = new window.Image();
-                          img.onload = () => {
-                            // Compress: resize to max 1200px wide, quality 0.82
-                            const MAX_W = 1200;
-                            const scale = img.width > MAX_W ? MAX_W / img.width : 1;
-                            const canvas = document.createElement('canvas');
-                            canvas.width  = Math.round(img.width  * scale);
-                            canvas.height = Math.round(img.height * scale);
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                            const compressed = canvas.toDataURL('image/jpeg', 0.82);
-                            setImageUrl(compressed);
-                            setImageProcessing(false);
+                        let processedCount = 0;
+                        const newUrls = [];
+
+                        files.forEach((file) => {
+                          if (file.size > 8 * 1024 * 1024) {
+                            setError('कुछ फ़ाइलें 8MB से अधिक बड़ी थीं और उन्हें हटा दिया गया।');
+                            processedCount++;
+                            if (processedCount === files.length) {
+                              setImageProcessing(false);
+                            }
+                            return;
+                          }
+
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            const img = new window.Image();
+                            img.onload = () => {
+                              // Compress: resize to max 1200px wide, quality 0.82
+                              const MAX_W = 1200;
+                              const scale = img.width > MAX_W ? MAX_W / img.width : 1;
+                              const canvas = document.createElement('canvas');
+                              canvas.width  = Math.round(img.width  * scale);
+                              canvas.height = Math.round(img.height * scale);
+                              const ctx = canvas.getContext('2d');
+                              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                              const compressed = canvas.toDataURL('image/jpeg', 0.82);
+                              newUrls.push(compressed);
+                              processedCount++;
+                              
+                              if (processedCount === files.length) {
+                                setImageUrls(prev => [...prev, ...newUrls]);
+                                setImageProcessing(false);
+                              }
+                            };
+                            img.src = reader.result;
                           };
-                          img.src = reader.result;
-                        };
-                        reader.readAsDataURL(file);
+                          reader.readAsDataURL(file);
+                        });
                       }}
                       className="hidden"
                     />
@@ -466,9 +563,9 @@ export const Gallery = () => {
                       htmlFor="gallery-file-upload"
                       className={`px-3.5 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider text-center cursor-pointer transition-colors shadow-premium w-fit ${imageProcessing ? 'opacity-60 pointer-events-none' : ''}`}
                     >
-                      {imageProcessing ? '⏳ संसाधित हो रही है...' : 'फ़ाइल चुनें (Choose Image)'}
+                      {imageProcessing ? '⏳ संसाधित हो रही है...' : 'फ़ाइलें चुनें (Choose Images)'}
                     </label>
-                    <p className="text-[8px] text-slate-500 leading-normal">PNG, JPG, JPEG या GIF (अधिकतम 8MB)। फोटो स्वतः संकुचित होकर गैलरी में सहेजी जाएगी।</p>
+                    <p className="text-[8px] text-slate-500 leading-normal">PNG, JPG, JPEG या GIF (अधिकतम 8MB)। आप एक साथ कई फोटो चुनकर जोड़ सकते हैं।</p>
                   </div>
                 </div>
               </div>
