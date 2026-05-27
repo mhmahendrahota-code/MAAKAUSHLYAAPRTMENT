@@ -897,7 +897,7 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
                 <h1 class="rwa-title-hi">माँ कौशल्या अपार्टमेंट (RWA) रायपुर</h1>
                 <h2 class="rwa-title-en">MAA KAUSHALYA APARTMENT WELFARE ASSOCIATION</h2>
                 <p class="rwa-address">
-                  पंजीकरण संख्या: 4832/2024 | सेक्टर 1, कौशल्या माता विहार, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015
+                  सेक्टर 1, कौशल्या माता विहार, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015
                 </p>
               </td>
             </tr>
