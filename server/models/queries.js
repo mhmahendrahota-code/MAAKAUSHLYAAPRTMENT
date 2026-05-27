@@ -1,4 +1,4 @@
-import { query, isFallback, mockDb } from '../config/db.js';
+import { query, isFallback, mockDb, saveMockDb } from '../config/db.js';
 
 export const queries = {
   // --- USERS ---
@@ -677,6 +677,7 @@ export const queries = {
         created_at: new Date()
       };
       mockDb.gallery_events.push(newEvent);
+      saveMockDb();
       return newEvent;
     }
     const res = await query(
@@ -698,6 +699,7 @@ export const queries = {
           image_url: imageUrl || null,
           event_date: eventDate ? new Date(eventDate) : new Date()
         };
+        saveMockDb();
         return mockDb.gallery_events[idx];
       }
       return null;
@@ -717,6 +719,7 @@ export const queries = {
       if (idx !== -1) {
         const deleted = mockDb.gallery_events[idx];
         mockDb.gallery_events.splice(idx, 1);
+        saveMockDb();
         return deleted;
       }
       return null;
