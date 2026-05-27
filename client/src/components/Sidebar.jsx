@@ -11,9 +11,9 @@ import {
   DollarSign, 
   User, 
   AlertCircle,
-  Download,
   Image,
-  X
+  X,
+  Terminal
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen, onClose }) => {
@@ -35,6 +35,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
           { to: '/gallery', label: 'सोसायटी गैलरी (Gallery)', icon: Image },
           { to: '/downloads', label: 'दस्तावेज़ डाउनलोड (Downloads)', icon: Download },
           { to: '/contact', label: 'RWA संपर्क डेस्क (Contact)', icon: AlertCircle },
+          { to: '/developer', label: 'डेवलपर विवरण (Developer)', icon: Terminal },
         ];
       case 'Security':
         return [
@@ -44,6 +45,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
           { to: '/gallery', label: 'सोसायटी गैलरी (Gallery)', icon: Image },
           { to: '/downloads', label: 'दस्तावेज़ डाउनलोड (Downloads)', icon: Download },
           { to: '/contact', label: 'RWA संपर्क डेस्क (Contact)', icon: AlertCircle },
+          { to: '/developer', label: 'डेवलपर विवरण (Developer)', icon: Terminal },
         ];
       case 'Resident':
       default:
@@ -56,6 +58,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
           { to: '/gallery', label: 'सोसायटी गैलरी (Gallery)', icon: Image },
           { to: '/downloads', label: 'दस्तावेज़ डाउनलोड (Downloads)', icon: Download },
           { to: '/contact', label: 'RWA संपर्क डेस्क (Contact)', icon: AlertCircle },
+          { to: '/developer', label: 'डेवलपर विवरण (Developer)', icon: Terminal },
         ];
     }
   };

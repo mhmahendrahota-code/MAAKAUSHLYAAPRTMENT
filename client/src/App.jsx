@@ -11,6 +11,7 @@ import { About } from './pages/Public/About';
 import { Contact } from './pages/Public/Contact';
 import { Committee } from './pages/Public/Committee';
 import { Gallery } from './pages/Public/Gallery';
+import { Developer } from './pages/Public/Developer';
 
 // Resident pages
 import { Dashboard } from './pages/Resident/Dashboard';
@@ -49,6 +50,7 @@ const AppLayout = () => {
             <Route path="/login" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/developer" element={<Developer />} />
 
             {/* Resident Protected Portal Routes */}
             <Route

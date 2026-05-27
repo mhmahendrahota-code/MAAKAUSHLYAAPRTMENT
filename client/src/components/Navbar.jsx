@@ -123,6 +123,12 @@ export const Navbar = ({ onMenuClick }) => {
           >
             संपर्क करें
           </Link>
+          <Link 
+            to="/developer" 
+            className={`text-sm font-medium transition-all ${isActive('/developer') ? 'text-brand-300 font-bold' : 'text-slate-300 hover:text-white'}`}
+          >
+            डेवलपर विवरण
+          </Link>
         </div>
 
         {/* Auth status or login button */}
