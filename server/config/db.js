@@ -616,21 +616,43 @@ const initializeSchema = async () => {
       
       console.log("🚀 PostgreSQL Database tables initialized successfully from schema.sql.");
 
-      // Ensure "is_approved" column exists dynamically in case the schema wasn't dropped
-      try {
-        await dbPool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT TRUE");
-        console.log("🛡️ Ensured column 'is_approved' exists on users table.");
-      } catch (colErr) {
-        console.warn("⚠️ Non-blocking column check warning:", colErr.message);
-      }
+      // Comprehensive Schema Column Sync & Migration block
+      const columnCheckStatements = [
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(20)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS occupancy_status VARCHAR(30) DEFAULT 'Self-Occupied'",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS tenant_type VARCHAR(20) DEFAULT 'Family'",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS owner_name VARCHAR(100)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS owner_phone VARCHAR(20)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS aadhaar_number VARCHAR(20)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS family_members INTEGER",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS family_member_names TEXT",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS vehicles TEXT",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS move_in_date DATE",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS lease_duration VARCHAR(50)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS lease_agreement_submitted BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS emergency_contact_name VARCHAR(100)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS emergency_contact_phone VARCHAR(20)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture TEXT",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS has_pet BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS pet_details VARCHAR(255)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_legacy_bachelor BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS exemption_ref VARCHAR(100)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS police_verification_status VARCHAR(20) DEFAULT 'pending'",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS police_verification_date DATE",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS noc_document_ref VARCHAR(200)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS bachelor_notes TEXT",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT TRUE"
+      ];
 
-      // Ensure "lease_agreement_submitted" column exists dynamically
-      try {
-        await dbPool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS lease_agreement_submitted BOOLEAN DEFAULT FALSE");
-        console.log("🛡️ Ensured column 'lease_agreement_submitted' exists on users table.");
-      } catch (colErr) {
-        console.warn("⚠️ Non-blocking column check warning:", colErr.message);
+      for (const queryStr of columnCheckStatements) {
+        try {
+          await dbPool.query(queryStr);
+        } catch (colErr) {
+          console.warn(`⚠️ Non-blocking column check warning for statement [${queryStr}]:`, colErr.message);
+        }
       }
+      console.log("🛡️ Completed comprehensive PostgreSQL database users table columns health sync.");
 
       // Ensure gallery_events image_url is TYPE TEXT for Base64 uploads
       try {

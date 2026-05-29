@@ -119,12 +119,17 @@ export const Directory = () => {
       const res = await fetch('/api/users/directory', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
       const data = await res.json();
       if (data.success) {
         setUsersList(data.data);
+      } else {
+        throw new Error(data.message || 'Failed to fetch directory');
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, falling back to mock user directory database.");
+      console.warn("⚠️ Server offline or query failed, falling back to mock user directory database.", err.message);
       setUsersList([
         {
           id: 100,
