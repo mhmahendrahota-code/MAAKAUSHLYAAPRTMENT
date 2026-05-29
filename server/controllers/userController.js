@@ -300,3 +300,56 @@ export const updateOwnProfile = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Get complete database dump (Admin only)
+// @route   GET /api/users/db-inspect
+// @access  Private (Admin Only)
+export const getFullDatabaseDump = async (req, res, next) => {
+  try {
+    const { getDb, isFallback, mockDb } = await import('../config/db.js');
+
+    if (isFallback()) {
+      return res.status(200).json({
+        success: true,
+        mode: 'fallback',
+        users: mockDb.users,
+        bills: mockDb.bills,
+        tickets: mockDb.tickets,
+        notices: mockDb.notices,
+        visitor_logs: mockDb.visitor_logs,
+        committee_members: mockDb.committee_members,
+        helplines: mockDb.helplines,
+        gallery_events: mockDb.gallery_events
+      });
+    }
+
+    const db = getDb();
+    if (!db) {
+      throw new Error('Database connection pool is uninitialized.');
+    }
+
+    const usersRes = await db.query("SELECT * FROM users ORDER BY id ASC");
+    const billsRes = await db.query("SELECT * FROM bills ORDER BY id ASC");
+    const ticketsRes = await db.query("SELECT * FROM tickets ORDER BY id ASC");
+    const noticesRes = await db.query("SELECT * FROM notices ORDER BY id ASC");
+    const visitorsRes = await db.query("SELECT * FROM visitor_logs ORDER BY id ASC");
+    const committeeRes = await db.query("SELECT * FROM committee_members ORDER BY id ASC");
+    const helplinesRes = await db.query("SELECT * FROM helplines ORDER BY id ASC");
+    const galleryRes = await db.query("SELECT * FROM gallery_events ORDER BY id ASC");
+
+    res.status(200).json({
+      success: true,
+      mode: 'postgres',
+      users: usersRes.rows,
+      bills: billsRes.rows,
+      tickets: ticketsRes.rows,
+      notices: noticesRes.rows,
+      visitor_logs: visitorsRes.rows,
+      committee_members: committeeRes.rows,
+      helplines: helplinesRes.rows,
+      gallery_events: galleryRes.rows
+    });
+  } catch (error) {
+    next(error);
+  }
+};

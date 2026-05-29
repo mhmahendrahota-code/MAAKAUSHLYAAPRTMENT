@@ -14,7 +14,8 @@ import {
   Download,
   Image,
   X,
-  Terminal
+  Terminal,
+  Database
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen, onClose }) => {
@@ -31,6 +32,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
           { to: '/directory', label: 'निवासी निर्देशिका (Directory)', icon: Users },
           { to: '/visitor-logs', label: 'आगंतुक ऑडिट (Visitor Logs)', icon: FolderSync },
           { to: '/finance', label: 'वित्तीय बहीखाता (Finance)', icon: DollarSign },
+          { to: '/admin/database', label: 'डेटाबेस लाइव (Database)', icon: Database },
           { to: '/notices', label: 'रेसिडेंट वेलफेयर एसोसिएशन सूचना पटल', icon: Megaphone },
           { to: '/committee', label: 'RWA प्रबंध समिति (Committee)', icon: Users },
           { to: '/gallery', label: 'सोसायटी गैलरी (Gallery)', icon: Image },
