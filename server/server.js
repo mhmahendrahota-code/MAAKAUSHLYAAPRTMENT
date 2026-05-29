@@ -107,6 +107,28 @@ app.use('/api/committee', committeeRoutes);
 app.use('/api/helplines', helplineRoutes);
 app.use('/api/gallery', galleryRoutes);
 
+// Temporary DB Debug Endpoint
+app.get('/api/db-debug', async (req, res) => {
+  try {
+    const db = getDb();
+    if (!db) {
+      return res.json({ success: true, mode: 'fallback', users: [] });
+    }
+    const usersRes = await db.query("SELECT id, name, email, role, is_approved, flat_no FROM users ORDER BY id ASC");
+    const billsRes = await db.query("SELECT id, resident_id, amount, status FROM bills ORDER BY id ASC");
+    res.json({
+      success: true,
+      mode: 'postgres',
+      usersCount: usersRes.rowCount,
+      users: usersRes.rows,
+      billsCount: billsRes.rowCount,
+      bills: billsRes.rows
+    });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});
+
 // Serve frontend static assets in production
 if (process.env.NODE_ENV === 'production') {
   const distPath = path.join(__dirname, '../client/dist');
