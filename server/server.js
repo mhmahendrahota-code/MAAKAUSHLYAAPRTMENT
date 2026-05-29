@@ -14,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Import database configuration (tests postgres & enables in-memory fallback dynamically)
-import { isFallback } from './config/db.js';
+import { isFallback, getDb } from './config/db.js';
 
 // Import Routes
 import authRoutes from './routes/authRoutes.js';
