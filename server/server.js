@@ -14,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Import database configuration (tests postgres & enables in-memory fallback dynamically)
-import './config/db.js';
+import { isFallback } from './config/db.js';
 
 // Import Routes
 import authRoutes from './routes/authRoutes.js';
@@ -90,6 +90,7 @@ app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'online',
+    database: isFallback() ? 'fallback (JSON)' : 'PostgreSQL (Persistent)',
     timestamp: new Date(),
     environment: process.env.NODE_ENV || 'development'
   });
