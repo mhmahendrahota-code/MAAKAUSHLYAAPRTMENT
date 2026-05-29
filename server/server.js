@@ -116,13 +116,61 @@ app.get('/api/db-debug', async (req, res) => {
     }
     const usersRes = await db.query("SELECT id, name, email, role, is_approved, flat_no FROM users ORDER BY id ASC");
     const billsRes = await db.query("SELECT id, resident_id, amount, status FROM bills ORDER BY id ASC");
+    
+    // Test the actual getSocietyDirectory queries and map logic
+    let directoryError = null;
+    let directoryData = null;
+    try {
+      const { queries } = await import('./models/queries.js');
+      const allUsers = await queries.getAllUsers();
+      
+      directoryData = allUsers.map(user => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        gender: user.gender,
+        flat_no: user.flat_no,
+        phone: user.phone,
+        occupancy_status: user.occupancy_status,
+        tenant_type: user.tenant_type,
+        owner_name: user.owner_name,
+        owner_phone: user.owner_phone,
+        aadhaar_number: user.aadhaar_number,
+        family_members: user.family_members,
+        family_member_names: user.family_member_names,
+        vehicles: user.vehicles,
+        move_in_date: user.move_in_date,
+        lease_duration: user.lease_duration,
+        lease_agreement_submitted: user.lease_agreement_submitted,
+        emergency_contact_name: user.emergency_contact_name,
+        emergency_contact_phone: user.emergency_contact_phone,
+        profile_picture: user.profile_picture,
+        has_pet: user.has_pet,
+        pet_details: user.pet_details,
+        is_legacy_bachelor: user.is_legacy_bachelor,
+        exemption_ref: user.exemption_ref,
+        police_verification_status: user.police_verification_status,
+        police_verification_date: user.police_verification_date,
+        noc_document_ref: user.noc_document_ref,
+        bachelor_notes: user.bachelor_notes,
+        is_approved: user.is_approved,
+        created_at: user.created_at
+      }));
+    } catch (dirErr) {
+      directoryError = dirErr.message;
+    }
+
     res.json({
       success: true,
       mode: 'postgres',
       usersCount: usersRes.rowCount,
       users: usersRes.rows,
       billsCount: billsRes.rowCount,
-      bills: billsRes.rows
+      bills: billsRes.rows,
+      directoryError,
+      directoryDataCount: directoryData ? directoryData.length : null,
+      directoryDataSample: directoryData ? directoryData.slice(0, 2) : null
     });
   } catch (err) {
     res.json({ success: false, error: err.message });

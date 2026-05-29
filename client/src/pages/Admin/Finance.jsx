@@ -25,86 +25,102 @@ export const Finance = () => {
 
   const fetchFinanceData = async () => {
     setLoading(true);
+    setError('');
     try {
       // Fetch all bills
       const billsRes = await fetch('/api/bills/history', {
         credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (!billsRes.ok) {
+        throw new Error(`Bills API error: ${billsRes.status}`);
+      }
       const billsData = await billsRes.json();
+      if (!billsData.success) {
+        throw new Error(billsData.message || 'Failed to fetch bills history');
+      }
 
       // Fetch directory to get list of residents
       const dirRes = await fetch('/api/users/directory', {
         credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (!dirRes.ok) {
+        throw new Error(`Directory API error: ${dirRes.status}`);
+      }
       const dirData = await dirRes.json();
+      if (!dirData.success) {
+        throw new Error(dirData.message || 'Failed to fetch directory');
+      }
 
-      if (billsData.success && dirData.success) {
-        setBills(billsData.data);
-        const filteredResidents = dirData.data.filter(u => u.role === 'Resident');
-        setResidents(filteredResidents);
-        if (filteredResidents.length > 0) {
-          setResidentId(filteredResidents[0].id);
-        }
+      setBills(billsData.data);
+      const filteredResidents = dirData.data.filter(u => u.role === 'Resident');
+      setResidents(filteredResidents);
+      if (filteredResidents.length > 0) {
+        setResidentId(filteredResidents[0].id);
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, falling back to simulated billing logs.");
-      setBills([
-        {
-          id: 1,
-          resident_name: "सूफी इलियास चिश्ती (Sufi Illias Chisti)",
-          flat_no: "B-304",
-          amount: 2000.00,
-          status: "unpaid",
-          billing_month: "अप्रैल 2026",
-          due_date: new Date(2026, 3, 20),
-          created_at: new Date(2026, 3, 1)
-        },
-        {
-          id: 2,
-          resident_name: "स्वदेश कटियार (Swadesh Katiyar)",
-          flat_no: "C-102",
-          amount: 2000.00,
-          status: "paid",
-          billing_month: "अप्रैल 2026",
-          due_date: new Date(2026, 3, 20),
-          paid_at: new Date(2026, 3, 12),
-          payment_reference: "TXN1029384756",
-          created_at: new Date(2026, 3, 1)
-        },
-        {
-          id: 3,
-          resident_name: "आलोक बारिया (Alok Bariya)",
-          flat_no: "C-103",
-          amount: 2000.00,
-          status: "unpaid",
-          billing_month: "मई 2026",
-          due_date: new Date(2026, 4, 30),
-          created_at: new Date(2026, 4, 1)
-        }
-      ]);
-      setResidents([
-        { id: 2, name: "सूफी इलियास चिश्ती (Sufi Illias Chisti)", flat_no: "B-304", email: "resident@maakaushalya.com" },
-        { id: 4, name: "स्वदेश कटियार (Swadesh Katiyar)", flat_no: "C-102", email: "swadesh@maakaushalya.com" },
-        { id: 5, name: "आलोक बारिया (Alok Bariya)", flat_no: "C-103", email: "alok@maakaushalya.com" },
-        { id: 6, name: "अयाज़ भाई (Ayaz Bhai)", flat_no: "C-104", email: "ayaz@maakaushalya.com" },
-        { id: 7, name: "डॉ. अमित सिंह (Dr. Amit Singh)", flat_no: "C-105", email: "amit@maakaushalya.com" },
-        { id: 8, name: "हेमलाल पाल (Hemlal Pal)", flat_no: "C-106", email: "hemlal@maakaushalya.com" },
-        { id: 9, name: "सर्वेश मिश्रा (Sarvesh Mishra)", flat_no: "C-107", email: "sarvesh@maakaushalya.com" },
-        { id: 10, name: "आकाश दुबे (Akash Dubey)", flat_no: "C-108", email: "akash@maakaushalya.com" },
-        { id: 11, name: "लाल बहादुर यादव (Lal Bahadur Yadav)", flat_no: "C-109", email: "lalbahadur@maakaushalya.com" },
-        { id: 12, name: "भरत कुमार अग्रवाल (Bharat Kumar Agrawal)", flat_no: "C-110", email: "bharat@maakaushalya.com" },
-        { id: 13, name: "चंद्रकांत बुरांडे (Chandrakant Burande)", flat_no: "C-111", email: "chandrakant@maakaushalya.com" },
-        { id: 14, name: "नरेंद्र परमार (Narendra Parmar)", flat_no: "C-112", email: "narendra@maakaushalya.com" },
-        { id: 15, name: "हिमांशु (Himanshu)", flat_no: "C-113", email: "himanshu@maakaushalya.com" },
-        { id: 16, name: "नरेश (Naresh)", flat_no: "C-114", email: "naresh@maakaushalya.com" },
-        { id: 17, name: "अशोक निषाद (Ashok Nishad)", flat_no: "C-115", email: "ashok@maakaushalya.com" },
-        { id: 18, name: "हेमंत पांडे (Hemant Pandey)", flat_no: "C-116", email: "hemant@maakaushalya.com" },
-        { id: 19, name: "केदार हंडघोरे (Kedar Handghore)", flat_no: "C-117", email: "kedar@maakaushalya.com" },
-        { id: 20, name: "राजू दास (Raju Das)", flat_no: "C-118", email: "raju@maakaushalya.com" }
-      ]);
-      setResidentId('2');
+      console.warn("⚠️ Server fetch failed:", err.message);
+      setError(`डेटा लोड करने में विफल: ${err.message}`);
+      
+      // Fallback to simulated data only if offline/network error
+      if (err.message.includes('fetch') || err.message.includes('network') || err.message.includes('Failed to fetch')) {
+        setBills([
+          {
+            id: 1,
+            resident_name: "सूफी इलियास चिश्ती (Sufi Illias Chisti)",
+            flat_no: "B-304",
+            amount: 2000.00,
+            status: "unpaid",
+            billing_month: "अप्रैल 2026",
+            due_date: new Date(2026, 3, 20),
+            created_at: new Date(2026, 3, 1)
+          },
+          {
+            id: 2,
+            resident_name: "स्वदेश कटियार (Swadesh Katiyar)",
+            flat_no: "C-102",
+            amount: 2000.00,
+            status: "paid",
+            billing_month: "अप्रैल 2026",
+            due_date: new Date(2026, 3, 20),
+            paid_at: new Date(2026, 3, 12),
+            payment_reference: "TXN1029384756",
+            created_at: new Date(2026, 3, 1)
+          },
+          {
+            id: 3,
+            resident_name: "आलोक बारिया (Alok Bariya)",
+            flat_no: "C-103",
+            amount: 2000.00,
+            status: "unpaid",
+            billing_month: "मई 2026",
+            due_date: new Date(2026, 4, 30),
+            created_at: new Date(2026, 4, 1)
+          }
+        ]);
+        setResidents([
+          { id: 2, name: "सूफी इलियास चिश्ती (Sufi Illias Chisti)", flat_no: "B-304", email: "resident@maakaushalya.com" },
+          { id: 4, name: "स्वदेश कटियार (Swadesh Katiyar)", flat_no: "C-102", email: "swadesh@maakaushalya.com" },
+          { id: 5, name: "आलोक बारिया (Alok Bariya)", flat_no: "C-103", email: "alok@maakaushalya.com" },
+          { id: 6, name: "अयाज़ भाई (Ayaz Bhai)", flat_no: "C-104", email: "ayaz@maakaushalya.com" },
+          { id: 7, name: "डॉ. अमित सिंह (Dr. Amit Singh)", flat_no: "C-105", email: "amit@maakaushalya.com" },
+          { id: 8, name: "हेमलाल पाल (Hemlal Pal)", flat_no: "C-106", email: "hemlal@maakaushalya.com" },
+          { id: 9, name: "सर्वेश मिश्रा (Sarvesh Mishra)", flat_no: "C-107", email: "sarvesh@maakaushalya.com" },
+          { id: 10, name: "आकाश दुबे (Akash Dubey)", flat_no: "C-108", email: "akash@maakaushalya.com" },
+          { id: 11, name: "लाल बहादुर यादव (Lal Bahadur Yadav)", flat_no: "C-109", email: "lalbahadur@maakaushalya.com" },
+          { id: 12, name: "भरत कुमार अग्रवाल (Bharat Kumar Agrawal)", flat_no: "C-110", email: "bharat@maakaushalya.com" },
+          { id: 13, name: "चंद्रकांत बुरांडे (Chandrakant Burande)", flat_no: "C-111", email: "chandrakant@maakaushalya.com" },
+          { id: 14, name: "नरेंद्र परमार (Narendra Parmar)", flat_no: "C-112", email: "narendra@maakaushalya.com" },
+          { id: 15, name: "हिमांशु (Himanshu)", flat_no: "C-113", email: "himanshu@maakaushalya.com" },
+          { id: 16, name: "नरेश (Naresh)", flat_no: "C-114", email: "naresh@maakaushalya.com" },
+          { id: 17, name: "अशोक निषाद (Ashok Nishad)", flat_no: "C-115", email: "ashok@maakaushalya.com" },
+          { id: 18, name: "हेमंत पांडे (Hemant Pandey)", flat_no: "C-116", email: "hemant@maakaushalya.com" },
+          { id: 19, name: "केदार हंडघोरे (Kedar Handghore)", flat_no: "C-117", email: "kedar@maakaushalya.com" },
+          { id: 20, name: "राजू दास (Raju Das)", flat_no: "C-118", email: "raju@maakaushalya.com" }
+        ]);
+        setResidentId('2');
+      }
     } finally {
       setLoading(false);
     }
