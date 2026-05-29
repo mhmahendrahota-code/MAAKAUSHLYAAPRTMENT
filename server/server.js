@@ -63,14 +63,14 @@ app.use((req, res, next) => {
   }
   return csurf({ cookie: true })(req, res, next);
 });
-// Global rate limiter: 100 requests per 15 minutes
+// Global rate limiter: 100 requests per 15 minutes, applied strictly to API endpoints to preserve static assets request thresholds
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use(globalLimiter);
+app.use('/api', globalLimiter);
 // HTTPS redirect (if behind proxy handling TLS)
 app.use((req, res, next) => {
   if (process.env.NODE_ENV === 'production' && req.headers['x-forwarded-proto'] !== 'https') {

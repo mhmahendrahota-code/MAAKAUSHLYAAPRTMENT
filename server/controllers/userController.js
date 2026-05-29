@@ -23,14 +23,42 @@ export const getSocietyDirectory = async (req, res, next) => {
   try {
     const allUsers = await queries.getAllUsers();
     
-    // Format a directory of residents and admins, hiding sensitive credentials
+    const isAdmin = req.user && req.user.role === 'Admin';
+
+    // Format a directory of residents and admins, hiding sensitive credentials & masking PII
     const directory = allUsers.map(user => ({
-        id: user.id,
-        name: user.name,
-        flat_no: user.flat_no,
-        role: user.role,
-        // Additional non-PII fields can be added here if needed
-      }));
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      gender: user.gender,
+      flat_no: user.flat_no,
+      phone: user.phone,
+      occupancy_status: user.occupancy_status,
+      tenant_type: user.tenant_type,
+      owner_name: user.owner_name,
+      owner_phone: user.owner_phone,
+      aadhaar_number: isAdmin ? user.aadhaar_number : (user.aadhaar_number ? 'XXXX XXXX ' + user.aadhaar_number.trim().slice(-4) : null),
+      family_members: user.family_members,
+      family_member_names: user.family_member_names,
+      vehicles: user.vehicles,
+      move_in_date: user.move_in_date,
+      lease_duration: user.lease_duration,
+      lease_agreement_submitted: user.lease_agreement_submitted,
+      emergency_contact_name: user.emergency_contact_name,
+      emergency_contact_phone: user.emergency_contact_phone,
+      profile_picture: user.profile_picture,
+      has_pet: user.has_pet,
+      pet_details: user.pet_details,
+      is_legacy_bachelor: user.is_legacy_bachelor,
+      exemption_ref: user.exemption_ref,
+      police_verification_status: user.police_verification_status,
+      police_verification_date: user.police_verification_date,
+      noc_document_ref: user.noc_document_ref,
+      bachelor_notes: user.bachelor_notes,
+      is_approved: user.is_approved,
+      created_at: user.created_at
+    }));
 
     res.status(200).json({
       success: true,
