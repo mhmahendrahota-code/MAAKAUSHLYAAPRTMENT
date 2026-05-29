@@ -18,6 +18,7 @@ export const MaintenanceBills = () => {
     setLoading(true);
     try {
       const res = await fetch('/api/bills/history', {
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -79,6 +80,7 @@ export const MaintenanceBills = () => {
     try {
       const res = await fetch('/api/bills/pay', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`

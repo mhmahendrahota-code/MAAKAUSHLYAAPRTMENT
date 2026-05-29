@@ -43,6 +43,7 @@ export const Committee = () => {
     setLoading(true);
     try {
       const res = await fetch('/api/committee', {
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -110,6 +111,7 @@ export const Committee = () => {
 
       const res = await fetch(url, {
         method,
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -161,6 +163,7 @@ export const Committee = () => {
     try {
       const res = await fetch(`/api/committee/${deleteId}`, {
         method: 'DELETE',
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {

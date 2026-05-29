@@ -117,6 +117,7 @@ export const Directory = () => {
     setLoading(true);
     try {
       const res = await fetch('/api/users/directory', {
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) {
@@ -620,6 +621,7 @@ export const Directory = () => {
         try {
           const res = await fetch('/api/auth/register', {
             method: 'POST',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
@@ -732,6 +734,7 @@ export const Directory = () => {
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -931,6 +934,7 @@ export const Directory = () => {
 
       const res = await fetch('/api/users/update', {
         method: 'PUT',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -977,6 +981,7 @@ export const Directory = () => {
     try {
       const res = await fetch(`/api/users/delete/${deleteUserId}`, {
         method: 'DELETE',
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -1001,6 +1006,7 @@ export const Directory = () => {
     try {
       const res = await fetch(`/api/users/approve/${userId}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();

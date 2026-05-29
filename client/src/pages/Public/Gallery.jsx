@@ -57,6 +57,7 @@ export const Gallery = () => {
     setLoading(true);
     try {
       const res = await fetch('/api/gallery', {
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -144,6 +145,7 @@ export const Gallery = () => {
 
       const res = await fetch(url, {
         method,
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -195,6 +197,7 @@ export const Gallery = () => {
     try {
       const res = await fetch(`/api/gallery/${deleteId}`, {
         method: 'DELETE',
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {

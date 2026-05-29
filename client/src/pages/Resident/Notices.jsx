@@ -21,6 +21,7 @@ export const Notices = () => {
     setLoading(true);
     try {
       const res = await fetch('/api/notices', {
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -62,6 +63,7 @@ export const Notices = () => {
     try {
       const res = await fetch('/api/notices', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -107,6 +109,7 @@ export const Notices = () => {
       // Mock endpoint or actual
       const res = await fetch(`/api/notices/delete/${deleteNoticeId}`, {
         method: 'DELETE',
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {

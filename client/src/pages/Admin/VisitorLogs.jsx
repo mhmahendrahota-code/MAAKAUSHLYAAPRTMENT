@@ -26,6 +26,7 @@ export const VisitorLogs = () => {
     setLoading(true);
     try {
       const res = await fetch('/api/visitors', {
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -83,6 +84,7 @@ export const VisitorLogs = () => {
     try {
       const res = await fetch('/api/visitors/checkin', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -136,6 +138,7 @@ export const VisitorLogs = () => {
     try {
       const res = await fetch(`/api/visitors/checkout/${logId}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: {
           'Authorization': `Bearer ${token}`
         }

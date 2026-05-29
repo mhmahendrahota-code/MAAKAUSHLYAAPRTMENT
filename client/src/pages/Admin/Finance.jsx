@@ -28,12 +28,14 @@ export const Finance = () => {
     try {
       // Fetch all bills
       const billsRes = await fetch('/api/bills/history', {
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const billsData = await billsRes.json();
 
       // Fetch directory to get list of residents
       const dirRes = await fetch('/api/users/directory', {
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const dirData = await dirRes.json();
@@ -120,6 +122,7 @@ export const Finance = () => {
     try {
       const res = await fetch('/api/bills/generate', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -191,6 +194,7 @@ export const Finance = () => {
       try {
         const res = await fetch('/api/bills/generate', {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
@@ -232,6 +236,7 @@ export const Finance = () => {
     try {
       const res = await fetch('/api/bills/pay', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -264,6 +269,7 @@ export const Finance = () => {
       // Mocked endpoint as backend might not have delete
       const res = await fetch(`/api/bills/delete/${deleteBillId}`, {
         method: 'DELETE',
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {

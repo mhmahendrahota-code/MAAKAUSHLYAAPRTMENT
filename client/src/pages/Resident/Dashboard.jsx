@@ -19,18 +19,21 @@ export const Dashboard = () => {
       try {
         // Fetch notices
         const noticesRes = await fetch('/api/notices', {
+          credentials: 'include',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const noticesData = await noticesRes.json();
         
         // Fetch bills
         const billsRes = await fetch('/api/bills/history', {
+          credentials: 'include',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const billsData = await billsRes.json();
 
         // Fetch tickets
         const ticketsRes = await fetch('/api/tickets/history', {
+          credentials: 'include',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const ticketsData = await ticketsRes.json();

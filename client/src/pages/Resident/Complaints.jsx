@@ -28,6 +28,7 @@ export const Complaints = () => {
     setLoading(true);
     try {
       const res = await fetch('/api/tickets/history', {
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -105,6 +106,7 @@ export const Complaints = () => {
     try {
       const res = await fetch('/api/tickets/create', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -153,6 +155,7 @@ export const Complaints = () => {
     try {
       const res = await fetch('/api/tickets/update', {
         method: 'PUT',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -188,6 +191,7 @@ export const Complaints = () => {
     try {
       const res = await fetch('/api/tickets/remark', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`

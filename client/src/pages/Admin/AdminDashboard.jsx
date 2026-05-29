@@ -21,36 +21,42 @@ export const AdminDashboard = () => {
       try {
         // Fetch directory/users
         const dirRes = await fetch('/api/users/directory', {
+          credentials: 'include',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const dirData = await dirRes.json();
 
         // Fetch tickets
         const ticketsRes = await fetch('/api/tickets/history', {
+          credentials: 'include',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const ticketsData = await ticketsRes.json();
 
         // Fetch visitors
         const visitorsRes = await fetch('/api/visitors', {
+          credentials: 'include',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const visitorsData = await visitorsRes.json();
 
         // Fetch bills
         const billsRes = await fetch('/api/bills/history', {
+          credentials: 'include',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const billsData = await billsRes.json();
 
         // Fetch bachelor alerts
         const bachelorsRes = await fetch('/api/users/bachelor-alerts', {
+          credentials: 'include',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const bachelorsData = await bachelorsRes.json();
 
         // Fetch gallery events count
         const galleryRes = await fetch('/api/gallery', {
+          credentials: 'include',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const galleryData = await galleryRes.json();

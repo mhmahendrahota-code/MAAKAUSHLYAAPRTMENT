@@ -48,6 +48,7 @@ export const Contact = () => {
     setLoading(true);
     try {
       const res = await fetch('/api/helplines', {
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -124,6 +125,7 @@ export const Contact = () => {
 
       const res = await fetch(url, {
         method,
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -173,6 +175,7 @@ export const Contact = () => {
     try {
       const res = await fetch(`/api/helplines/${deleteId}`, {
         method: 'DELETE',
+        credentials: 'include',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
