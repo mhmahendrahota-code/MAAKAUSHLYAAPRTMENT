@@ -535,15 +535,15 @@ export const Gallery = () => {
                           reader.onloadend = () => {
                             const img = new window.Image();
                             img.onload = () => {
-                              // Compress: resize to max 1200px wide, quality 0.82
-                              const MAX_W = 1200;
+                              // Compress: resize to max 800px wide, quality 0.65 to fit within Render's proxy body limits
+                              const MAX_W = 800;
                               const scale = img.width > MAX_W ? MAX_W / img.width : 1;
                               const canvas = document.createElement('canvas');
                               canvas.width  = Math.round(img.width  * scale);
                               canvas.height = Math.round(img.height * scale);
                               const ctx = canvas.getContext('2d');
                               ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                              const compressed = canvas.toDataURL('image/jpeg', 0.82);
+                              const compressed = canvas.toDataURL('image/jpeg', 0.65);
                               newUrls.push(compressed);
                               processedCount++;
                               
