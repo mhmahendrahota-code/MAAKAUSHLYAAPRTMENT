@@ -6,6 +6,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [token, setToken] = useState(null);
 
   // Validate session on startup
   useEffect(() => {
@@ -19,6 +20,7 @@ export const AuthProvider = ({ children }) => {
         
         if (response.ok && result.success) {
           setUser(result.data);
+          setToken(result.token);
         } else {
           // Token expired or invalid
           handleLogout();
@@ -58,7 +60,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       const userData = result.data;
-      // Token is set as httpOnly cookie by server; no localStorage usage.
+      setToken(result.token);
       setUser(userData);
       return userData;
     } catch (err) {
@@ -128,16 +130,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout handler
   const handleLogout = () => {
     // Clear client state; server should clear cookie via logout endpoint if needed.
     setUser(null);
-    // Note: token state no longer exists.
-
+    setToken(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, register, logout: handleLogout }}>
+    <AuthContext.Provider value={{ user, loading, error, login, register, token, logout: handleLogout }}>
       {children}
     </AuthContext.Provider>
   );

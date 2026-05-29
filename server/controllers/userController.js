@@ -9,6 +9,7 @@ export const getUserProfile = async (req, res, next) => {
     // req.user has already been populated and sanitized by the 'protect' middleware
     res.status(200).json({
       success: true,
+      token: req.cookies?.auth_token || (req.headers.authorization?.startsWith('Bearer') ? req.headers.authorization.split(' ')[1] : null),
       data: req.user
     });
   } catch (error) {

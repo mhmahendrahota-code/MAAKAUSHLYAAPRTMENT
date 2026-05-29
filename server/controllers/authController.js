@@ -131,10 +131,11 @@ export const loginUser = async (req, res, next) => {
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
-    // Respond without sensitive PII and without token in body
+    // Respond without sensitive PII and return token in body for client token state hydration
     res.status(200).json({
       success: true,
       message: 'Login successful',
+      token,
       data: {
         id: user.id,
         name: user.name,
