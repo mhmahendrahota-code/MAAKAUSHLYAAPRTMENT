@@ -688,10 +688,10 @@ const initializeSchema = async () => {
         console.warn("⚠️ Non-blocking feature flags synchronization warning:", flagErr.message);
       }
 
-      // Check if database is empty to seed it
-      const userCountRes = await dbPool.query("SELECT COUNT(*) FROM users");
+      // Check if database has no residents to seed it
+      const userCountRes = await dbPool.query("SELECT COUNT(*) FROM users WHERE role = 'Resident'");
       if (parseInt(userCountRes.rows[0].count) === 0) {
-        console.log("🌱 Database is empty, seeding all data from mock database...");
+        console.log("🌱 Database has no residents, seeding all data from mock database...");
         
         // --- Seed Users ---
         for (const user of mockDb.users) {
