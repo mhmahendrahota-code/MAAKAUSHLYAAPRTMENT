@@ -30,7 +30,7 @@ const tableFields = {
   users: [
     { name: 'name', label: 'नाम (Name)', type: 'text', required: true },
     { name: 'email', label: 'ईमेल (Email)', type: 'email', required: true },
-    { name: 'role', label: 'भूमिका (Role)', type: 'select', options: ['Admin', 'Resident', 'Security'], required: true },
+    { name: 'role', label: 'भूमिका (Role)', type: 'select', options: ['Admin', 'Resident', 'Security', 'Committee'], required: true },
     { name: 'flat_no', label: 'फ्लैट नंबर (Flat No)', type: 'text' },
     { name: 'phone', label: 'फ़ोन नंबर (Phone)', type: 'text' },
     { name: 'occupancy_status', label: 'अधिभोग (Occupancy)', type: 'select', options: ['Self-Occupied', 'Rented', 'Vacant'] },

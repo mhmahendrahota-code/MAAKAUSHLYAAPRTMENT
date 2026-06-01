@@ -12,9 +12,9 @@ const router = express.Router();
 // Read events feed - public access
 router.get('/', getGalleryEvents);
 
-// Manage events feed - Admin only
-router.post('/', protect, authorizeRoles('Admin'), addGalleryEvent);
-router.put('/:id', protect, authorizeRoles('Admin'), updateGalleryEvent);
-router.delete('/:id', protect, authorizeRoles('Admin'), removeGalleryEvent);
+// Manage events feed - Admin and Committee
+router.post('/', protect, authorizeRoles('Admin', 'Committee'), addGalleryEvent);
+router.put('/:id', protect, authorizeRoles('Admin', 'Committee'), updateGalleryEvent);
+router.delete('/:id', protect, authorizeRoles('Admin', 'Committee'), removeGalleryEvent);
 
 export default router;

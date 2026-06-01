@@ -5,6 +5,6 @@ import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.get('/', protect, getSocietyNotices);
-router.post('/', protect, authorizeRoles('Admin'), createSocietyNotice);
+router.post('/', protect, authorizeRoles('Admin', 'Committee'), createSocietyNotice);
 
 export default router;

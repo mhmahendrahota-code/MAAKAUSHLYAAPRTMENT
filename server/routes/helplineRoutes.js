@@ -12,9 +12,9 @@ const router = express.Router();
 // Read helplines - accessible to all logged-in roles
 router.get('/', protect, getHelplines);
 
-// Manage helplines - Admin only
-router.post('/', protect, authorizeRoles('Admin'), addHelpline);
-router.put('/:id', protect, authorizeRoles('Admin'), updateHelpline);
-router.delete('/:id', protect, authorizeRoles('Admin'), removeHelpline);
+// Manage helplines - Admin and Committee
+router.post('/', protect, authorizeRoles('Admin', 'Committee'), addHelpline);
+router.put('/:id', protect, authorizeRoles('Admin', 'Committee'), updateHelpline);
+router.delete('/:id', protect, authorizeRoles('Admin', 'Committee'), removeHelpline);
 
 export default router;

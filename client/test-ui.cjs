@@ -12,7 +12,7 @@ const puppeteer = require('puppeteer');
     // Attempt Login
     try {
       await page.type('input[type="email"]', 'admin@maakaushalya.com');
-      await page.type('input[type="password"]', 'admin123');
+      await page.type('input[type="password"]', 'password123');
       await page.click('button[type="submit"]');
       await page.waitForNavigation({ waitUntil: 'networkidle0' });
       console.log('Login successful.');

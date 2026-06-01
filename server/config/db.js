@@ -650,9 +650,11 @@ const initializeSchema = async () => {
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS exemption_ref VARCHAR(100)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS police_verification_status VARCHAR(20) DEFAULT 'pending'",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS police_verification_date DATE",
-        "ALTER TABLE users ADD COLUMN IF NOT EXISTS noc_document_ref VARCHAR(200)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS NOC_document_ref VARCHAR(200)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS bachelor_notes TEXT",
-        "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT TRUE"
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT TRUE",
+        "ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check",
+        "ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('Admin', 'Resident', 'Security', 'Committee'))"
       ];
 
       for (const queryStr of columnCheckStatements) {

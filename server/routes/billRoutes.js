@@ -4,7 +4,7 @@ import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/generate', protect, authorizeRoles('Admin'), generateMaintenanceBill);
+router.post('/generate', protect, authorizeRoles('Admin', 'Committee'), generateMaintenanceBill);
 router.post('/pay', protect, payMaintenanceBill);
 router.get('/history', protect, getBillsHistory);
 

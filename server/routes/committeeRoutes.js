@@ -12,9 +12,9 @@ const router = express.Router();
 // Get committee - readable by all authenticated members
 router.get('/', protect, getCommittee);
 
-// Modify committee - Admin only operations
-router.post('/', protect, authorizeRoles('Admin'), addCommitteeMember);
-router.put('/:id', protect, authorizeRoles('Admin'), updateCommitteeMember);
-router.delete('/:id', protect, authorizeRoles('Admin'), removeCommitteeMember);
+// Modify committee - Admin and Committee operations
+router.post('/', protect, authorizeRoles('Admin', 'Committee'), addCommitteeMember);
+router.put('/:id', protect, authorizeRoles('Admin', 'Committee'), updateCommitteeMember);
+router.delete('/:id', protect, authorizeRoles('Admin', 'Committee'), removeCommitteeMember);
 
 export default router;

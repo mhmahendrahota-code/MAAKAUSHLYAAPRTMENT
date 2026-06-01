@@ -5,7 +5,7 @@ import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.post('/create', protect, createComplaintTicket);
-router.put('/update', protect, authorizeRoles('Admin'), updateTicketStatus);
+router.put('/update', protect, authorizeRoles('Admin', 'Committee'), updateTicketStatus);
 router.get('/history', protect, getTicketsHistory);
 
 export default router;

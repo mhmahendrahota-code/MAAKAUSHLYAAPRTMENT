@@ -76,7 +76,7 @@ const AppLayout = () => {
             <Route
               path="/complaints"
               element={
-                <ProtectedRoute allowedRoles={['Resident', 'Admin']}>
+                <ProtectedRoute allowedRoles={['Resident', 'Admin', 'Committee']}>
                   <FeatureProtectedRoute featureKey="complaints">
                     <Complaints />
                   </FeatureProtectedRoute>
@@ -88,7 +88,7 @@ const AppLayout = () => {
             <Route
               path="/notices"
               element={
-                <ProtectedRoute allowedRoles={['Resident', 'Admin', 'Security']}>
+                <ProtectedRoute allowedRoles={['Resident', 'Admin', 'Security', 'Committee']}>
                   <FeatureProtectedRoute featureKey="notices">
                     <Notices />
                   </FeatureProtectedRoute>
@@ -100,7 +100,7 @@ const AppLayout = () => {
             <Route
               path="/committee"
               element={
-                <ProtectedRoute allowedRoles={['Resident', 'Admin', 'Security']}>
+                <ProtectedRoute allowedRoles={['Resident', 'Admin', 'Security', 'Committee']}>
                   <FeatureProtectedRoute featureKey="committee">
                     <Committee />
                   </FeatureProtectedRoute>
@@ -118,7 +118,7 @@ const AppLayout = () => {
             <Route
               path="/admin"
               element={
-                <ProtectedRoute allowedRoles={['Admin']}>
+                <ProtectedRoute allowedRoles={['Admin', 'Committee']}>
                   <AdminDashboard />
                 </ProtectedRoute>
               }
@@ -126,7 +126,7 @@ const AppLayout = () => {
             <Route
               path="/directory"
               element={
-                <ProtectedRoute allowedRoles={['Admin']}>
+                <ProtectedRoute allowedRoles={['Admin', 'Committee']}>
                   <Directory />
                 </ProtectedRoute>
               }
@@ -134,7 +134,7 @@ const AppLayout = () => {
             <Route
               path="/finance"
               element={
-                <ProtectedRoute allowedRoles={['Admin']}>
+                <ProtectedRoute allowedRoles={['Admin', 'Committee']}>
                   <Finance />
                 </ProtectedRoute>
               }
@@ -152,7 +152,7 @@ const AppLayout = () => {
             <Route
               path="/visitor-logs"
               element={
-                <ProtectedRoute allowedRoles={['Security', 'Admin', 'Resident']}>
+                <ProtectedRoute allowedRoles={['Security', 'Admin', 'Resident', 'Committee']}>
                   <FeatureProtectedRoute featureKey="visitor-logs">
                     <VisitorLogs />
                   </FeatureProtectedRoute>

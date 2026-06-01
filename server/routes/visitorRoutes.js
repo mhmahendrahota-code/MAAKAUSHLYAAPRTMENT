@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.get('/', protect, getVisitorLogs);
 router.post('/checkin', protect, authorizeRoles('Security'), checkinVisitor);
-router.put('/checkout/:id', protect, authorizeRoles('Security', 'Admin'), checkoutVisitor);
+router.put('/checkout/:id', protect, authorizeRoles('Security', 'Admin', 'Committee'), checkoutVisitor);
 
 export default router;

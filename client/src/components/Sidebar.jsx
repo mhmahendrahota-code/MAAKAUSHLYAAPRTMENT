@@ -91,6 +91,19 @@ export const Sidebar = ({ isOpen, onClose }) => {
           { to: '/contact', label: 'RWA संपर्क डेस्क (Contact)', icon: AlertCircle },
           { to: '/developer', label: 'डेवलपर विवरण (Developer)', icon: Terminal },
         ];
+      case 'Committee':
+        return [
+          { to: '/admin', label: 'प्रशासन डेस्क (Admin)', icon: LayoutDashboard },
+          { to: '/directory', label: 'निवासी निर्देशिका (Directory)', icon: Users },
+          { to: '/visitor-logs', label: 'आगंतुक ऑडिट (Visitor Logs)', icon: FolderSync },
+          { to: '/finance', label: 'वित्तीय बहीखाता (Finance)', icon: DollarSign },
+          { to: '/notices', label: 'रेसिडेंट वेलफेयर एसोसिएशन सूचना पटल', icon: Megaphone },
+          { to: '/committee', label: 'RWA प्रबंध समिति (Committee)', icon: Users },
+          { to: '/gallery', label: 'सोसायटी गैलरी (Gallery)', icon: Image },
+          { to: '/downloads', label: 'दस्तावेज़ डाउनलोड (Downloads)', icon: Download },
+          { to: '/contact', label: 'RWA संपर्क डेस्क (Contact)', icon: AlertCircle },
+          { to: '/developer', label: 'डेवलपर विवरण (Developer)', icon: Terminal },
+        ];
       case 'Security':
         return [
           { to: '/visitor-logs', label: 'द्वारपाल लॉग (Security Logs)', icon: FolderSync },
@@ -201,7 +214,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
           <div className="flex items-center justify-between text-[10px] border-t border-white/5 pt-2 mt-1">
             <span className="text-slate-500 font-medium">लॉग इन रोल:</span>
             <span className="text-brand-400 font-bold uppercase tracking-wider">
-              {user.role === 'Admin' ? 'प्रशासक' : user.role === 'Security' ? 'सुरक्षा गार्ड' : 'निवासी'}
+              {user.role === 'Admin' ? 'प्रशासक' : user.role === 'Committee' ? 'समिति सदस्य' : user.role === 'Security' ? 'सुरक्षा गार्ड' : 'निवासी'}
             </span>
           </div>
         </div>

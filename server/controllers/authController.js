@@ -28,7 +28,7 @@ export const registerUser = async (req, res, next) => {
       throw new Error('Please provide name, email, password, and role');
     }
 
-    if (!['Admin', 'Resident', 'Security'].includes(role)) {
+    if (!['Admin', 'Resident', 'Security', 'Committee'].includes(role)) {
       res.status(400);
       throw new Error('Invalid user role specified');
     }

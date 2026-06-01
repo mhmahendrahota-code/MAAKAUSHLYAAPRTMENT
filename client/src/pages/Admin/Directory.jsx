@@ -1150,7 +1150,9 @@ export const Directory = () => {
   const getRoleHindi = (role) => {
     switch (role) {
       case 'Admin':
-        return 'प्रशासक (Admin)';
+        return 'मुख्य एडमिन (Admin)';
+      case 'Committee':
+        return 'समिति सदस्य (Committee)';
       case 'Security':
         return 'सुरक्षा गार्ड (Security)';
       case 'Resident':
@@ -1316,7 +1318,8 @@ export const Directory = () => {
                   className="bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-xs text-slate-200 focus:border-brand-500 focus:outline-none transition-colors"
                 >
                   <option value="Resident">निवासी (Resident)</option>
-                  <option value="Admin">प्रशासक (Admin - Resident Welfare Association)</option>
+                  <option value="Committee">समिति सदस्य (Committee Member)</option>
+                  <option value="Admin">मुख्य एडमिन (Admin)</option>
                   <option value="Security">सुरक्षा गार्ड (Security)</option>
                 </select>
               </div>
@@ -1900,7 +1903,8 @@ export const Directory = () => {
             {[
               { id: 'All', label: 'सभी सदस्य (All)' },
               { id: 'Resident', label: 'निवासी (Residents)' },
-              { id: 'Admin', label: 'आरडब्ल्यूए समिति (Committee)' },
+              { id: 'Committee', label: 'समिति सदस्य (Committee)' },
+              { id: 'Admin', label: 'मुख्य एडमिन (Admin)' },
               { id: 'Security', label: 'सुरक्षा स्टाफ (Security)' },
               { id: 'Pending', label: 'अनुमोदन लंबित (Pending Approval)' }
             ].map(tab => (
@@ -2012,6 +2016,7 @@ export const Directory = () => {
                         </div>
                       </div>
                       <span className={`text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider ${item.role === 'Admin' ? 'bg-rose-500/15 text-rose-400 border border-rose-500/20' :
+                        item.role === 'Committee' ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/20' :
                         item.role === 'Security' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20' :
                           'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
                         }`}>
@@ -2683,7 +2688,8 @@ export const Directory = () => {
                     <label className="text-[10px] font-bold uppercase text-slate-400 text-left">भूमिका (Role)</label>
                     <select value={editUser.role} onChange={(e) => setEditUser({ ...editUser, role: e.target.value })} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-3 text-xs text-slate-200 focus:border-brand-500 outline-none">
                       <option value="Resident">निवासी (Resident)</option>
-                      <option value="Admin">प्रशासक (Admin)</option>
+                      <option value="Committee">समिति सदस्य (Committee Member)</option>
+                      <option value="Admin">मुख्य एडमिन (Admin)</option>
                       <option value="Security">सुरक्षा (Security)</option>
                     </select>
                   </div>

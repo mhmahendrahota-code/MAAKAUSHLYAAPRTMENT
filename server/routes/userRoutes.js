@@ -26,13 +26,13 @@ router.post('/db-inspect/:table', protect, authorizeRoles('Admin'), createDataba
 router.put('/db-inspect/:table/:id', protect, authorizeRoles('Admin'), updateDatabaseRecord);
 router.delete('/db-inspect/:table/:id', protect, authorizeRoles('Admin'), deleteDatabaseRecord);
 
-router.put('/update', protect, authorizeRoles('Admin'), updateUser);
+router.put('/update', protect, authorizeRoles('Admin', 'Committee'), updateUser);
 router.put('/update-profile', protect, updateOwnProfile);
-router.delete('/delete/:id', protect, authorizeRoles('Admin'), deleteUser);
-router.put('/approve/:id', protect, authorizeRoles('Admin'), approveUser);
+router.delete('/delete/:id', protect, authorizeRoles('Admin', 'Committee'), deleteUser);
+router.put('/approve/:id', protect, authorizeRoles('Admin', 'Committee'), approveUser);
 
 // Bachelor Tenant Routes
-router.get('/bachelor-alerts', protect, authorizeRoles('Admin'), getBachelorAlerts);
-router.put('/bachelor-verification/:id', protect, authorizeRoles('Admin'), updateBachelorStatus);
+router.get('/bachelor-alerts', protect, authorizeRoles('Admin', 'Committee'), getBachelorAlerts);
+router.put('/bachelor-verification/:id', protect, authorizeRoles('Admin', 'Committee'), updateBachelorStatus);
 
 export default router;

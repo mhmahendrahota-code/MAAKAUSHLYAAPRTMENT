@@ -183,199 +183,246 @@ export const AdminDashboard = () => {
           { feature_key: "downloads", feature_name: "दस्तावेज़ डाउनलोड (Downloads)", is_active: true },
           { feature_key: "contact", feature_name: "RWA संपर्क डेस्क (Contact)", is_active: true }
         ]);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchAdminStats();
   }, [token]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-16">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex-1 p-6 text-left flex flex-col gap-6 max-w-5xl">
+    <div className="flex-1 p-6 text-left flex flex-col gap-6 max-w-5xl w-full">
       {/* Greeting Banner */}
-      <div className="glass-panel p-8 rounded-3xl border border-white/5 bg-gradient-to-r from-violet-950/40 via-brand-950/20 to-transparent flex items-start gap-4 glow-brand">
-        <div className="w-12 h-12 rounded-2xl bg-violet-500/20 text-brand-400 flex items-center justify-center border border-brand-500/35 shrink-0">
-          <LayoutDashboard size={24} />
+      <div className="glass-panel p-8 rounded-3xl border border-white/5 bg-gradient-to-br from-slate-900/60 via-brand-950/25 to-violet-950/15 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 glow-brand relative overflow-hidden">
+        {/* Decorative background visual sparkles */}
+        <div className="absolute right-0 top-0 w-48 h-48 bg-brand-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute left-1/3 bottom-0 w-32 h-32 bg-violet-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-violet-500/10 text-brand-400 flex items-center justify-center border border-brand-500/35 shrink-0 shadow-premium">
+            <LayoutDashboard size={24} className="animate-pulse" />
+          </div>
+          <div className="flex flex-col text-left">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-2xl font-black text-white tracking-tight uppercase">प्रशासन डेस्क</h2>
+              <span className="text-[8px] font-black uppercase tracking-widest bg-brand-500/25 text-brand-300 px-2 py-0.5 rounded-full border border-brand-500/35">RWA Admin Console</span>
+            </div>
+            <p className="text-slate-400 text-xs mt-1 leading-relaxed">
+              आपका स्वागत है, <span className="font-extrabold text-white">{user?.name}</span>। सोसायटी प्रशासनिक मॉड्यूल, वित्तीय लेजर और आगंतुक सुरक्षा गेट पूरी तरह से सक्रिय (Online) हैं।
+            </p>
+          </div>
         </div>
-        <div className="flex flex-col">
-          <h2 className="text-2xl font-extrabold text-white tracking-tight uppercase">प्रशासन डेस्क (Resident Welfare Association Admin)</h2>
-          <p className="text-slate-400 text-sm mt-0.5">
-            आपका स्वागत है, {user?.name}। सोसायटी प्रशासनिक मॉड्यूल, वित्तीय लेजर और आगंतुक गेट पूरी तरह से सक्रिय (Online) हैं।
-          </p>
+        
+        {/* Dynamic System Status Indicator */}
+        <div className="flex items-center gap-3 bg-slate-950/40 border border-white/5 px-4 py-2.5 rounded-2xl shrink-0 self-stretch sm:self-auto justify-between sm:justify-start">
+          <div className="flex flex-col text-left">
+            <span className="text-[8px] font-extrabold uppercase text-slate-500 tracking-wider">सिस्टम स्थिति</span>
+            <span className="text-[10px] font-bold text-white mt-0.5">Society Engine V2.1</span>
+          </div>
+          <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-xl">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></div>
+            <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">ऑनलाइन</span>
+          </div>
         </div>
       </div>
 
       {/* Grid: Admin Stats Counters */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
         {/* Total Funds Collected */}
-        <div className="glass-panel p-5 rounded-3xl border border-white/5 flex flex-col justify-between hover:border-brand-500/10 transition-colors">
+        <div className="glass-panel p-5 rounded-3xl border border-white/5 bg-gradient-to-b from-slate-900/40 to-slate-950/80 flex flex-col justify-between hover:border-emerald-500/25 hover:shadow-premium transition-all duration-300 hover:-translate-y-0.5 group">
           <div className="flex justify-between items-start">
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">एकत्रित शुल्क (Funds Collected)</span>
-              <span className="text-xl font-black text-emerald-400 mt-1">₹{stats.totalFunds.toFixed(2)}</span>
+            <div className="flex flex-col gap-1 text-left">
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">एकत्रित शुल्क (Funds)</span>
+              <span className="text-xl font-black text-emerald-400 mt-1 tracking-wide">₹{stats.totalFunds.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-300">
               <DollarSign size={16} />
             </div>
           </div>
-          <div className="mt-4 pt-3 border-t border-white/5 text-[10px] text-slate-400 font-semibold flex items-center justify-between">
+          <div className="mt-5 pt-3 border-t border-white/5 text-[10px] text-slate-400 font-semibold flex items-center justify-between">
             <span>सक्रिय चालानों का ऑडिट</span>
-            <Link to="/finance" className="text-brand-400 hover:text-brand-300 font-bold flex items-center gap-0.5">
+            <Link to="/finance" className="text-brand-400 hover:text-brand-300 font-bold flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
               बहीखाता <ChevronRight size={12} />
             </Link>
           </div>
         </div>
 
         {/* Total Dues Outstanding */}
-        <div className="glass-panel p-5 rounded-3xl border border-white/5 flex flex-col justify-between hover:border-brand-500/10 transition-colors">
+        <div className="glass-panel p-5 rounded-3xl border border-white/5 bg-gradient-to-b from-slate-900/40 to-slate-950/80 flex flex-col justify-between hover:border-rose-500/25 hover:shadow-premium transition-all duration-300 hover:-translate-y-0.5 group">
           <div className="flex justify-between items-start">
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">कुल बकाया शुल्क (Outstanding)</span>
-              <span className="text-xl font-black text-rose-400 mt-1">₹{stats.unpaidAmount.toFixed(2)}</span>
+            <div className="flex flex-col gap-1 text-left">
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">बकाया शुल्क (Outstanding)</span>
+              <span className="text-xl font-black text-rose-400 mt-1 tracking-wide">₹{stats.unpaidAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/25 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/25 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-300">
               <TrendingUp size={16} />
             </div>
           </div>
-          <div className="mt-4 pt-3 border-t border-white/5 text-[10px] text-slate-400 font-semibold flex items-center justify-between">
+          <div className="mt-5 pt-3 border-t border-white/5 text-[10px] text-slate-400 font-semibold flex items-center justify-between">
             <span>अवैतनिक खाते</span>
-            <Link to="/finance" className="text-brand-400 hover:text-brand-300 font-bold flex items-center gap-0.5">
+            <Link to="/finance" className="text-brand-400 hover:text-brand-300 font-bold flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
               संग्रह <ChevronRight size={12} />
             </Link>
           </div>
         </div>
 
         {/* Member Count */}
-        <div className="glass-panel p-5 rounded-3xl border border-white/5 flex flex-col justify-between hover:border-brand-500/10 transition-colors">
+        <div className="glass-panel p-5 rounded-3xl border border-white/5 bg-gradient-to-b from-slate-900/40 to-slate-950/80 flex flex-col justify-between hover:border-violet-500/25 hover:shadow-premium transition-all duration-300 hover:-translate-y-0.5 group">
           <div className="flex justify-between items-start">
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">सोसायटी फ्लैट्स</span>
-              <span className="text-xl font-black text-white mt-1">{stats.activeResidents} निवासी (Residents)</span>
+            <div className="flex flex-col gap-1 text-left">
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">सोसायटी फ्लैट्स</span>
+              <span className="text-xl font-black text-white mt-1 tracking-wide">{stats.activeResidents} सदस्य (Members)</span>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/25 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/25 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-300">
               <Users size={16} />
             </div>
           </div>
-          <div className="mt-4 pt-3 border-t border-white/5 text-[10px] text-slate-400 font-semibold flex items-center justify-between">
+          <div className="mt-5 pt-3 border-t border-white/5 text-[10px] text-slate-400 font-semibold flex items-center justify-between">
             <span>सदस्य निर्देशिका</span>
-            <Link to="/directory" className="text-brand-400 hover:text-brand-300 font-bold flex items-center gap-0.5">
+            <Link to="/directory" className="text-brand-400 hover:text-brand-300 font-bold flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
               निर्देशिका <ChevronRight size={12} />
             </Link>
           </div>
         </div>
 
         {/* Open Complaints */}
-        <div className="glass-panel p-5 rounded-3xl border border-white/5 flex flex-col justify-between hover:border-brand-500/10 transition-colors">
+        <div className="glass-panel p-5 rounded-3xl border border-white/5 bg-gradient-to-b from-slate-900/40 to-slate-950/80 flex flex-col justify-between hover:border-brand-500/25 hover:shadow-premium transition-all duration-300 hover:-translate-y-0.5 group">
           <div className="flex justify-between items-start">
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">सक्रिय शिकायतें</span>
-              <span className="text-xl font-black text-white mt-1">{stats.openComplaints} लंबित (Open)</span>
+            <div className="flex flex-col gap-1 text-left">
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">सक्रिय शिकायतें</span>
+              <span className="text-xl font-black text-white mt-1 tracking-wide">{stats.openComplaints} लंबित (Open)</span>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/25 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/25 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-300">
               <FileText size={16} />
             </div>
           </div>
-          <div className="mt-4 pt-3 border-t border-white/5 text-[10px] text-slate-400 font-semibold flex items-center justify-between">
+          <div className="mt-5 pt-3 border-t border-white/5 text-[10px] text-slate-400 font-semibold flex items-center justify-between">
             <span>सहायता डेस्क की समीक्षा</span>
-            <Link to="/complaints" className="text-brand-400 hover:text-brand-300 font-bold flex items-center gap-0.5">
-              समाधान करें <ChevronRight size={12} />
+            <Link to="/complaints" className="text-brand-400 hover:text-brand-300 font-bold flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+              समाधान <ChevronRight size={12} />
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Auxiliary Action boards */}
+      {/* Auxiliary Action boards - Balanced 2-Column Desktop Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Core Administrative links panel */}
-        <div className="glass-panel p-6 rounded-3xl border border-white/5 lg:col-span-2 flex flex-col gap-4">
-          <h3 className="text-sm font-bold text-white uppercase tracking-widest border-b border-white/5 pb-3 flex items-center gap-2">
+        {/* Core Administrative links panel (Left Panel: col-span-2) */}
+        <div className="glass-panel p-6 rounded-3xl border border-white/5 lg:col-span-2 flex flex-col gap-5 bg-gradient-to-b from-slate-900/30 to-slate-950/50">
+          <h3 className="text-sm font-extrabold text-white uppercase tracking-widest border-b border-white/5 pb-3.5 flex items-center gap-2">
             <FolderSync size={16} className="text-brand-400" />
-            त्वरित प्रशासनिक नियंत्रण (Admin Controls)
+            <span>त्वरित प्रशासनिक नियंत्रण (Admin Controls)</span>
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Link 
               to="/directory"
-              className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/25 hover:bg-brand-500/5 transition-all text-left flex flex-col gap-1 group"
+              className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/20 hover:bg-brand-500/5 transition-all text-left flex flex-col gap-1.5 group"
             >
-              <h4 className="font-bold text-white text-xs uppercase tracking-wider group-hover:text-brand-300 transition-colors">निर्देशिका प्रबंधित करें</h4>
-              <p className="text-[10px] text-slate-400">फ्लैट सदस्यों का ऑडिट करें, फ्लैट आवंटित करें और संपर्क फोन सूची देखें।</p>
+              <h4 className="font-extrabold text-white text-xs uppercase tracking-wider group-hover:text-brand-300 transition-colors">निर्देशिका प्रबंधित करें</h4>
+              <p className="text-[10px] text-slate-400 leading-normal">फ्लैट सदस्यों का ऑडिट करें, फ्लैट आवंटित करें और संपर्क फोन सूची देखें।</p>
             </Link>
 
             <Link 
               to="/finance"
-              className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/25 hover:bg-brand-500/5 transition-all text-left flex flex-col gap-1 group"
+              className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/20 hover:bg-brand-500/5 transition-all text-left flex flex-col gap-1.5 group"
             >
-              <h4 className="font-bold text-white text-xs uppercase tracking-wider group-hover:text-brand-300 transition-colors">बिलिंग प्रणाली (Billing System)</h4>
-              <p className="text-[10px] text-slate-400">रखरखाव चालान जनरेट करें और अवैतनिक सोसायटी शुल्क की निगरानी करें।</p>
+              <h4 className="font-extrabold text-white text-xs uppercase tracking-wider group-hover:text-brand-300 transition-colors">बिलिंग प्रणाली (Billing System)</h4>
+              <p className="text-[10px] text-slate-400 leading-normal">रखरखाव चालान जनरेट करें और अवैतनिक सोसायटी शुल्क की निगरानी करें।</p>
             </Link>
 
             <Link 
               to="/visitor-logs"
-              className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/25 hover:bg-brand-500/5 transition-all text-left flex flex-col gap-1 group"
+              className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/20 hover:bg-brand-500/5 transition-all text-left flex flex-col gap-1.5 group"
             >
-              <h4 className="font-bold text-white text-xs uppercase tracking-wider group-hover:text-brand-300 transition-colors">आगंतुक पंजी (Visitor Registry)</h4>
-              <p className="text-[10px] text-slate-400">आगमन को ट्रैक करें, अतिथि प्रस्थान दर्ज करें और गेटकीपर रिपोर्ट की जांच करें।</p>
+              <h4 className="font-extrabold text-white text-xs uppercase tracking-wider group-hover:text-brand-300 transition-colors">आगंतुक पंजी (Visitor Registry)</h4>
+              <p className="text-[10px] text-slate-400 leading-normal">आगमन को ट्रैक करें, अतिथि प्रस्थान दर्ज करें और गेटकीपर रिपोर्ट की जांच करें।</p>
             </Link>
 
             <Link 
               to="/notices"
-              className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/25 hover:bg-brand-500/5 transition-all text-left flex flex-col gap-1 group"
+              className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/20 hover:bg-brand-500/5 transition-all text-left flex flex-col gap-1.5 group"
             >
-              <h4 className="font-bold text-white text-xs uppercase tracking-wider group-hover:text-brand-300 transition-colors">सूचना बुलेटिन</h4>
-              <p className="text-[10px] text-slate-400">सभी निवासियों को नोटिस और आपातकालीन घोषणाएं प्रसारित करें।</p>
+              <h4 className="font-extrabold text-white text-xs uppercase tracking-wider group-hover:text-brand-300 transition-colors">सूचना बुलेटिन</h4>
+              <p className="text-[10px] text-slate-400 leading-normal">सभी निवासियों को नोटिस और आपातकालीन घोषणाएं प्रसारित करें।</p>
             </Link>
 
             <Link 
               to="/gallery"
-              className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/25 hover:bg-brand-500/5 transition-all text-left flex flex-col gap-1.5 group sm:col-span-2"
+              className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/20 hover:bg-brand-500/5 transition-all text-left flex flex-col gap-2 group sm:col-span-2"
             >
               <div className="flex items-center gap-2">
-                <Image size={15} className="text-brand-400 group-hover:scale-105 transition-transform" />
-                <h4 className="font-bold text-white text-xs uppercase tracking-wider group-hover:text-brand-300 transition-colors">सोसायटी गैलरी एवं समाचार (Events Gallery CMS)</h4>
+                <Image size={15} className="text-brand-400 group-hover:scale-105 transition-transform duration-300" />
+                <h4 className="font-extrabold text-white text-xs uppercase tracking-wider group-hover:text-brand-300 transition-colors">सोसायटी गैलरी एवं समाचार (Events Gallery CMS)</h4>
               </div>
-              <p className="text-[10px] text-slate-400">सोसायटी के त्योहारों, उत्सवों और समाचारों की तस्वीरें प्रकाशित व प्रबंधित करें। (वर्तमान में <strong>{stats.galleryCount}</strong> इवेंट्स लाइव हैं)</p>
+              <p className="text-[10px] text-slate-400 leading-normal">सोसायटी के त्योहारों, उत्सवों और समाचारों की तस्वीरें प्रकाशित व प्रबंधित करें। (वर्तमान में <strong>{stats.galleryCount}</strong> इवेंट्स लाइव हैं)</p>
             </Link>
           </div>
         </div>
 
-        {/* Live Visitor stats summary widget */}
-        <div className="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col justify-between">
-          <div className="flex flex-col gap-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-widest border-b border-white/5 pb-3 flex items-center gap-2">
-              <FolderSync size={16} className="text-indigo-400" />
-              सुरक्षा जांच (Security Check)
-            </h3>
-            
-            <div className="bg-white/5 border border-white/5 p-4 rounded-2xl text-center">
-              <span className="text-3xl font-black text-indigo-400">{stats.activeVisitors}</span>
-              <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mt-1">वर्तमान में परिसर के अंदर अतिथि</p>
+        {/* Audit Stack Column (Right Panel: col-span-1) - Eliminates empty spaces and balances desktop view */}
+        <div className="flex flex-col gap-6 lg:col-span-1">
+          {/* Live Visitor stats summary widget */}
+          <div className="glass-panel p-6 rounded-3xl border border-white/5 bg-gradient-to-b from-slate-900/30 to-slate-950/50 flex-1 flex flex-col justify-between gap-4">
+            <div className="flex flex-col gap-4">
+              <h3 className="text-sm font-extrabold text-white uppercase tracking-widest border-b border-white/5 pb-3 flex items-center gap-2">
+                <FolderSync size={16} className="text-indigo-400" />
+                <span>सुरक्षा जांच (Security Audit)</span>
+              </h3>
+              
+              <div className="bg-slate-950/60 border border-white/5 p-5 rounded-2xl text-center relative overflow-hidden group">
+                <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                <span className="text-4xl font-black text-indigo-400 tracking-tight">{stats.activeVisitors}</span>
+                <p className="text-[9px] uppercase font-extrabold text-slate-400 tracking-widest mt-1.5">भीतर सक्रिय अतिथि (Inside Building)</p>
+              </div>
+              <p className="text-[10px] text-slate-400 leading-relaxed text-center">
+                सुरक्षा गेटकीपर डेस्क आगमन को तुरंत दर्ज करता है। सोसायटी सुरक्षा को दुरुस्त और जवाबदेह रखने में सहयोग करें।
+              </p>
             </div>
-            <p className="text-[10px] text-slate-500 leading-normal text-center">
-              सुरक्षा गेट डेस्क आगमन को तुरंत दर्ज करता है। सुनिश्चित करें कि रेसिडेंट वेलफेयर एसोसिएशन जांच सुसंगत रहे।
-            </p>
+
+            <Link 
+              to="/visitor-logs"
+              className="w-full py-2.5 bg-slate-900 border border-white/5 hover:border-brand-500/25 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider text-center transition-all flex items-center justify-center gap-1 shadow-md hover:shadow-brand-500/10"
+            >
+              <span>गेट लॉग्स जांचें</span> <ChevronRight size={14} />
+            </Link>
           </div>
 
-          <Link 
-            to="/visitor-logs"
-            className="w-full mt-4 py-2.5 bg-slate-900 border border-white/5 hover:border-brand-500/25 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider text-center transition-all flex items-center justify-center gap-1"
-          >
-            गेट लॉग्स की जांच करें <ChevronRight size={14} />
-          </Link>
-        </div>
+          {/* Bachelor Alert Widget */}
+          <div className="glass-panel p-6 rounded-3xl border border-white/5 bg-gradient-to-b from-slate-900/30 to-slate-950/50 flex-1 flex flex-col justify-between gap-4">
+            <div className="flex flex-col gap-4">
+              <h3 className="text-sm font-extrabold text-white uppercase tracking-widest border-b border-white/5 pb-3 flex items-center gap-2">
+                <Users size={16} className="text-amber-400" />
+                <span>किरायेदार सत्यापन (Tenant Check)</span>
+              </h3>
+              
+              <div className="flex flex-col gap-2.5">
+                <div className="flex justify-between items-center bg-slate-950/40 p-3 rounded-xl border border-white/5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">कुल बैचलर किरायेदार</span>
+                  <span className="text-base font-black text-amber-400">{stats.bachelorAlerts?.length || 0}</span>
+                </div>
+                
+                <div className="flex justify-between items-center bg-slate-950/40 p-3 rounded-xl border border-white/5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">लंबित पुलिस वेरिफिकेशन</span>
+                  <span className={`text-base font-black px-2 py-0.5 rounded-lg ${stats.bachelorAlerts?.filter(b => b.police_verification_status === 'pending').length > 0 ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+                    {stats.bachelorAlerts?.filter(b => b.police_verification_status === 'pending').length || 0}
+                  </span>
+                </div>
+              </div>
+              
+              <p className="text-[10px] text-slate-400 leading-relaxed text-center">
+                सभी बैचलर किरायेदारों के लिए RWA नियम के तहत पुलिस सत्यापन और NOC कागजात अपलोड होना अनिवार्य है।
+              </p>
+            </div>
 
-        {/* Bachelor Alert Widget */}
-        <div className="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col justify-between">
-          <div className="flex flex-col gap-4">
+            <Link 
+              to="/directory"
+              className="w-full py-2.5 bg-slate-900 border border-white/5 hover:border-amber-500/25 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider text-center transition-all flex items-center justify-center gap-1 shadow-md hover:shadow-amber-500/10"
+            >
+              <span>सत्यापन ऑडिट करें</span> <ChevronRight size={14} />
+            </Link>
+          </div>
+          <div className="glass-panel p-6 rounded-3xl border border-white/5 bg-gradient-to-br from-slate-950/20 via-brand-950/5 to-transparent glow-brand flex flex-col justify-between">
+            <div className="flex flex-col gap-4">
             <h3 className="text-sm font-bold text-white uppercase tracking-widest border-b border-white/5 pb-3 flex items-center gap-2">
               <Users size={16} className="text-amber-400" />
               बैचलर अलर्ट (Bachelor Alerts)
@@ -408,6 +455,7 @@ export const AdminDashboard = () => {
           </Link>
         </div>
       </div>
+    </div>
 
       {/* System Feature Management Console */}
       <div className="glass-panel p-6 rounded-3xl border border-white/5 bg-gradient-to-r from-slate-950/20 via-brand-950/5 to-transparent glow-brand flex flex-col gap-6">
