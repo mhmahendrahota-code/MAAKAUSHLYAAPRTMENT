@@ -3,17 +3,30 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(() => localStorage.getItem('auth_token'));
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('auth_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [token, setToken] = useState(null);
 
   // Validate session on startup
   useEffect(() => {
     const initializeAuth = async () => {
+      const localToken = localStorage.getItem('auth_token');
       try {
+        const headers = {};
+        if (localToken) {
+          headers['Authorization'] = `Bearer ${localToken}`;
+        }
         const response = await fetch('/api/users/profile', {
-          credentials: 'include'
+          credentials: 'include',
+          headers
         });
 
         const result = await response.json();
@@ -21,14 +34,19 @@ export const AuthProvider = ({ children }) => {
         if (response.ok && result.success) {
           setUser(result.data);
           setToken(result.token);
+          localStorage.setItem('auth_token', result.token);
+          localStorage.setItem('auth_user', JSON.stringify(result.data));
         } else {
           // Token expired or invalid
           handleLogout();
         }
       } catch (err) {
-        // If the backend is unavailable, show a clear error to the user.
-        setError('Unable to reach the authentication server. Please try again later.');
-        handleLogout();
+        console.warn("⚠️ Authentication server check failed. Using locally stored session context.", err);
+        // Only log out if it is explicitly an invalid token error from the server (e.g. 401)
+        // If it's a network error (server offline), we keep the local session active for offline simulation.
+        if (err.message && err.message.includes('status')) {
+          handleLogout();
+        }
       } finally {
         setLoading(false);
       }
@@ -62,6 +80,8 @@ export const AuthProvider = ({ children }) => {
       const userData = result.data;
       setToken(result.token);
       setUser(userData);
+      localStorage.setItem('auth_token', result.token);
+      localStorage.setItem('auth_user', JSON.stringify(userData));
       return userData;
     } catch (err) {
       if (hasResponse) {
@@ -134,6 +154,8 @@ export const AuthProvider = ({ children }) => {
     // Clear client state; server should clear cookie via logout endpoint if needed.
     setUser(null);
     setToken(null);
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
   };
 
   return (
