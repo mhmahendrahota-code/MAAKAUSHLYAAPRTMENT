@@ -41,6 +41,110 @@ export const Downloads = () => {
   const [tenantAddress, setTenantAddress] = useState('');
   const [tenantOccupation, setTenantOccupation] = useState('');
   const [tenantFlat, setTenantFlat] = useState('');
+
+  // Tenant Police Verification Form Tab State
+  const [tenantFormTab, setTenantFormTab] = useState('landlord');
+
+  // Tenant Police Verification Form States
+  const [llFirstName, setLlFirstName] = useState('');
+  const [llMiddleName, setLlMiddleName] = useState('');
+  const [llLastName, setLlLastName] = useState('');
+  const [llFatherName, setLlFatherName] = useState('');
+  const [llEmail, setLlEmail] = useState('');
+  const [llPhone, setLlPhone] = useState('');
+  const [llLandline, setLlLandline] = useState('');
+  const [llOccupation, setLlOccupation] = useState('');
+  const [llHouseNo, setLlHouseNo] = useState('');
+  const [llCountry, setLlCountry] = useState('भारत (India)');
+  const [llStreet, setLlStreet] = useState('');
+  const [llState, setLlState] = useState('छत्तीसगढ़ (Chhattisgarh)');
+  const [llColony, setLlColony] = useState('');
+  const [llDistrict, setLlDistrict] = useState('रायपुर (Raipur)');
+  const [llCity, setLlCity] = useState('रायपुर (Raipur)');
+  const [llPoliceStation, setLlPoliceStation] = useState('');
+  const [llTehsil, setLlTehsil] = useState('');
+  const [llPinCode, setLlPinCode] = useState('');
+
+  const [tFirstName, setTFirstName] = useState('');
+  const [tMiddleName, setTMiddleName] = useState('');
+  const [tLastName, setTLastName] = useState('');
+  const [tFatherName, setTFatherName] = useState('');
+  const [tPhone, setTPhone] = useState('');
+  const [tLandline, setTLandline] = useState('');
+  const [tRelativeName, setTRelativeName] = useState('');
+  const [tGender, setTGender] = useState('Male');
+  const [tRelationType, setTRelationType] = useState('पिता (Father)');
+  const [tOccupation, setTOccupation] = useState('');
+  const [tPurpose, setTPurpose] = useState('निवास (Residence)');
+  const [tDOB, setTDOB] = useState('');
+
+  const [currHouseNo, setCurrHouseNo] = useState('');
+  const [currCountry, setCurrCountry] = useState('भारत (India)');
+  const [currStreet, setCurrStreet] = useState('');
+  const [currState, setCurrState] = useState('छत्तीसगढ़ (Chhattisgarh)');
+  const [currColony, setCurrColony] = useState('');
+  const [currDistrict, setCurrDistrict] = useState('रायपुर (Raipur)');
+  const [currCity, setCurrCity] = useState('रायपुर (Raipur)');
+  const [currPoliceStation, setCurrPoliceStation] = useState('');
+  const [currTehsil, setCurrTehsil] = useState('');
+  const [currPinCode, setCurrPinCode] = useState('');
+
+  const [prevHouseNo, setPrevHouseNo] = useState('');
+  const [prevCountry, setPrevCountry] = useState('भारत (India)');
+  const [prevStreet, setPrevStreet] = useState('');
+  const [prevState, setPrevState] = useState('');
+  const [prevColony, setPrevColony] = useState('');
+  const [prevDistrict, setPrevDistrict] = useState('');
+  const [prevCity, setPrevCity] = useState('');
+  const [prevPoliceStation, setPrevPoliceStation] = useState('');
+  const [prevTehsil, setPrevTehsil] = useState('');
+  const [prevPinCode, setPrevPinCode] = useState('');
+  const [prevStayFrom, setPrevStayFrom] = useState('');
+  const [prevStayTo, setPrevStayTo] = useState('');
+
+  const [permHouseNo, setPermHouseNo] = useState('');
+  const [permCountry, setPermCountry] = useState('भारत (India)');
+  const [permStreet, setPermStreet] = useState('');
+  const [permState, setPermState] = useState('');
+  const [permColony, setPermColony] = useState('');
+  const [permDistrict, setPermDistrict] = useState('');
+  const [permCity, setPermCity] = useState('');
+  const [permPoliceStation, setPermPoliceStation] = useState('');
+  const [permTehsil, setPermTehsil] = useState('');
+  const [permPinCode, setPermPinCode] = useState('');
+
+  const [tenantFamilyMembersList, setTenantFamilyMembersList] = useState([]);
+  const [tenantFamilyMembersCount, setTenantFamilyMembersCount] = useState('');
+
+  const [tHasCriminalRecord, setTHasCriminalRecord] = useState('नहीं');
+  const [tCriminalDetails, setTCriminalDetails] = useState('');
+  const [tInfoCorrect, setTInfoCorrect] = useState('हाँ');
+
+  const handleTenantFamilyMembersChange = (e) => {
+    const val = e.target.value;
+    setTenantFamilyMembersCount(val);
+    const count = parseInt(val) || 0;
+    const safeCount = Math.min(count, 10);
+    setTenantFamilyMembersList(prev => {
+      const newArr = [...prev];
+      if (safeCount > newArr.length) {
+        for (let i = newArr.length; i < safeCount; i++) {
+          newArr.push({ name: '', relation: '', phone: '' });
+        }
+      } else if (safeCount < newArr.length) {
+        newArr.splice(safeCount);
+      }
+      return newArr;
+    });
+  };
+
+  const handleTenantFamilyMemberChange = (index, field, value) => {
+    setTenantFamilyMembersList(prev => {
+      const newArr = [...prev];
+      newArr[index] = { ...newArr[index], [field]: value };
+      return newArr;
+    });
+  };
   
   const [parkingName, setParkingName] = useState('');
   const [parkingFlat, setParkingFlat] = useState('');
@@ -385,33 +489,58 @@ export const Downloads = () => {
       // Tenant Police Verification
       formContent = `========================================================================
              माँ कौशल्या अपार्टमेंट (Maa Kaushalya Apartment RWA)
-                       किरायेदार पुलिस सत्यापन प्रमाण पत्र
+                 किरायेदार पुलिस सत्यापन अनुरोध डेटा फ़ाइल
 ========================================================================
 दिनांक: ${new Date().toLocaleDateString('hi-IN')}          सत्यापन संदर्भ: ${authCode}
 ------------------------------------------------------------------------
 
-यह प्रमाणित किया जाता है कि माँ कौशल्या अपार्टमेंट (रायपुर, छत्तीसगढ़) के 
-फ्लैट संख्या ${tenantFlat || '_____'} में निम्नलिखित किरायेदार के प्रवेश को 
-आरडब्ल्यूए (Resident Welfare Association) द्वारा पंजीकृत कर लिया गया है:
+[1. मकान मालिक की सूचना (Landlord Information)]
+• नाम: ${llFirstName} ${llMiddleName} ${llLastName}
+• पिता/पति का नाम: ${llFatherName}
+• ईमेल: ${llEmail}
+• मोबाइल: ${llPhone}
+• लैंडलाइन: ${llLandline}
+• व्यवसाय: ${llOccupation}
+• मकान मालिक पता: मकान संख्या ${llHouseNo}, ${llStreet}, ${llColony}, ${llCity}, ${llDistrict}, ${llState}, ${llCountry} - ${llPinCode}
+• संबंधित पुलिस स्टेशन: ${llPoliceStation}
 
-[किरायेदार का विवरण]
-• किरायेदार का पूरा नाम: ${tenantName || 'N/A'}
-• संपर्क फोन नंबर: ${tenantPhone || 'N/A'}
-• स्थायी गृह पता: ${tenantAddress || 'N/A'}
-• नियोजक/नौकरी का विवरण: ${tenantOccupation || 'N/A'}
+[2. किरायेदार की सूचना (Tenant Information)]
+• नाम: ${tFirstName} ${tMiddleName} ${tLastName}
+• पिता/पति का नाम: ${tFatherName}
+• मोबाइल: ${tPhone}
+• रिश्तेदार का नाम: ${tRelativeName}
+• लिंग: ${tGender}
+• संबंध: ${tRelationType}
+• व्यवसाय: ${tOccupation}
+• किरायेदारी का उद्देश्य: ${tPurpose}
+• जन्म तिथि: ${tDOB}
+• लैंडलाइन: ${tLandline}
 
-[आवास एवं सुरक्षा अनुपालन]
-1. किरायेदार ने यह घोषणा की है कि उनका कोई आपराधिक रिकॉर्ड नहीं है।
-2. रायपुर पुलिस थाने में सत्यापन हेतु यह प्रपत्र प्रमाणित किया जाता है।
-3. नियमों के अनुसार गेट-पास जारी कर दिया गया है।
+[3. वर्तमान पता (Current Address)]
+• मकान संख्या ${currHouseNo}, ${currStreet}, ${currColony}, ${currCity}, ${currDistrict}, ${currState}, ${currCountry} - ${currPinCode}
+• पुलिस स्टेशन: ${currPoliceStation}
 
-प्रशासक हस्ताक्षर: नौशाद अहमद (RWA अध्यक्ष)
-सत्यापन कोड: ${authCode}
-सत्यापित समय: ${timestamp}
+[4. पिछला पता (Previous Address)]
+• मकान संख्या ${prevHouseNo}, ${prevStreet}, ${prevColony}, ${prevCity}, ${prevDistrict}, ${prevState}, ${prevCountry} - ${prevPinCode}
+• पुलिस स्टेशन: ${prevPoliceStation}
+• रहने की अवधि: ${prevStayFrom} से ${prevStayTo}
+
+[5. स्थायी पता (Permanent Address)]
+• मकान संख्या ${permHouseNo}, ${permStreet}, ${permColony}, ${permCity}, ${permDistrict}, ${permState}, ${permCountry} - ${permPinCode}
+• पुलिस स्टेशन: ${permPoliceStation}
+
+[6. किरायेदार के परिवार के सदस्यों की जानकारी]
+${tenantFamilyMembersList.length > 0 ? tenantFamilyMembersList.map((m, i) => `  ${i+1}. नाम: ${m.name || 'N/A'} | संबंध: ${m.relation || 'N/A'} | फ़ोन: ${m.phone || 'N/A'}`).join('\n') : '  कोई परिवार सदस्य पंजीकृत नहीं है।'}
+
+[7. शपथ एवं घोषणा (Undertaking)]
+• आपराधिक रिकॉर्ड: ${tHasCriminalRecord}
+${tHasCriminalRecord === 'हाँ' ? `• आपराधिक विवरण: ${tCriminalDetails}` : ''}
+• सभी जानकारी सही होने की पुष्टि: ${tInfoCorrect}
+
 ------------------------------------------------------------------------
 (C) 2026 माँ कौशल्या अपार्टमेंट वेलफेयर एसोसिएशन, रायपुर।
 ========================================================================`;
-      downloadName = `police_verification_flat_${tenantFlat || 'unknown'}.txt`;
+      downloadName = `police_verification_request_flat_${llHouseNo || 'unknown'}.txt`;
 
     } else if (activeFormDoc.id === 3) {
       // NOC Application
@@ -605,6 +734,539 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
     setSuccessMsg("डिजिटल घोषणा-पत्र सफलतापूर्वक उत्पन्न और डाउनलोड हो गया है!");
     setActiveFormDoc(null);
     setTimeout(() => setSuccessMsg(''), 3000);
+  };
+
+  // High-fidelity A4 Printable Form Generator for Tenant Verification
+  const handlePrintTenantVerificationForm = (isBlank) => {
+    const printWindow = window.open('', '_blank', 'width=900,height=950,scrollbars=yes');
+    if (!printWindow) {
+      alert("पॉपअप अवरोधक (Popup Blocker) सक्रिय है! कृपया इसे इस वेबसाइट के लिए सक्षम करें ताकि प्रिंट प्रपत्र खुल सके।");
+      return;
+    }
+
+    const dateStr = new Date().toLocaleDateString('hi-IN');
+    const authCode = `RWA-POL-${Math.floor(100000 + Math.random() * 900000)}`;
+
+    // Prepare family rows
+    let familyRowsHtml = '';
+    const safeFamilyList = isBlank ? Array(4).fill({ name: '', relation: '', phone: '' }) : tenantFamilyMembersList;
+    if (safeFamilyList.length > 0) {
+      safeFamilyList.forEach((member, index) => {
+        familyRowsHtml += `
+          <tr>
+            <td style="border: 1px solid #111; padding: 6px; text-align: center; font-size: 10px;">${index + 1}</td>
+            <td style="border: 1px solid #111; padding: 6px; font-weight: bold; font-size: 10.5px;">${member.name || ''}</td>
+            <td style="border: 1px solid #111; padding: 6px; font-size: 10px;">${member.relation || ''}</td>
+            <td style="border: 1px solid #111; padding: 6px; text-align: center; font-size: 10px;">${member.phone || ''}</td>
+          </tr>
+        `;
+      });
+    } else {
+      familyRowsHtml = `
+        <tr>
+          <td colspan="4" style="border: 1px solid #111; padding: 12px; text-align: center; color: #555; font-style: italic; font-size: 10px;">
+            कोई पारिवारिक सदस्य पंजीकृत नहीं है (No family members registered)
+          </td>
+        </tr>
+      `;
+    }
+
+    const valOrDot = (val) => isBlank ? '..................................................' : (val || 'N/A');
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>किरायेदार पुलिस सत्यापन अनुरोध फॉर्म - माँ कौशल्या अपार्टमेंट</title>
+        <meta charset="utf-8" />
+        <style>
+          @page {
+            size: A4;
+            margin: 15mm;
+          }
+          body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #000;
+            background-color: #fff;
+            margin: 0;
+            padding: 0;
+            font-size: 11px;
+            line-height: 1.4;
+          }
+          .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+          }
+          .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            border-bottom: 2px double #000;
+          }
+          .header-logo-cell {
+            width: 60px;
+            vertical-align: middle;
+            text-align: center;
+          }
+          .header-text-cell {
+            vertical-align: middle;
+            text-align: center;
+            padding-right: 60px;
+          }
+          .rwa-title-hi {
+            font-size: 18px;
+            font-weight: 900;
+            margin: 0;
+            color: #111;
+            letter-spacing: 0.5px;
+          }
+          .rwa-title-en {
+            font-size: 11px;
+            font-weight: bold;
+            margin: 2px 0 0 0;
+            color: #333;
+            letter-spacing: 1px;
+          }
+          .rwa-address {
+            font-size: 8.5px;
+            color: #555;
+            margin: 2px 0 0 0;
+          }
+          .form-title-container {
+            text-align: center;
+            margin: 5px 0 10px 0;
+          }
+          .form-title-hi {
+            font-size: 12px;
+            font-weight: bold;
+            background-color: #eee;
+            padding: 3px 10px;
+            border: 1px solid #222;
+            display: inline-block;
+          }
+          .photo-box {
+            width: 100px;
+            height: 120px;
+            border: 1.5px dashed #333;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 8.5px;
+            color: #555;
+            background-color: #fafafa;
+          }
+          .section-heading {
+            font-size: 10px;
+            font-weight: bold;
+            background-color: #f2f2f2;
+            padding: 3px 8px;
+            border: 1px solid #111;
+            margin-top: 8px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+          }
+          .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 6px;
+          }
+          .data-table th, .data-table td {
+            border: 1px solid #111;
+            padding: 4px 6px;
+            text-align: left;
+            vertical-align: middle;
+          }
+          .data-table th {
+            background-color: #fafafa;
+            font-weight: bold;
+            width: 25%;
+            font-size: 9px;
+          }
+          .data-table td {
+            width: 25%;
+          }
+          .signatures-table {
+            width: 100%;
+            margin-top: 25px;
+            border-collapse: collapse;
+          }
+          .signatures-table td {
+            width: 50%;
+            text-align: center;
+            vertical-align: bottom;
+          }
+          .sig-line {
+            width: 180px;
+            border-bottom: 1px solid #000;
+            margin: 0 auto 5px auto;
+          }
+          .sig-label {
+            font-weight: bold;
+            font-size: 9.5px;
+          }
+          .print-button-container {
+            margin: 15px 0;
+            text-align: center;
+          }
+          .print-btn {
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+          }
+          @media print {
+            .print-button-container {
+              display: none;
+            }
+            body {
+              margin: 0;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="print-button-container">
+          <button class="print-btn" onclick="window.print()">प्रिंट करें / PDF सहेजें (Print / Save PDF)</button>
+        </div>
+
+        <div class="container">
+          <table class="header-table">
+            <tr>
+              <td class="header-logo-cell">
+                <span style="font-size: 28px;">🏢</span>
+              </td>
+              <td class="header-text-cell">
+                <h1 class="rwa-title-hi">माँ कौशल्या अपार्टमेंट (RWA) रायपुर</h1>
+                <h2 class="rwa-title-en">MAA KAUSHALYA APARTMENT WELFARE ASSOCIATION</h2>
+                <p class="rwa-address">कौशल्या माता विहार, सेक्टर 1, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015</p>
+              </td>
+            </tr>
+          </table>
+
+          <div class="form-title-container">
+            <div class="form-title-hi">किरायेदार / पी.जी.सत्यापन अनुरोध फॉर्म</div>
+            <div style="font-size: 8.5px; color: #444; font-weight: bold; margin-top: 2px;">TENANT / PG VERIFICATION REQUEST FORM</div>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px;">
+            <tr>
+              <td style="vertical-align: top;">
+                <table style="font-size: 9px; line-height: 1.5;">
+                  <tr>
+                    <td style="font-weight: bold; width: 140px;">संदर्भ नंबर (Ref ID):</td>
+                    <td style="font-family: monospace;">${authCode}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight: bold;">दिनांक (Date):</td>
+                    <td>${dateStr}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight: bold;">पुलिस थाना (Police Station):</td>
+                    <td>${valOrDot(isBlank ? '' : currPoliceStation)}</td>
+                  </tr>
+                </table>
+              </td>
+              <td style="width: 100px; text-align: right; vertical-align: top;">
+                <div class="photo-box">
+                  <div style="padding-top: 40px; font-weight: bold; line-height: 1.2;">पासपोर्ट फोटो<br/><span style="font-size: 7px; font-weight: normal; color: #777;">Affix Photo</span></div>
+                </div>
+              </td>
+            </tr>
+          </table>
+
+          <!-- 1. LANDLORD DETAILS -->
+          <div class="section-heading">मकान मालिक की सूचना (Landlord Information)</div>
+          <table class="data-table">
+            <tr>
+              <th>प्रथम नाम (First Name)*</th>
+              <td>${valOrDot(llFirstName)}</td>
+              <th>मध्य नाम (Middle Name)</th>
+              <td>${valOrDot(llMiddleName)}</td>
+            </tr>
+            <tr>
+              <th>अंतिम नाम (Last Name)</th>
+              <td>${valOrDot(llLastName)}</td>
+              <th>पिता / पति का नाम</th>
+              <td>${valOrDot(llFatherName)}</td>
+            </tr>
+            <tr>
+              <th>ईमेल आईडी (Email ID)</th>
+              <td>${valOrDot(llEmail)}</td>
+              <th>मोबाइल नम्बर (Mobile No)</th>
+              <td>${valOrDot(llPhone)}</td>
+            </tr>
+            <tr>
+              <th>व्यवसाय (Occupation)</th>
+              <td>${valOrDot(llOccupation)}</td>
+              <th>लैण्ड लाइन नंबर</th>
+              <td>${valOrDot(llLandline)}</td>
+            </tr>
+          </table>
+
+          <table class="data-table">
+            <tr>
+              <th>मकान संख्या (Flat/House No)</th>
+              <td>${valOrDot(llHouseNo)}</td>
+              <th>गली का नाम (Street)</th>
+              <td>${valOrDot(llStreet)}</td>
+            </tr>
+            <tr>
+              <th>कालोनी / क्षेत्र (Colony)</th>
+              <td>${valOrDot(llColony)}</td>
+              <th>ग्राम / नगर / शहर*</th>
+              <td>${valOrDot(llCity)}</td>
+            </tr>
+            <tr>
+              <th>तहसील / ब्लॉक / मंडल</th>
+              <td>${valOrDot(llTehsil)}</td>
+              <th>जिला (District)</th>
+              <td>${valOrDot(llDistrict)}</td>
+            </tr>
+            <tr>
+              <th>राज्य (State)</th>
+              <td>${valOrDot(llState)}</td>
+              <th>देश* (Country)</th>
+              <td>${valOrDot(llCountry)}</td>
+            </tr>
+            <tr>
+              <th>पुलिस स्टेशन (PS)</th>
+              <td>${valOrDot(llPoliceStation)}</td>
+              <th>पिन कोड (Pin Code)</th>
+              <td>${valOrDot(llPinCode)}</td>
+            </tr>
+          </table>
+
+          <!-- 2. TENANT DETAILS -->
+          <div class="section-heading">किरायेदार की सूचना (Tenant Information)</div>
+          <table class="data-table">
+            <tr>
+              <th>प्रथम नाम (First Name)</th>
+              <td>${valOrDot(tFirstName)}</td>
+              <th>मध्य नाम (Middle Name)</th>
+              <td>${valOrDot(tMiddleName)}</td>
+            </tr>
+            <tr>
+              <th>अंतिम नाम (Last Name)</th>
+              <td>${valOrDot(tLastName)}</td>
+              <th>पिता / पति का नाम</th>
+              <td>${valOrDot(tFatherName)}</td>
+            </tr>
+            <tr>
+              <th>मोबाइल नंबर (Mobile No)</th>
+              <td>${valOrDot(tPhone)}</td>
+              <th>रिश्तेदार का नाम</th>
+              <td>${valOrDot(tRelativeName)}</td>
+            </tr>
+            <tr>
+              <th>लिंग (Gender)</th>
+              <td>${valOrDot(isBlank ? '' : tGender)}</td>
+              <th>संबंध के प्रकार</th>
+              <td>${valOrDot(isBlank ? '' : tRelationType)}</td>
+            </tr>
+            <tr>
+              <th>व्यवसाय (Occupation)</th>
+              <td>${valOrDot(tOccupation)}</td>
+              <th>किरायेदारी का उद्देश्य</th>
+              <td>${valOrDot(isBlank ? '' : tPurpose)}</td>
+            </tr>
+            <tr>
+              <th>जन्म तिथी (DOB)</th>
+              <td>${valOrDot(tDOB)}</td>
+              <th>लैण्ड लाईन नम्बर</th>
+              <td>${valOrDot(tLandline)}</td>
+            </tr>
+          </table>
+
+          <!-- 3. CURRENT ADDRESS -->
+          <div class="section-heading">वर्तमान पता (Current Address)</div>
+          <table class="data-table">
+            <tr>
+              <th>मकान संख्या</th>
+              <td>${valOrDot(currHouseNo)}</td>
+              <th>गली का नाम</th>
+              <td>${valOrDot(currStreet)}</td>
+            </tr>
+            <tr>
+              <th>कालोनी / क्षेत्र</th>
+              <td>${valOrDot(currColony)}</td>
+              <th>ग्राम / नगर / शहर</th>
+              <td>${valOrDot(currCity)}</td>
+            </tr>
+            <tr>
+              <th>तहसील / ब्लॉक / मंडल</th>
+              <td>${valOrDot(currTehsil)}</td>
+              <th>जिला</th>
+              <td>${valOrDot(currDistrict)}</td>
+            </tr>
+            <tr>
+              <th>राज्य</th>
+              <td>${valOrDot(currState)}</td>
+              <th>देश</th>
+              <td>${valOrDot(currCountry)}</td>
+            </tr>
+            <tr>
+              <th>पुलिस स्टेशन</th>
+              <td>${valOrDot(currPoliceStation)}</td>
+              <th>पिन कोड</th>
+              <td>${valOrDot(currPinCode)}</td>
+            </tr>
+          </table>
+
+          <div style="page-break-before: always;"></div>
+
+          <table class="header-table">
+            <tr>
+              <td class="header-logo-cell">
+                <span style="font-size: 20px;">🏢</span>
+              </td>
+              <td class="header-text-cell" style="padding-right: 20px;">
+                <h1 style="font-size: 14px; margin:0;">माँ कौशल्या अपार्टमेंट (RWA) रायपुर</h1>
+                <p style="font-size: 7.5px; color:#555; margin:0;">किरायेदार पुलिस सत्यापन अनुरोध फॉर्म - भाग 2</p>
+              </td>
+            </tr>
+          </table>
+
+          <!-- 4. PREVIOUS ADDRESS -->
+          <div class="section-heading">पिछला पता (Previous Address)</div>
+          <table class="data-table">
+            <tr>
+              <th>मकान संख्या</th>
+              <td>${valOrDot(prevHouseNo)}</td>
+              <th>गली का नाम</th>
+              <td>${valOrDot(prevStreet)}</td>
+            </tr>
+            <tr>
+              <th>कालोनी / क्षेत्र</th>
+              <td>${valOrDot(prevColony)}</td>
+              <th>ग्राम / नगर / शहर</th>
+              <td>${valOrDot(prevCity)}</td>
+            </tr>
+            <tr>
+              <th>तहसील / ब्लॉक / मंडल</th>
+              <td>${valOrDot(prevTehsil)}</td>
+              <th>जिला</th>
+              <td>${valOrDot(prevDistrict)}</td>
+            </tr>
+            <tr>
+              <th>राज्य</th>
+              <td>${valOrDot(prevState)}</td>
+              <th>देश</th>
+              <td>${valOrDot(prevCountry)}</td>
+            </tr>
+            <tr>
+              <th>police station (थाना)</th>
+              <td>${valOrDot(prevPoliceStation)}</td>
+              <th>पिन कोड</th>
+              <td>${valOrDot(prevPinCode)}</td>
+            </tr>
+            <tr>
+              <th>रहने की दिनांक (From)</th>
+              <td>${valOrDot(prevStayFrom)}</td>
+              <th>छोड़ने की दिनांक (To)</th>
+              <td>${valOrDot(prevStayTo)}</td>
+            </tr>
+          </table>
+
+          <!-- 5. PERMANENT ADDRESS -->
+          <div class="section-heading">स्थायी पता (Permanent Address)</div>
+          <table class="data-table">
+            <tr>
+              <th>मकान संख्या</th>
+              <td>${valOrDot(permHouseNo)}</td>
+              <th>गली का नाम</th>
+              <td>${valOrDot(permStreet)}</td>
+            </tr>
+            <tr>
+              <th>कालोनी / क्षेत्र</th>
+              <td>${valOrDot(permColony)}</td>
+              <th>ग्राम / नगर / शहर</th>
+              <td>${valOrDot(permCity)}</td>
+            </tr>
+            <tr>
+              <th>तहसील / ब्लॉक / मंडल</th>
+              <td>${valOrDot(permTehsil)}</td>
+              <th>जिला</th>
+              <td>${valOrDot(permDistrict)}</td>
+            </tr>
+            <tr>
+              <th>राज्य</th>
+              <td>${valOrDot(permState)}</td>
+              <th>देश</th>
+              <td>${valOrDot(permCountry)}</td>
+            </tr>
+            <tr>
+              <th>पुलिस स्टेशन</th>
+              <td>${valOrDot(permPoliceStation)}</td>
+              <th>पिन कोड</th>
+              <td>${valOrDot(permPinCode)}</td>
+            </tr>
+          </table>
+
+          <!-- 6. FAMILY DETAILS -->
+          <div class="section-heading">किरायेदार के परिवार के सदस्यों की जानकारी</div>
+          <table class="data-table" style="text-align: center;">
+            <thead>
+              <tr style="background-color: #fafafa; font-weight: bold;">
+                <th style="width: 10%; text-align: center;">क्र. (S.N.)</th>
+                <th style="width: 40%; text-align: left;">सदस्य का पूरा नाम (Full Name)</th>
+                <th style="width: 30%; text-align: left;">किरायेदार के साथ संबंध</th>
+                <th style="width: 20%; text-align: center;">मोबाईल नंबर (Mobile)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${familyRowsHtml}
+            </tbody>
+          </table>
+
+          <div style="font-size: 8px; font-weight: bold; margin: 5px 0;">
+            नोट :- किरायेदार के पहचान / पते का दस्तावेज (आधार कार्ड / ड्राइविंग लाईसेंस / पेन कार्ड / एम्प्लाई कार्ड इत्यादि) साथ में संलग्न करें।
+          </div>
+
+          <!-- 7. SHAPATH / DECLARATION -->
+          <div class="section-heading">शपथ (Undertaking / Declaration)</div>
+          <div style="border: 1px solid #111; padding: 6px; font-size: 9px; line-height: 1.5; text-align: justify; background-color: #fafafa;">
+            <strong>प्रश्न:</strong> क्या आपका कोई आपराधिक रिकॉर्ड है या देश के किसी भी भाग में आप या आपके परिवार के विरुद्ध कहीं कोई आपराधिक मामला चल रहा है? यदि हाँ विवरण प्रदान करे।<br/>
+            <strong>उत्तर (हाँ / नहीं):</strong> <span style="font-weight: bold; border-bottom: 1px solid #000; padding: 0 10px;">${valOrDot(tHasCriminalRecord)}</span><br/>
+            ${(!isBlank && tHasCriminalRecord === 'हाँ' && tCriminalDetails) ? `<strong>विवरण:</strong> ${tCriminalDetails}<br/>` : ''}
+            <br/>
+            मैं एतदद्वारा घोषणा करता/करती हूँ कि उपरोक्त सभी उपलब्ध कराई गई जानकारी पूरी तरह से सही है (हाँ / नहीं): 
+            <span style="font-weight: bold; border-bottom: 1px solid #000; padding: 0 10px;">${valOrDot(tInfoCorrect)}</span>
+          </div>
+
+          <!-- SIGNATURES -->
+          <table class="signatures-table">
+            <tr>
+              <td>
+                <div class="sig-line"></div>
+                <div class="sig-label">हस्ताक्षर मकान मालिक</div>
+                <div style="font-size: 7.5px; color:#555; margin-top:2px;">Signature of Landlord</div>
+              </td>
+              <td>
+                <div class="sig-line"></div>
+                <div class="sig-label">हस्ताक्षर किरायेदार</div>
+                <div style="font-size: 7.5px; color:#555; margin-top:2px;">Signature of Tenant</div>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+            }, 350);
+          };
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
   };
 
   // High-fidelity A4 Printable Form Generator
@@ -1333,7 +1995,7 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
       {/* ─── MODAL: PRE-FILL INTERACTIVE FORM ─── */}
       {activeFormDoc && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className={`bg-slate-900 border border-white/10 rounded-3xl ${activeFormDoc.isUniversalForm ? 'max-w-4xl max-h-[92vh] overflow-y-auto' : 'max-w-md'} w-full p-6 text-left shadow-2xl relative`}>
+          <div className={`bg-slate-900 border border-white/10 rounded-3xl ${(activeFormDoc.isUniversalForm || activeFormDoc.id === 2) ? 'max-w-4xl max-h-[92vh] overflow-y-auto' : 'max-w-md'} w-full p-6 text-left shadow-2xl relative`}>
             <button 
               onClick={() => setActiveFormDoc(null)} 
               className="absolute top-4 right-4 text-slate-500 hover:text-white"
@@ -1353,29 +2015,465 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
               
               {/* Conditional Form 1: Tenant Verification */}
               {activeFormDoc.id === 2 && (
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-col gap-1">
-                    <label className="font-bold text-slate-400 uppercase text-[10px]">किरायेदार का पूरा नाम (Tenant Name)</label>
-                    <input type="text" required placeholder="जैसे: जॉन डो" value={tenantName} onChange={(e) => setTenantName(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors" />
+                <div className="flex flex-col gap-4 text-xs text-slate-300">
+                  {/* Tab Navigation */}
+                  <div className="flex flex-wrap gap-1.5 border-b border-white/10 pb-3 mb-2">
+                    {[
+                      { id: 'landlord', label: '🏠 मकान मालिक (Landlord)' },
+                      { id: 'tenant', label: '👤 किरायेदार (Tenant)' },
+                      { id: 'addresses', label: '📍 पते (Addresses)' },
+                      { id: 'family', label: '👥 परिवार (Family)' },
+                      { id: 'undertaking', label: '⚖️ शपथ (Declaration)' }
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setTenantFormTab(tab.id)}
+                        className={`px-3 py-1.5 rounded-lg text-[9.5px] font-black uppercase tracking-wider transition-all border ${
+                          tenantFormTab === tab.id
+                            ? 'bg-gradient-to-r from-sky-600 to-indigo-600 border-transparent text-white shadow-premium'
+                            : 'bg-slate-950/60 border-white/5 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="font-bold text-slate-400 uppercase text-[10px]">संपर्क मोबाइल नंबर (Tenant Phone)</label>
-                    <input type="tel" required placeholder="+91 9988776655" value={tenantPhone} onChange={(e) => setTenantPhone(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex flex-col gap-1">
-                      <label className="font-bold text-slate-400 uppercase text-[10px]">फ्लैट संख्या (Allocated Flat)</label>
-                      <input type="text" required placeholder="जैसे: B-304" value={tenantFlat} onChange={(e) => setTenantFlat(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors" />
+
+                  {/* Tab 1: Landlord */}
+                  {tenantFormTab === 'landlord' && (
+                    <div className="flex flex-col gap-3.5 bg-slate-950/20 p-4 rounded-2xl border border-white/5 animate-fadeIn">
+                      <h3 className="font-extrabold text-[10px] uppercase text-brand-300 tracking-wider flex items-center gap-1.5 border-b border-white/5 pb-1.5">
+                        🏠 मकान मालिक की सूचना (Landlord Information)
+                      </h3>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">प्रथम नाम *</label>
+                          <input type="text" required placeholder="जैसे: नौशाद" value={llFirstName} onChange={(e) => setLlFirstName(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">मध्य नाम</label>
+                          <input type="text" placeholder="मध्य नाम" value={llMiddleName} onChange={(e) => setLlMiddleName(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">अंतिम नाम</label>
+                          <input type="text" placeholder="जैसे: अहमद" value={llLastName} onChange={(e) => setLlLastName(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">पिता / पति का नाम</label>
+                          <input type="text" placeholder="पिता या पति का नाम" value={llFatherName} onChange={(e) => setLlFatherName(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">व्यवसाय (Occupation)</label>
+                          <input type="text" placeholder="व्यवसाय या नौकरी" value={llOccupation} onChange={(e) => setLlOccupation(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">ईमेल (Email ID)</label>
+                          <input type="email" placeholder="email@domain.com" value={llEmail} onChange={(e) => setLlEmail(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">मोबाइल नम्बर *</label>
+                          <input type="tel" required placeholder="मोबाइल नंबर" value={llPhone} onChange={(e) => setLlPhone(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">लैण्ड लाइन नंबर</label>
+                          <input type="text" placeholder="लैंडलाइन नंबर" value={llLandline} onChange={(e) => setLlLandline(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                      </div>
+
+                      <h4 className="font-bold text-[9px] uppercase text-brand-300 tracking-wider mt-2 flex items-center gap-1">📍 मकान मालिक का पता (Landlord Address)</h4>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">मकान संख्या *</label>
+                          <input type="text" required placeholder="जैसे: Flat A-101" value={llHouseNo} onChange={(e) => setLlHouseNo(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">गली का नाम</label>
+                          <input type="text" placeholder="गली का नाम" value={llStreet} onChange={(e) => setLlStreet(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">कालोनी / लोकैलिटी</label>
+                          <input type="text" placeholder="कालोनी या क्षेत्र" value={llColony} onChange={(e) => setLlColony(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">ग्राम / नगर / शहर *</label>
+                          <input type="text" required placeholder="जैसे: रायपुर" value={llCity} onChange={(e) => setLlCity(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">तहसील / ब्लॉक</label>
+                          <input type="text" placeholder="तहसील" value={llTehsil} onChange={(e) => setLlTehsil(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">जिला *</label>
+                          <input type="text" required placeholder="रायपुर" value={llDistrict} onChange={(e) => setLlDistrict(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2">
+                        <div className="flex flex-col gap-1 col-span-2">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">राज्य *</label>
+                          <input type="text" required placeholder="छत्तीसगढ़" value={llState} onChange={(e) => setLlState(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">देश *</label>
+                          <input type="text" required placeholder="भारत" value={llCountry} onChange={(e) => setLlCountry(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">पिन कोड *</label>
+                          <input type="text" required placeholder="492015" value={llPinCode} onChange={(e) => setLlPinCode(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="font-bold text-slate-400 uppercase text-[9px]">संबंधित पुलिस स्टेशन (Police Station)</label>
+                        <input type="text" placeholder="उदा. पचपेड़ी नाका पुलिस थाना" value={llPoliceStation} onChange={(e) => setLlPoliceStation(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="font-bold text-slate-400 uppercase text-[10px]">व्यवसाय / नौकरी (Occupation)</label>
-                      <input type="text" required placeholder="उदा. सॉफ्टवेयर डेवलपर" value={tenantOccupation} onChange={(e) => setTenantOccupation(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors" />
+                  )}
+
+                  {/* Tab 2: Tenant */}
+                  {tenantFormTab === 'tenant' && (
+                    <div className="flex flex-col gap-3.5 bg-slate-950/20 p-4 rounded-2xl border border-white/5 animate-fadeIn">
+                      <h3 className="font-extrabold text-[10px] uppercase text-sky-300 tracking-wider flex items-center gap-1.5 border-b border-white/5 pb-1.5">
+                        👤 किरायेदार की सूचना (Tenant Information)
+                      </h3>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">प्रथम नाम *</label>
+                          <input type="text" required placeholder="प्रथम नाम" value={tFirstName} onChange={(e) => setTFirstName(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">मध्य नाम</label>
+                          <input type="text" placeholder="मध्य नाम" value={tMiddleName} onChange={(e) => setTMiddleName(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">अंतिम नाम</label>
+                          <input type="text" placeholder="अंतिम नाम" value={tLastName} onChange={(e) => setTLastName(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">पिता / पति का नाम *</label>
+                          <input type="text" required placeholder="पिता या पति का नाम" value={tFatherName} onChange={(e) => setTFatherName(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">रिश्तेदार का नाम</label>
+                          <input type="text" placeholder="रिश्तेदार का नाम" value={tRelativeName} onChange={(e) => setTRelativeName(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">लिंग (Gender) *</label>
+                          <select value={tGender} onChange={(e) => setTGender(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2.5 text-slate-200 focus:border-brand-500 outline-none transition-colors">
+                            <option value="Male">Male (पुरुष)</option>
+                            <option value="Female">Female (महिला)</option>
+                            <option value="Other">Other (अन्य)</option>
+                          </select>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">संबंध के प्रकार</label>
+                          <select value={tRelationType} onChange={(e) => setTRelationType(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2.5 text-slate-200 focus:border-brand-500 outline-none transition-colors">
+                            <option value="पिता (Father)">पिता (Father)</option>
+                            <option value="माता (Mother)">माता (Mother)</option>
+                            <option value="पति (Husband)">पति (Husband)</option>
+                            <option value="पत्नी (Wife)">पत्नी (Wife)</option>
+                            <option value="अन्य (Other)">अन्य (Other)</option>
+                          </select>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">जन्म तिथी (DOB) *</label>
+                          <input type="date" required value={tDOB} onChange={(e) => setTDOB(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">व्यवसाय (Occupation)</label>
+                          <input type="text" placeholder="नौकरी या व्यवसाय" value={tOccupation} onChange={(e) => setTOccupation(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">किरायेदारी का उद्देश्य</label>
+                          <select value={tPurpose} onChange={(e) => setTPurpose(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2.5 text-slate-200 focus:border-brand-500 outline-none transition-colors">
+                            <option value="निवास (Residence)">निवास (Residence)</option>
+                            <option value="व्यवसाय (Commercial)">व्यवसाय (Commercial)</option>
+                          </select>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">मोबाइल नंबर *</label>
+                          <input type="tel" required placeholder="मोबाइल नंबर" value={tPhone} onChange={(e) => setTPhone(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="font-bold text-slate-400 uppercase text-[9px]">लैण्ड लाईन नम्बर</label>
+                        <input type="text" placeholder="लैंडलाइन" value={tLandline} onChange={(e) => setTLandline(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="font-bold text-slate-400 uppercase text-[10px]">स्थायी घरेलू पता (Permanent Address)</label>
-                    <textarea rows="2" required placeholder="किरायेदार का स्थायी पता लिखें..." value={tenantAddress} onChange={(e) => setTenantAddress(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors resize-none" />
-                  </div>
+                  )}
+
+                  {/* Tab 3: Addresses */}
+                  {tenantFormTab === 'addresses' && (
+                    <div className="flex flex-col gap-4 text-left animate-fadeIn">
+                      {/* Current Address */}
+                      <div className="flex flex-col gap-3.5 bg-slate-950/20 p-4 rounded-2xl border border-white/5">
+                        <h3 className="font-extrabold text-[10px] uppercase text-emerald-300 tracking-wider flex items-center gap-1.5 border-b border-white/5 pb-1.5">
+                          📍 वर्तमान पता (Current Address)
+                        </h3>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">मकान संख्या *</label>
+                            <input type="text" required placeholder="जैसे: Flat B-304" value={currHouseNo} onChange={(e) => setCurrHouseNo(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">गली का नाम</label>
+                            <input type="text" placeholder="गली" value={currStreet} onChange={(e) => setCurrStreet(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">कालोनी / क्षेत्र</label>
+                            <input type="text" placeholder="कालोनी" value={currColony} onChange={(e) => setCurrColony(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">नगर / शहर *</label>
+                            <input type="text" required placeholder="जैसे: रायपुर" value={currCity} onChange={(e) => setCurrCity(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">तहसील / ब्लॉक</label>
+                            <input type="text" placeholder="तहसील" value={currTehsil} onChange={(e) => setCurrTehsil(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">जिला *</label>
+                            <input type="text" required placeholder="रायपुर" value={currDistrict} onChange={(e) => setCurrDistrict(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2">
+                          <div className="flex flex-col gap-1 col-span-2">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">राज्य *</label>
+                            <input type="text" required placeholder="छत्तीसगढ़" value={currState} onChange={(e) => setCurrState(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">देश *</label>
+                            <input type="text" required placeholder="भारत" value={currCountry} onChange={(e) => setCurrCountry(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">पिन कोड *</label>
+                            <input type="text" required placeholder="492015" value={currPinCode} onChange={(e) => setCurrPinCode(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">पुलिस स्टेशन (PS)</label>
+                            <input type="text" placeholder="उदा. पचपेड़ी नाका पुलिस थाना" value={currPoliceStation} onChange={(e) => setCurrPoliceStation(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Previous Address */}
+                      <div className="flex flex-col gap-3.5 bg-slate-950/20 p-4 rounded-2xl border border-white/5">
+                        <h3 className="font-extrabold text-[10px] uppercase text-amber-300 tracking-wider flex items-center gap-1.5 border-b border-white/5 pb-1.5">
+                          ⏪ पिछला पता (Previous Address)
+                        </h3>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">मकान संख्या</label>
+                            <input type="text" placeholder="मकान संख्या" value={prevHouseNo} onChange={(e) => setPrevHouseNo(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">गली का नाम</label>
+                            <input type="text" placeholder="गली" value={prevStreet} onChange={(e) => setPrevStreet(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">कालोनी / क्षेत्र</label>
+                            <input type="text" placeholder="कालोनी" value={prevColony} onChange={(e) => setPrevColony(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">नगर / शहर</label>
+                            <input type="text" placeholder="नगर/शहर" value={prevCity} onChange={(e) => setPrevCity(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">तहसील / ब्लॉक</label>
+                            <input type="text" placeholder="तहसील" value={prevTehsil} onChange={(e) => setPrevTehsil(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">जिला</label>
+                            <input type="text" placeholder="जिला" value={prevDistrict} onChange={(e) => setPrevDistrict(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2">
+                          <div className="flex flex-col gap-1 col-span-2">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">राज्य</label>
+                            <input type="text" placeholder="राज्य" value={prevState} onChange={(e) => setPrevState(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">देश</label>
+                            <input type="text" placeholder="देश" value={prevCountry} onChange={(e) => setPrevCountry(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">पिन कोड</label>
+                            <input type="text" placeholder="पिन कोड" value={prevPinCode} onChange={(e) => setPrevPinCode(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">पुलिस स्टेशन</label>
+                            <input type="text" placeholder="थाना" value={prevPoliceStation} onChange={(e) => setPrevPoliceStation(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">रहने की दिनांक (Stay From)</label>
+                            <input type="date" value={prevStayFrom} onChange={(e) => setPrevStayFrom(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">छोड़ने की दिनांक (Stay To)</label>
+                            <input type="date" value={prevStayTo} onChange={(e) => setPrevStayTo(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Permanent Address */}
+                      <div className="flex flex-col gap-3.5 bg-slate-950/20 p-4 rounded-2xl border border-white/5">
+                        <h3 className="font-extrabold text-[10px] uppercase text-violet-300 tracking-wider flex items-center gap-1.5 border-b border-white/5 pb-1.5">
+                          🏡 स्थायी पता (Permanent Address)
+                        </h3>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">मकान संख्या</label>
+                            <input type="text" placeholder="मकान संख्या" value={permHouseNo} onChange={(e) => setPermHouseNo(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">गली का नाम</label>
+                            <input type="text" placeholder="गली" value={permStreet} onChange={(e) => setPermStreet(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">कालोनी / क्षेत्र</label>
+                            <input type="text" placeholder="कालोनी" value={permColony} onChange={(e) => setPermColony(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">नगर / शहर</label>
+                            <input type="text" placeholder="नगर/शहर" value={permCity} onChange={(e) => setPermCity(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">तहसील / ब्लॉक</label>
+                            <input type="text" placeholder="तहसील" value={permTehsil} onChange={(e) => setPermTehsil(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">जिला</label>
+                            <input type="text" placeholder="जिला" value={permDistrict} onChange={(e) => setPermDistrict(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2">
+                          <div className="flex flex-col gap-1 col-span-2">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">राज्य</label>
+                            <input type="text" placeholder="राज्य" value={permState} onChange={(e) => setPermState(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">देश</label>
+                            <input type="text" placeholder="देश" value={permCountry} onChange={(e) => setPermCountry(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="font-bold text-slate-400 uppercase text-[9px]">पिन कोड</label>
+                            <input type="text" placeholder="पिन कोड" value={permPinCode} onChange={(e) => setPermPinCode(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-bold text-slate-400 uppercase text-[9px]">पुलिस स्टेशन (PS)</label>
+                          <input type="text" placeholder="थाना" value={permPoliceStation} onChange={(e) => setPermPoliceStation(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tab 4: Family */}
+                  {tenantFormTab === 'family' && (
+                    <div className="flex flex-col gap-2.5 p-4 bg-slate-950/20 border border-white/5 rounded-2xl text-left animate-fadeIn">
+                      <div className="flex items-center gap-3 justify-between border-b border-white/5 pb-2">
+                        <h3 className="font-extrabold text-[10px] uppercase text-indigo-300 tracking-wider flex items-center gap-1.5">
+                          👨‍👩‍👧‍👦 किरायेदार के परिवार के सदस्यों की जानकारी (Family Members)
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          <label className="font-bold text-slate-400 text-[8px] uppercase">कुल सदस्य संख्या:</label>
+                          <input type="number" min="0" max="10" placeholder="उदा: 3" value={tenantFamilyMembersCount} onChange={handleTenantFamilyMembersChange} className="bg-slate-950 border border-white/10 rounded-lg px-2 py-1 text-slate-200 text-center w-12 text-[9px]" />
+                        </div>
+                      </div>
+
+                      {tenantFamilyMembersList.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          {tenantFamilyMembersList.map((member, idx) => (
+                            <div key={idx} className="p-2.5 bg-slate-950/40 border border-white/5 rounded-xl flex flex-col gap-1.5">
+                              <p className="text-[8px] font-black uppercase text-brand-400 tracking-wider">परिवार सदस्य {idx + 1}</p>
+                              <div className="grid grid-cols-3 gap-2">
+                                <div className="flex flex-col gap-0.5 col-span-1">
+                                  <label className="text-[7.5px] text-slate-400 font-bold uppercase">सदस्य का नाम</label>
+                                  <input type="text" required placeholder="नाम" value={member.name || ''} onChange={(e) => handleTenantFamilyMemberChange(idx, 'name', e.target.value)} className="bg-slate-950 border border-white/10 rounded-lg px-2 py-1 text-slate-200 text-[9px] focus:border-brand-500 outline-none w-full" />
+                                </div>
+                                <div className="flex flex-col gap-0.5">
+                                  <label className="text-[7.5px] text-slate-400 font-bold uppercase">किरायेदार से संबंध</label>
+                                  <input type="text" required placeholder="जैसे: माता/पुत्र" value={member.relation || ''} onChange={(e) => handleTenantFamilyMemberChange(idx, 'relation', e.target.value)} className="bg-slate-950 border border-white/10 rounded-lg px-2 py-1 text-slate-200 text-[9px] focus:border-brand-500 outline-none w-full" />
+                                </div>
+                                <div className="flex flex-col gap-0.5">
+                                  <label className="text-[7.5px] text-slate-400 font-bold uppercase">मोबाईल नंबर</label>
+                                  <input type="tel" required placeholder="मोबाइल नंबर" value={member.phone || ''} onChange={(e) => handleTenantFamilyMemberChange(idx, 'phone', e.target.value)} className="bg-slate-950 border border-white/10 rounded-lg px-2 py-1 text-slate-200 text-[9px] focus:border-brand-500 outline-none w-full" />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-[8.5px] text-slate-500 italic">कोई पारिवारिक सदस्य दर्ज नहीं किया गया है। भौतिक प्रिंटआउट निकालने के बाद पेन से भी भरा जा सकता है।</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Tab 5: Oath/Undertaking */}
+                  {tenantFormTab === 'undertaking' && (
+                    <div className="flex flex-col gap-3.5 bg-slate-950/20 p-4 rounded-2xl border border-white/5 text-left animate-fadeIn">
+                      <h3 className="font-extrabold text-[10px] uppercase text-rose-300 tracking-wider flex items-center gap-1.5 border-b border-white/5 pb-1.5">
+                        ⚖️ शपथ एवं घोषणा (Undertaking / Declaration)
+                      </h3>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-1.5 bg-rose-500/5 border border-rose-500/20 p-3 rounded-xl">
+                          <label className="font-bold text-slate-300 uppercase text-[9.5px]">क्या आपका कोई आपराधिक रिकॉर्ड है या आपके विरुद्ध कोई मामला चल रहा है? *</label>
+                          <div className="flex items-center gap-4 mt-1">
+                            <label className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-200">
+                              <input type="radio" name="criminal-record" checked={tHasCriminalRecord === 'हाँ'} onChange={() => setTHasCriminalRecord('हाँ')} className="accent-rose-500" />
+                              <span>हाँ (Yes)</span>
+                            </label>
+                            <label className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-200">
+                              <input type="radio" name="criminal-record" checked={tHasCriminalRecord === 'नहीं'} onChange={() => { setTHasCriminalRecord('नहीं'); setTCriminalDetails(''); }} className="accent-rose-500" />
+                              <span>नहीं (No)</span>
+                            </label>
+                          </div>
+
+                          {tHasCriminalRecord === 'हाँ' && (
+                            <div className="flex flex-col gap-1 mt-2">
+                              <label className="font-bold text-slate-400 uppercase text-[8px]">आपराधिक मामले का विस्तृत विवरण लिखें (Details):</label>
+                              <textarea rows="2" required placeholder="आपराधिक मामले या एफआईआर का विवरण प्रदान करें..." value={tCriminalDetails} onChange={(e) => setTCriminalDetails(e.target.value)} className="bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-[10px] text-slate-200 focus:border-rose-500 outline-none resize-none" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-1.5 bg-emerald-500/5 border border-emerald-500/20 p-3 rounded-xl mt-1">
+                          <label className="font-bold text-slate-300 uppercase text-[9.5px]">क्या आपके द्वारा प्रदान की गई सभी जानकारियां सत्य हैं? *</label>
+                          <div className="flex items-center gap-4 mt-1">
+                            <label className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-200">
+                              <input type="radio" name="info-correct" checked={tInfoCorrect === 'हाँ'} onChange={() => setTInfoCorrect('हाँ')} className="accent-emerald-500" />
+                              <span>हाँ (Yes)</span>
+                            </label>
+                            <label className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-200">
+                              <input type="radio" name="info-correct" checked={tInfoCorrect === 'नहीं'} onChange={() => setTInfoCorrect('नहीं')} className="accent-emerald-500" />
+                              <span>नहीं (No)</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1786,10 +2884,10 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
               )}
 
               <div className="flex justify-between items-center gap-4 bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-2xl mt-2 text-[10px] text-slate-400">
-                <span>{activeFormDoc.isUniversalForm ? '* प्रिंटआउट सीधे ए4 (A4) फॉर्मेट में सहेजने के लिए तैयार रहेगा।' : '* प्रमाणित डिजिटल प्रपत्र आरडब्ल्यूए डेटाबेस में ऑटो-दर्ज हो जाएगा।'}</span>
+                <span>{(activeFormDoc.isUniversalForm || activeFormDoc.id === 2) ? '* प्रिंटआउट सीधे ए4 (A4) फॉर्मेट में सहेजने के लिए तैयार रहेगा।' : '* प्रमाणित डिजिटल प्रपत्र आरडब्ल्यूए डेटाबेस में ऑटो-दर्ज हो जाएगा।'}</span>
               </div>
 
-              <div className="flex gap-2 justify-end mt-2">
+              <div className="flex gap-2 justify-end mt-2 flex-wrap">
                 <button 
                   type="button" 
                   onClick={() => setActiveFormDoc(null)} 
@@ -1797,7 +2895,30 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
                 >
                   रद्द करें
                 </button>
-                {activeFormDoc.isUniversalForm ? (
+                {activeFormDoc.id === 2 ? (
+                  <>
+                    <button 
+                      type="button" 
+                      onClick={() => handlePrintTenantVerificationForm(true)} 
+                      className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-xl font-bold uppercase transition-all shadow-premium flex items-center gap-1"
+                    >
+                      🖨️ खाली प्रपत्र प्रिंट (Print Blank)
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => handlePrintTenantVerificationForm(false)} 
+                      className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-xl font-bold uppercase transition-all shadow-premium flex items-center gap-1"
+                    >
+                      🖨️ विवरण भरकर प्रिंट (Print Pre-filled)
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-bold uppercase transition-all shadow-premium"
+                    >
+                      📥 डेटा डाउनलोड (.txt)
+                    </button>
+                  </>
+                ) : activeFormDoc.isUniversalForm ? (
                   <>
                     <button 
                       type="button" 

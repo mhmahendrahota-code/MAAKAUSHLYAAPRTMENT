@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { FeatureProtectedRoute } from './components/FeatureProtectedRoute';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 
@@ -50,7 +51,7 @@ const AppLayout = () => {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Home />} />
             <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
+            <Route path="/contact" element={<FeatureProtectedRoute featureKey="contact"><Contact /></FeatureProtectedRoute>} />
             <Route path="/developer" element={<Developer />} />
 
             {/* Resident Protected Portal Routes */}
@@ -66,7 +67,9 @@ const AppLayout = () => {
               path="/maintenance-bills"
               element={
                 <ProtectedRoute allowedRoles={['Resident']}>
-                  <MaintenanceBills />
+                  <FeatureProtectedRoute featureKey="maintenance-bills">
+                    <MaintenanceBills />
+                  </FeatureProtectedRoute>
                 </ProtectedRoute>
               }
             />
@@ -74,7 +77,9 @@ const AppLayout = () => {
               path="/complaints"
               element={
                 <ProtectedRoute allowedRoles={['Resident', 'Admin']}>
-                  <Complaints />
+                  <FeatureProtectedRoute featureKey="complaints">
+                    <Complaints />
+                  </FeatureProtectedRoute>
                 </ProtectedRoute>
               }
             />
@@ -84,7 +89,9 @@ const AppLayout = () => {
               path="/notices"
               element={
                 <ProtectedRoute allowedRoles={['Resident', 'Admin', 'Security']}>
-                  <Notices />
+                  <FeatureProtectedRoute featureKey="notices">
+                    <Notices />
+                  </FeatureProtectedRoute>
                 </ProtectedRoute>
               }
             />
@@ -94,16 +101,18 @@ const AppLayout = () => {
               path="/committee"
               element={
                 <ProtectedRoute allowedRoles={['Resident', 'Admin', 'Security']}>
-                  <Committee />
+                  <FeatureProtectedRoute featureKey="committee">
+                    <Committee />
+                  </FeatureProtectedRoute>
                 </ProtectedRoute>
               }
             />
 
             {/* Shared Gallery Section - readable by all authenticated members and public guests */}
-            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/gallery" element={<FeatureProtectedRoute featureKey="gallery"><Gallery /></FeatureProtectedRoute>} />
 
             {/* Shared Downloads Section - readable by all authenticated members and public guests */}
-            <Route path="/downloads" element={<Downloads />} />
+            <Route path="/downloads" element={<FeatureProtectedRoute featureKey="downloads"><Downloads /></FeatureProtectedRoute>} />
 
             {/* Admin Protected Portal Routes */}
             <Route
@@ -144,7 +153,9 @@ const AppLayout = () => {
               path="/visitor-logs"
               element={
                 <ProtectedRoute allowedRoles={['Security', 'Admin', 'Resident']}>
-                  <VisitorLogs />
+                  <FeatureProtectedRoute featureKey="visitor-logs">
+                    <VisitorLogs />
+                  </FeatureProtectedRoute>
                 </ProtectedRoute>
               }
             />

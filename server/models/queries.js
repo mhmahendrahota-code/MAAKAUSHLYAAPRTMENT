@@ -726,5 +726,33 @@ export const queries = {
     }
     const res = await query('DELETE FROM gallery_events WHERE id = $1 RETURNING *', [id]);
     return res.rows[0] || null;
+  },
+
+  // --- SYSTEM FEATURE FLAGS ---
+  getFeatureFlags: async () => {
+    if (isFallback()) {
+      return mockDb.feature_flags || [];
+    }
+    const res = await query('SELECT * FROM feature_flags ORDER BY feature_key ASC');
+    return res.rows;
+  },
+
+  updateFeatureFlag: async (key, isActive) => {
+    if (isFallback()) {
+      const idx = mockDb.feature_flags.findIndex(f => f.feature_key === key);
+      if (idx !== -1) {
+        mockDb.feature_flags[idx].is_active = isActive;
+        saveMockDb();
+        return mockDb.feature_flags[idx];
+      }
+      return null;
+    }
+    const res = await query(
+      `UPDATE feature_flags 
+       SET is_active = $1, updated_at = CURRENT_TIMESTAMP 
+       WHERE feature_key = $2 RETURNING *`,
+      [isActive, key]
+    );
+    return res.rows[0] || null;
   }
 };

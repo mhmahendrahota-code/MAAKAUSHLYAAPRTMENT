@@ -473,5 +473,47 @@
       "image_url": "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop&q=60",
       "event_date": "2026-05-09T18:30:00.000Z"
     }
+  ],
+  "feature_flags": [
+    {
+      "feature_key": "notices",
+      "feature_name": "सूचना पटल (Notices)",
+      "is_active": true
+    },
+    {
+      "feature_key": "maintenance-bills",
+      "feature_name": "रखरखाव बिल (Bills)",
+      "is_active": true
+    },
+    {
+      "feature_key": "complaints",
+      "feature_name": "शिकायतें एवं सहायता",
+      "is_active": true
+    },
+    {
+      "feature_key": "visitor-logs",
+      "feature_name": "द्वारपाल लॉग (Security Logs)",
+      "is_active": true
+    },
+    {
+      "feature_key": "committee",
+      "feature_name": "RWA प्रबंध समिति (Committee)",
+      "is_active": true
+    },
+    {
+      "feature_key": "gallery",
+      "feature_name": "सोसायटी गैलरी (Gallery)",
+      "is_active": true
+    },
+    {
+      "feature_key": "downloads",
+      "feature_name": "दस्तावेज़ डाउनलोड (Downloads)",
+      "is_active": true
+    },
+    {
+      "feature_key": "contact",
+      "feature_name": "RWA संपर्क डेस्क (Contact)",
+      "is_active": true
+    }
   ]
 }

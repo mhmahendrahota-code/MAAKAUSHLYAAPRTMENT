@@ -19,9 +19,60 @@ import {
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen, onClose }) => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const [activeFlags, setActiveFlags] = React.useState({});
+
+  React.useEffect(() => {
+    const fetchFlags = async () => {
+      // Admin bypasses sidebar filtering for easier toggling check
+      if (user && user.role === 'Admin') return;
+
+      try {
+        const response = await fetch('/api/settings/features', {
+          credentials: 'include',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        let result;
+        try {
+          result = await response.json();
+        } catch (jsonErr) {
+          console.warn('Failed to parse sidebar features JSON:', jsonErr);
+          return;
+        }
+
+        if (response.ok && result.success) {
+          const flagsMap = {};
+          result.data.forEach(f => {
+            flagsMap[f.feature_key] = f.is_active;
+          });
+          setActiveFlags(flagsMap);
+        }
+      } catch (err) {
+        console.error('Failed to load features in sidebar:', err);
+      }
+    };
+
+    if (user && token) {
+      fetchFlags();
+    }
+  }, [user, token]);
 
   if (!user) return null;
+
+  // Path to Feature Flag key mapper
+  const pathToFeatureKey = {
+    '/notices': 'notices',
+    '/maintenance-bills': 'maintenance-bills',
+    '/complaints': 'complaints',
+    '/visitor-logs': 'visitor-logs',
+    '/committee': 'committee',
+    '/gallery': 'gallery',
+    '/downloads': 'downloads',
+    '/contact': 'contact'
+  };
 
   // Define sidebar menus based on RBAC user role
   const getNavLinks = () => {
@@ -68,6 +119,14 @@ export const Sidebar = ({ isOpen, onClose }) => {
 
   const navLinks = getNavLinks();
 
+  // Dynamically filter inactive flags for non-admin roles
+  const filteredNavLinks = navLinks.filter(link => {
+    if (user.role === 'Admin') return true;
+    const key = pathToFeatureKey[link.to];
+    if (key && activeFlags[key] === false) return false;
+    return true;
+  });
+
   return (
     <>
       {/* Mobile Backdrop blur overlay */}
@@ -105,7 +164,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
           </div>
 
           <nav className="flex flex-col gap-1.5">
-            {navLinks.map((link) => {
+            {filteredNavLinks.map((link) => {
               const Icon = link.icon;
               return (
                 <NavLink

@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 const MOCK_DB_PATH = path.join(__dirname, 'mock_db.json');
 const SCHEMA_PATH = path.join(__dirname, '../models/schema.sql');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const { Pool } = pg;
 
@@ -548,6 +548,16 @@ export const mockDb = createMockDbProxy({
       image_url: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop&q=60", 
       event_date: new Date(2026, 4, 10) 
     }
+  ],
+  feature_flags: [
+    { feature_key: "notices", feature_name: "सूचना पटल (Notices)", is_active: true },
+    { feature_key: "maintenance-bills", feature_name: "रखरखाव बिल (Bills)", is_active: true },
+    { feature_key: "complaints", feature_name: "शिकायतें एवं सहायता", is_active: true },
+    { feature_key: "visitor-logs", feature_name: "द्वारपाल लॉग (Security Logs)", is_active: true },
+    { feature_key: "committee", feature_name: "RWA प्रबंध समिति (Committee)", is_active: true },
+    { feature_key: "gallery", feature_name: "सोसायटी गैलरी (Gallery)", is_active: true },
+    { feature_key: "downloads", feature_name: "दस्तावेज़ डाउनलोड (Downloads)", is_active: true },
+    { feature_key: "contact", feature_name: "RWA संपर्क डेस्क (Contact)", is_active: true }
   ]
 });
 
@@ -660,6 +670,20 @@ const initializeSchema = async () => {
         console.log("🛡️ Ensured gallery_events.image_url is TYPE TEXT.");
       } catch (galleryColErr) {
         console.warn("⚠️ Non-blocking gallery columns migration check warning:", galleryColErr.message);
+      }
+
+      // Ensure feature_flags table is seeded in PostgreSQL
+      try {
+        for (const flag of mockDb.feature_flags) {
+          await dbPool.query(
+            `INSERT INTO feature_flags (feature_key, feature_name, is_active)
+             VALUES ($1::VARCHAR, $2::VARCHAR, $3::BOOLEAN) ON CONFLICT (feature_key) DO NOTHING`,
+            [flag.feature_key, flag.feature_name, flag.is_active]
+          );
+        }
+        console.log("🛡️ Completed PostgreSQL database feature flags health sync.");
+      } catch (flagErr) {
+        console.warn("⚠️ Non-blocking feature flags synchronization warning:", flagErr.message);
       }
 
       // Check if database is empty to seed it

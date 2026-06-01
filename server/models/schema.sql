@@ -119,6 +119,14 @@ CREATE TABLE IF NOT EXISTS gallery_events (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 9. System Feature Flags Table
+CREATE TABLE IF NOT EXISTS feature_flags (
+    feature_key VARCHAR(50) PRIMARY KEY,
+    feature_name VARCHAR(100) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- =============================================
 -- SEED DATA - Complete Mock Data for All Tables
 -- =============================================

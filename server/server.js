@@ -26,12 +26,13 @@ import visitorRoutes from './routes/visitorRoutes.js';
 import committeeRoutes from './routes/committeeRoutes.js';
 import helplineRoutes from './routes/helplineRoutes.js';
 import galleryRoutes from './routes/galleryRoutes.js';
+import settingRoutes from './routes/settingRoutes.js';
 
 // Import Middlewares
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 
 // Load environmental variables
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -106,6 +107,7 @@ app.use('/api/visitors', visitorRoutes);
 app.use('/api/committee', committeeRoutes);
 app.use('/api/helplines', helplineRoutes);
 app.use('/api/gallery', galleryRoutes);
+app.use('/api/settings', settingRoutes);
 
 // Serve frontend static assets in production
 if (process.env.NODE_ENV === 'production') {

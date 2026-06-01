@@ -1,11 +1,12 @@
 // server/tests/auth.test.js
 import request from 'supertest';
 import app from '../../server/server.js';
+import { getDb } from '../config/db.js';
 
 describe('Authentication Flow', () => {
   let cookie;
-  const validCredentials = { email: 'resident@example.com', password: 'Password123' };
-  const invalidCredentials = { email: 'resident@example.com', password: 'wrong' };
+  const validCredentials = { email: 'resident@maakaushalya.com', password: 'password123' };
+  const invalidCredentials = { email: 'resident@maakaushalya.com', password: 'wrong' };
 
   test('Login with valid credentials sets httpOnly auth_token cookie', async () => {
     const res = await request(app).post('/api/auth/login').send(validCredentials);
@@ -33,7 +34,7 @@ describe('Authentication Flow', () => {
       .get('/api/users/profile')
       .set('Cookie', cookie);
     expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty('email');
+    expect(res.body.data).toHaveProperty('email');
   });
 
   test('Expired token should be rejected', async () => {
@@ -51,5 +52,12 @@ describe('Authentication Flow', () => {
     }
     const res = await request(app).post('/api/auth/login').send(invalidCredentials);
     expect(res.statusCode).toBe(429);
+  });
+
+  afterAll(async () => {
+    const pool = getDb();
+    if (pool) {
+      await pool.end();
+    }
   });
 });

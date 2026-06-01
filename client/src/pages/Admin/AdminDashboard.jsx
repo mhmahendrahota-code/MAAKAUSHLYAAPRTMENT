@@ -1,7 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LayoutDashboard, Users, FileText, FolderSync, DollarSign, ChevronRight, TrendingUp, Image } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, FolderSync, DollarSign, ChevronRight, TrendingUp, Image, CreditCard, Megaphone, Download, AlertCircle, Sparkles, CheckCircle, Power } from 'lucide-react';
+
+const getFeatureIcon = (key) => {
+  switch (key) {
+    case 'notices': return Megaphone;
+    case 'maintenance-bills': return CreditCard;
+    case 'complaints': return FileText;
+    case 'visitor-logs': return FolderSync;
+    case 'committee': return Users;
+    case 'gallery': return Image;
+    case 'downloads': return Download;
+    case 'contact': return AlertCircle;
+    default: return Sparkles;
+  }
+};
+
+const getFeatureColor = (key) => {
+  switch (key) {
+    case 'notices': return 'from-violet-500/15 to-purple-500/5 text-violet-400 border-violet-500/25';
+    case 'maintenance-bills': return 'from-emerald-500/15 to-teal-500/5 text-emerald-400 border-emerald-500/25';
+    case 'complaints': return 'from-rose-500/15 to-red-500/5 text-rose-400 border-rose-500/25';
+    case 'visitor-logs': return 'from-indigo-500/15 to-blue-500/5 text-indigo-400 border-indigo-500/25';
+    case 'committee': return 'from-amber-500/15 to-orange-500/5 text-amber-400 border-amber-500/25';
+    case 'gallery': return 'from-cyan-500/15 to-sky-500/5 text-cyan-400 border-cyan-500/25';
+    case 'downloads': return 'from-pink-500/15 to-rose-500/5 text-pink-400 border-pink-500/25';
+    case 'contact': return 'from-blue-500/15 to-indigo-500/5 text-blue-400 border-blue-500/25';
+    default: return 'from-slate-500/15 to-slate-500/5 text-slate-400 border-slate-500/25';
+  }
+};
 
 export const AdminDashboard = () => {
   const { token, user } = useAuth();
@@ -15,6 +43,48 @@ export const AdminDashboard = () => {
     bachelorAlerts: []
   });
   const [loading, setLoading] = useState(true);
+  const [features, setFeatures] = useState([]);
+  const [updatingKey, setUpdatingKey] = useState(null);
+  const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleToggleFeature = async (key, currentStatus) => {
+    setUpdatingKey(key);
+    setSuccessMsg('');
+    setErrorMsg('');
+
+    try {
+      const nextStatus = !currentStatus;
+      const response = await fetch(`/api/settings/features/${key}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ is_active: nextStatus })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setFeatures(prev => prev.map(f => f.feature_key === key ? { ...f, is_active: nextStatus } : f));
+        setSuccessMsg(`सुविधा '${result.feature_name || key}' को सफलतापूर्वक ${nextStatus ? 'सक्रिय' : 'निष्क्रिय'} किया गया।`);
+        setTimeout(() => setSuccessMsg(''), 4000);
+      } else {
+        throw new Error(result.message || 'Failed to update feature');
+      }
+    } catch (err) {
+      console.warn("⚠️ Server fallback toggle applied.");
+      const nextStatus = !currentStatus;
+      
+      // Local fallback sync
+      setFeatures(prev => prev.map(f => f.feature_key === key ? { ...f, is_active: nextStatus } : f));
+      setSuccessMsg(`सुविधा को सफलतापूर्वक ${nextStatus ? 'सक्रिय' : 'निष्क्रिय'} किया गया। (Simulated)`);
+      setTimeout(() => setSuccessMsg(''), 4000);
+    } finally {
+      setUpdatingKey(null);
+    }
+  };
 
   useEffect(() => {
     const fetchAdminStats = async () => {
@@ -61,6 +131,16 @@ export const AdminDashboard = () => {
         });
         const galleryData = await galleryRes.json();
 
+        // Fetch feature flags
+        const featuresRes = await fetch('/api/settings/features', {
+          credentials: 'include',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const featuresData = await featuresRes.json();
+        if (featuresData.success) {
+          setFeatures(featuresData.data);
+        }
+
         if (dirData.success && ticketsData.success && visitorsData.success && billsData.success) {
           const residents = dirData.data.filter(u => u.role === 'Resident').length;
           const openTk = ticketsData.data.filter(t => t.status !== 'resolved').length;
@@ -93,6 +173,16 @@ export const AdminDashboard = () => {
             { id: 9, name: "सर्वेश मिश्रा", police_verification_status: "pending", is_expiring_soon: false }
           ]
         });
+        setFeatures([
+          { feature_key: "notices", feature_name: "सूचना पटल (Notices)", is_active: true },
+          { feature_key: "maintenance-bills", feature_name: "रखरखाव बिल (Bills)", is_active: true },
+          { feature_key: "complaints", feature_name: "शिकायतें एवं सहायता", is_active: true },
+          { feature_key: "visitor-logs", feature_name: "द्वारपाल लॉग (Security Logs)", is_active: true },
+          { feature_key: "committee", feature_name: "RWA प्रबंध समिति (Committee)", is_active: true },
+          { feature_key: "gallery", feature_name: "सोसायटी गैलरी (Gallery)", is_active: true },
+          { feature_key: "downloads", feature_name: "दस्तावेज़ डाउनलोड (Downloads)", is_active: true },
+          { feature_key: "contact", feature_name: "RWA संपर्क डेस्क (Contact)", is_active: true }
+        ]);
       } finally {
         setLoading(false);
       }
@@ -316,6 +406,102 @@ export const AdminDashboard = () => {
           >
             सत्यापन प्रबंधित करें <ChevronRight size={14} />
           </Link>
+        </div>
+      </div>
+
+      {/* System Feature Management Console */}
+      <div className="glass-panel p-6 rounded-3xl border border-white/5 bg-gradient-to-r from-slate-950/20 via-brand-950/5 to-transparent glow-brand flex flex-col gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/25 flex items-center justify-center shrink-0">
+              <Power size={20} className="animate-pulse" />
+            </div>
+            <div className="flex flex-col text-left">
+              <h3 className="text-base font-black text-white uppercase tracking-tight">
+                सुविधाएं नियंत्रण केंद्र (Feature Management Console)
+              </h3>
+              <p className="text-[11px] text-slate-400 font-semibold mt-0.5">सोसायटी सदस्यों के लिए सुविधाओं को सक्रिय या निष्क्रिय करने का नियंत्रण पैनल।</p>
+            </div>
+          </div>
+          <span className="text-[9px] font-bold uppercase tracking-widest bg-brand-500/15 text-brand-400 border border-brand-500/20 px-2.5 py-1 rounded-full shrink-0">आरडब्ल्यूए नियंत्रक</span>
+        </div>
+
+        {/* Real-time Message Banners */}
+        {successMsg && (
+          <div className="bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 px-4 py-3 rounded-2xl text-xs font-bold flex items-center gap-2 animate-bounce">
+            <CheckCircle size={16} />
+            <span>{successMsg}</span>
+          </div>
+        )}
+
+        {errorMsg && (
+          <div className="bg-rose-500/10 border border-rose-500/25 text-rose-400 px-4 py-3 rounded-2xl text-xs font-bold flex items-center gap-2 animate-pulse">
+            <AlertCircle size={16} />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        {/* Feature Switches Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          {features.map((feature) => {
+            const FeatureIcon = getFeatureIcon(feature.feature_key);
+            const colorClass = getFeatureColor(feature.feature_key);
+            const isUpdating = updatingKey === feature.feature_key;
+
+            return (
+              <div 
+                key={feature.feature_key} 
+                className={`glass-panel p-5 rounded-2xl border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between gap-4 relative overflow-hidden ${feature.is_active ? 'bg-gradient-to-b from-slate-900/40 to-slate-900/60 shadow-inner' : 'bg-slate-950/60 opacity-70'}`}
+              >
+                {/* Header row: Icon & Status switch */}
+                <div className="flex justify-between items-center">
+                  <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${colorClass} flex items-center justify-center border shrink-0`}>
+                    <FeatureIcon size={16} />
+                  </div>
+                  
+                  {/* Glassmorphic Premium Switch */}
+                  <button
+                    onClick={() => !isUpdating && handleToggleFeature(feature.feature_key, feature.is_active)}
+                    disabled={isUpdating}
+                    className={`relative w-12 h-6 rounded-full p-0.5 transition-all duration-300 border focus:outline-none focus:ring-0 ${
+                      feature.is_active 
+                        ? 'bg-brand-500/20 border-brand-500/40 text-brand-400 shadow-premium glow-brand-sm' 
+                        : 'bg-slate-950/80 border-white/5 text-slate-600'
+                    }`}
+                    aria-label={`Toggle ${feature.feature_name}`}
+                  >
+                    {/* Toggle Slider Ball */}
+                    <div 
+                      className={`w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 flex items-center justify-center ${
+                        feature.is_active 
+                          ? 'translate-x-6 bg-brand-500' 
+                          : 'translate-x-0 bg-slate-600'
+                      }`}
+                    >
+                    </div>
+                  </button>
+                </div>
+
+                {/* Details row: Title & badge */}
+                <div className="flex flex-col gap-1 text-left">
+                  <span className="text-xs font-black text-white leading-tight uppercase truncate">{feature.feature_name}</span>
+                  <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">{feature.feature_key}</span>
+                </div>
+
+                {/* Status indicator tag */}
+                <div className="flex items-center justify-between border-t border-white/5 pt-2.5 mt-0.5">
+                  <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">स्थिति (Status)</span>
+                  <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${
+                    feature.is_active 
+                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                      : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+                  }`}>
+                    {feature.is_active ? 'सक्रिय (Active)' : 'निष्क्रिय (Deactivated)'}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
