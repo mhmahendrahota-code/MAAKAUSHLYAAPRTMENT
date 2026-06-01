@@ -109,3 +109,73 @@ export const getBillsHistory = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Delete a maintenance bill
+// @route   DELETE /api/bills/delete/:id
+// @access  Private (Admin / Committee Only)
+export const deleteMaintenanceBill = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      res.status(400);
+      throw new Error('Please provide a bill ID');
+    }
+
+    const bill = await queries.deleteBill(id);
+
+    if (!bill) {
+      res.status(404);
+      throw new Error('Maintenance bill record not found');
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Maintenance bill deleted successfully',
+      data: bill
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Generate bulk maintenance bills for all residents
+// @route   POST /api/bills/bulk-generate
+// @access  Private (Admin / Committee Only)
+export const generateBulkMaintenanceBills = async (req, res, next) => {
+  try {
+    const { amount, billingMonth, dueDate } = req.body;
+
+    if (!amount || !billingMonth || !dueDate) {
+      res.status(400);
+      throw new Error('Please provide amount, billingMonth, and dueDate');
+    }
+
+    const allUsers = await queries.getAllUsers();
+    const residents = allUsers.filter(u => u.role === 'Resident');
+
+    if (residents.length === 0) {
+      res.status(404);
+      throw new Error('No residents found to generate bills for');
+    }
+
+    const createdBills = [];
+    for (const resident of residents) {
+      const bill = await queries.createBill({
+        residentId: resident.id,
+        amount,
+        billingMonth,
+        dueDate
+      });
+      createdBills.push(bill);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: `Successfully generated ${createdBills.length} maintenance bills of ₹${amount} for ${billingMonth}`,
+      data: createdBills
+    });
+  } catch (error) {
+    next(error);
+  }
+};

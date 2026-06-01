@@ -375,6 +375,20 @@ export const queries = {
     return res.rows[0] || null;
   },
 
+  deleteBill: async (billId) => {
+    if (isFallback()) {
+      const idx = mockDb.bills.findIndex(b => b.id === parseInt(billId));
+      if (idx !== -1) {
+        const deleted = mockDb.bills[idx];
+        mockDb.bills.splice(idx, 1);
+        return deleted;
+      }
+      return null;
+    }
+    const res = await query('DELETE FROM bills WHERE id = $1 RETURNING *', [billId]);
+    return res.rows[0] || null;
+  },
+
   // --- TICKETS ---
   getTicketsByResident: async (residentId) => {
     if (isFallback()) {
