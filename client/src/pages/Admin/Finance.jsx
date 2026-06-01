@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { DollarSign, Check, PlusCircle, CheckCircle, Clock, Search, HelpCircle, Trash2, CheckSquare, X } from 'lucide-react';
+import { DollarSign, Check, PlusCircle, CheckCircle, Clock, Search, HelpCircle, Trash2, CheckSquare, X, Calendar } from 'lucide-react';
 
 export const Finance = () => {
   const { token } = useAuth();
@@ -421,15 +421,19 @@ export const Finance = () => {
                 </select>
               </div>
 
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 text-left">
                 <label className="text-xs font-bold uppercase text-slate-400">भुगतान की अंतिम तिथि (Due Date)</label>
-                <input
-                  type="date"
-                  required
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:border-brand-500 focus:outline-none transition-colors"
-                />
+                <div className="relative">
+                  <input
+                    type="date"
+                    required
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    onClick={(e) => { try { e.target.showPicker(); } catch (err) {} }}
+                    className="bg-slate-900 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-200 focus:border-brand-500 focus:outline-none transition-colors w-full cursor-pointer [color-scheme:dark]"
+                  />
+                  <Calendar size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                </div>
               </div>
             </div>
 
