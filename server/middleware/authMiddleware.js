@@ -7,9 +7,12 @@ export const protect = async (req, res, next) => {
   // Retrieve token from httpOnly cookie or Authorization header
   token = req.cookies?.auth_token;
   if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
+    const bearerToken = req.headers.authorization.split(' ')[1];
+    if (bearerToken && bearerToken !== 'null' && bearerToken !== 'undefined' && bearerToken !== '') {
+      token = bearerToken;
+    }
   }
-  if (!token) {
+  if (!token || token === 'null' || token === 'undefined') {
     res.status(401);
     return next(new Error('Not authorized, no token provided'));
   }

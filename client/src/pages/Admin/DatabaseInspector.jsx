@@ -218,9 +218,13 @@ export const DatabaseInspector = () => {
     setLoading(true);
     setError('');
     try {
+      const headers = {};
+      if (token && token !== 'null' && token !== 'undefined') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
       const res = await fetch('/api/users/db-inspect', {
         credentials: 'include',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers
       });
       if (!res.ok) {
         throw new Error(`Inspect failed: status ${res.status}`);
@@ -270,12 +274,13 @@ export const DatabaseInspector = () => {
     setLoading(true);
     setError('');
     try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (token && token !== 'null' && token !== 'undefined') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
       const res = await fetch(`/api/users/db-inspect/${activeTab}/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers,
         body: JSON.stringify(updatedBody)
       });
       
@@ -309,9 +314,13 @@ export const DatabaseInspector = () => {
     setLoading(true);
     setError('');
     try {
+      const headers = {};
+      if (token && token !== 'null' && token !== 'undefined') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
       const res = await fetch(`/api/users/db-inspect/${activeTab}/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers
       });
       const result = await res.json();
       if (res.ok && result.success) {
@@ -343,12 +352,13 @@ export const DatabaseInspector = () => {
     setLoading(true);
     setError('');
     try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (token && token !== 'null' && token !== 'undefined') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
       const res = await fetch(`/api/users/db-inspect/${activeTab}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers,
         body: JSON.stringify(newRecordFormData)
       });
       const result = await res.json();
