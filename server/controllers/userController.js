@@ -261,7 +261,7 @@ export const approveUser = async (req, res, next) => {
 // @access  Private
 export const updateOwnProfile = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, currentPassword } = req.body;
     const userId = req.user.id;
 
     if (!email) {
@@ -269,11 +269,30 @@ export const updateOwnProfile = async (req, res, next) => {
       throw new Error('Email/UserID is required');
     }
 
+    if (!currentPassword) {
+      res.status(400);
+      throw new Error('सुरक्षा सत्यापन के लिए आपका वर्तमान पासवर्ड आवश्यक है (Current password is required to verify identity)');
+    }
+
+    // Fetch full user record including password hash
+    const user = await queries.findUserById(userId);
+    if (!user) {
+      res.status(404);
+      throw new Error('यूजर अकाउंट नहीं मिला (User account not found)');
+    }
+
+    // Verify current password match
+    const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isMatch) {
+      res.status(401);
+      throw new Error('वर्तमान पासवर्ड गलत है (Incorrect current password)');
+    }
+
     let passwordHash = null;
     if (password) {
       if (password.length < 6) {
         res.status(400);
-        throw new Error('Password must be at least 6 characters long');
+        throw new Error('नया पासवर्ड कम से कम 6 अक्षरों का होना चाहिए (New password must be at least 6 characters long)');
       }
       const salt = await bcrypt.genSalt(10);
       passwordHash = await bcrypt.hash(password, salt);
