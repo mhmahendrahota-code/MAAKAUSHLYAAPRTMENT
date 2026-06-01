@@ -71,6 +71,17 @@ export const Directory = () => {
 
   // Edit / Delete / View States
   const [editUser, setEditUser] = useState(null);
+  const [showAdminEditPassword, setShowAdminEditPassword] = useState(false);
+  const [copiedPasswordText, setCopiedPasswordText] = useState(false);
+
+  const generateRandomPassword = () => {
+    const prefixes = ['Maa', 'RWA', 'Apartment', 'Society', 'Sector1', 'Flat'];
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const num = Math.floor(1000 + Math.random() * 9000);
+    const chars = '@#$&';
+    const char = chars[Math.floor(Math.random() * chars.length)];
+    return `${prefix}${char}${num}`;
+  };
   const [deleteUserId, setDeleteUserId] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
 
@@ -2664,22 +2675,86 @@ export const Directory = () => {
                   </div>
                 </div>
 
-                {/* Admin Password Override */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-1 border-t border-white/5 pt-3">
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] font-bold uppercase text-slate-400 text-left">लॉगिन पासवर्ड बदलें (New Password)</label>
-                    <input 
-                      type="password" 
-                      placeholder="बदलाव न करने के लिए खाली छोड़ें" 
-                      value={editUser.password || ''} 
-                      onChange={(e) => setEditUser({ ...editUser, password: e.target.value })} 
-                      className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:border-brand-500 outline-none" 
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1 justify-center">
-                    <span className="text-[9px] text-slate-500 italic mt-4">
-                      * नोट: यदि आप निवासी का लॉगिन पासवर्ड बदलना चाहते हैं, तो ही यहाँ दर्ज करें। अन्यथा खाली छोड़ें।
-                    </span>
+                {/* Admin Password Override Upgraded */}
+                <div className="flex flex-col gap-3 mt-1 border-t border-white/5 pt-3 text-left w-full">
+                  <p className="text-[10px] font-extrabold uppercase text-slate-500 tracking-wider">🔒 पासवर्ड प्रबंधन (Resident Password Management)</p>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-bold uppercase text-slate-400">लॉगिन पासवर्ड बदलें (New Password)</label>
+                      <div className="relative">
+                        <input 
+                          type={showAdminEditPassword ? "text" : "password"} 
+                          placeholder="बदलाव न करने के लिए खाली छोड़ें" 
+                          value={editUser.password || ''} 
+                          onChange={(e) => setEditUser({ ...editUser, password: e.target.value })} 
+                          className="bg-slate-950 border border-white/10 rounded-xl pl-3 pr-20 py-2.5 text-xs text-slate-200 focus:border-brand-500 outline-none w-full" 
+                        />
+                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setShowAdminEditPassword(!showAdminEditPassword)}
+                            className="text-slate-500 hover:text-slate-300 transition-colors p-1"
+                            title={showAdminEditPassword ? "छिपाएं" : "दिखाएं"}
+                          >
+                            {showAdminEditPassword ? <EyeOff size={13} /> : <Eye size={13} />}
+                          </button>
+                          
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newRand = generateRandomPassword();
+                              setEditUser({ ...editUser, password: newRand });
+                              setShowAdminEditPassword(true);
+                            }}
+                            className="text-brand-400 hover:text-brand-300 transition-colors p-1"
+                            title="सुरक्षित रैंडम पासवर्ड जनरेट करें"
+                          >
+                            <Sparkles size={13} />
+                          </button>
+                        </div>
+                      </div>
+                      {editUser.password && editUser.password.length < 6 && (
+                        <span className="text-[9px] text-rose-400 mt-0.5">⚠️ पासवर्ड कम से कम 6 अक्षरों का होना चाहिए</span>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col gap-1 justify-end pb-1.5">
+                      {editUser.password ? (
+                        <div className="flex items-center gap-2 animate-fadeIn">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const shareText = `माँ कौशल्या अपार्टमेंट (RWA):\nनिवासी: ${editUser.name}\nफ्लैट: ${editUser.flat_no || 'N/A'}\nलॉगिन ईमेल: ${editUser.email}\nआपका नया पासवर्ड है: ${editUser.password}\nकृपया तुरंत लॉगिन करें।`;
+                              navigator.clipboard.writeText(shareText);
+                              setCopiedPasswordText(true);
+                              setTimeout(() => setCopiedPasswordText(false), 2000);
+                            }}
+                            className="px-3 py-1.5 bg-brand-500/10 hover:bg-brand-500/20 text-brand-300 border border-brand-500/25 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all"
+                          >
+                            {copiedPasswordText ? (
+                              <><Check size={11} className="text-emerald-400" /> कॉपी हो गया!</>
+                            ) : (
+                              <><Copy size={11} /> विवरण कॉपी करें</>
+                            )}
+                          </button>
+                          <a
+                            href={`https://wa.me/${editUser.phone ? editUser.phone.replace(/[^0-9]/g, '') : ''}?text=${encodeURIComponent(
+                              `माँ कौशल्या अपार्टमेंट (RWA):\nनिवासी: ${editUser.name}\nलॉगिन ईमेल: ${editUser.email}\nआपका नया पासवर्ड है: ${editUser.password}\nकृपया तुरंत लॉगिन करें।`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/25 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 transition-all"
+                          >
+                            WhatsApp शेयर
+                          </a>
+                        </div>
+                      ) : (
+                        <span className="text-[9px] text-slate-500 italic">
+                          * यदि आप इस सदस्य का लॉगिन पासवर्ड रीसेट करना चाहते हैं, तो नया पासवर्ड दर्ज करें या ✨ आइकॉन पर क्लिक करके जनरेट करें।
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
