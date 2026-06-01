@@ -20,7 +20,8 @@ import {
   Users,
   Car,
   Phone,
-  Home as HomeIcon
+  Home as HomeIcon,
+  Calendar
 } from 'lucide-react';
 import { SOCIETY_FLATS } from '../../utils/flats';
 
@@ -2186,7 +2187,17 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
                         </div>
                         <div className="flex flex-col gap-1">
                           <label className="font-bold text-slate-400 uppercase text-[9px]">जन्म तिथी (DOB) *</label>
-                          <input type="date" required value={tDOB} onChange={(e) => setTDOB(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          <div className="relative">
+                            <input 
+                              type="date" 
+                              required 
+                              value={tDOB} 
+                              onChange={(e) => setTDOB(e.target.value)} 
+                              onClick={(e) => { try { e.target.showPicker(); } catch (err) {} }}
+                              className="bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors w-full cursor-pointer [color-scheme:dark]" 
+                            />
+                            <Calendar size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                          </div>
                         </div>
                       </div>
                       <div className="grid grid-cols-3 gap-3">
@@ -2325,11 +2336,29 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
                           </div>
                           <div className="flex flex-col gap-1">
                             <label className="font-bold text-slate-400 uppercase text-[9px]">रहने की दिनांक (Stay From)</label>
-                            <input type="date" value={prevStayFrom} onChange={(e) => setPrevStayFrom(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                            <div className="relative">
+                              <input 
+                                type="date" 
+                                value={prevStayFrom} 
+                                onChange={(e) => setPrevStayFrom(e.target.value)} 
+                                onClick={(e) => { try { e.target.showPicker(); } catch (err) {} }}
+                                className="bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors w-full cursor-pointer [color-scheme:dark]" 
+                              />
+                              <Calendar size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                            </div>
                           </div>
                           <div className="flex flex-col gap-1">
                             <label className="font-bold text-slate-400 uppercase text-[9px]">छोड़ने की दिनांक (Stay To)</label>
-                            <input type="date" value={prevStayTo} onChange={(e) => setPrevStayTo(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                            <div className="relative">
+                              <input 
+                                type="date" 
+                                value={prevStayTo} 
+                                onChange={(e) => setPrevStayTo(e.target.value)} 
+                                onClick={(e) => { try { e.target.showPicker(); } catch (err) {} }}
+                                className="bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors w-full cursor-pointer [color-scheme:dark]" 
+                              />
+                              <Calendar size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -2646,7 +2675,17 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
                       <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1">
                           <label className="font-bold text-slate-400 uppercase text-[9px]">प्रवेश तिथि (Move-in Date) *</label>
-                          <input type="date" required value={univMoveInDate} onChange={(e) => setUnivMoveInDate(e.target.value)} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors" />
+                          <div className="relative">
+                            <input 
+                              type="date" 
+                              required 
+                              value={univMoveInDate} 
+                              onChange={(e) => setUnivMoveInDate(e.target.value)} 
+                              onClick={(e) => { try { e.target.showPicker(); } catch (err) {} }}
+                              className="bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-2 text-slate-200 focus:border-brand-500 outline-none transition-colors w-full cursor-pointer [color-scheme:dark]" 
+                            />
+                            <Calendar size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                          </div>
                         </div>
                         <div className="flex flex-col gap-1">
                           <label className="font-bold text-slate-400 uppercase text-[9px]">कब्जा स्थिति (Occupancy) *</label>

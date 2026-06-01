@@ -471,16 +471,20 @@ export const Gallery = () => {
               </div>
 
               <div className="grid grid-cols-1 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="font-bold text-slate-400 uppercase text-[10px]">इवेंट तिथि (Event Date) *</label>
+                <div className="flex flex-col gap-1 text-left">
+                <label className="font-bold text-slate-400 uppercase text-[10px]">इवेंट तिथि (Event Date) *</label>
+                <div className="relative">
                   <input 
                     type="date" 
                     required 
                     value={eventDate} 
                     onChange={(e) => setEventDate(e.target.value)} 
-                    className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors w-full" 
+                    onClick={(e) => { try { e.target.showPicker(); } catch (err) {} }}
+                    className="bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-2 text-slate-200 outline-none focus:border-brand-500 transition-colors w-full cursor-pointer [color-scheme:dark]" 
                   />
+                  <Calendar size={12} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
                 </div>
+              </div>
               </div>
 
               {/* Premium Direct Base64 File Uploader */}

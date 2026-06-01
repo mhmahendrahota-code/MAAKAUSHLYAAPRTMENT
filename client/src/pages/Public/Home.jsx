@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { ShieldCheck, Building, KeyRound, ChevronRight, UserCheck, Home as HomeIcon, Users, ShieldAlert, Car, Phone, ArrowRight, X } from 'lucide-react';
+import { ShieldCheck, Building, KeyRound, ChevronRight, UserCheck, Home as HomeIcon, Users, ShieldAlert, Car, Phone, ArrowRight, X, Calendar } from 'lucide-react';
 import RulesPoster from './RulesPoster';
 import { SOCIETY_FLATS } from '../../utils/flats';
 
@@ -479,8 +479,13 @@ export const Home = () => {
                     </div>
                     <div className="flex flex-col gap-1 text-left">
                       <label className="text-xs font-bold uppercase text-slate-400">प्रवेश तिथि (Move-in Date)</label>
-                      <input type="date"
-                        value={moveInDate} onChange={(e) => setMoveInDate(e.target.value)} className={inputCls} />
+                      <div className="relative">
+                        <input type="date"
+                          value={moveInDate} onChange={(e) => setMoveInDate(e.target.value)}
+                          onClick={(e) => { try { e.target.showPicker(); } catch (err) {} }}
+                          className={`${inputCls} pl-9 cursor-pointer [color-scheme:dark]`} />
+                        <Calendar size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                      </div>
                     </div>
                   </div>
 

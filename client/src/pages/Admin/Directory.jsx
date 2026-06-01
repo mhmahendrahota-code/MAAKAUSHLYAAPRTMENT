@@ -3,7 +3,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { 
   Users, Search, PlusCircle, UserPlus, Check, Phone, Mail, Building, 
   Upload, Download, Edit, Trash2, Eye, EyeOff, X, LayoutGrid, Table, 
-  Copy, ChevronDown, ChevronUp, AlertCircle, Info, Sparkles, ShieldCheck 
+  Copy, ChevronDown, ChevronUp, AlertCircle, Info, Sparkles, ShieldCheck,
+  Calendar 
 } from 'lucide-react';
 import { SOCIETY_FLATS } from '../../utils/flats';
 
@@ -1467,12 +1468,16 @@ export const Directory = () => {
 
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold uppercase text-slate-400">प्रवेश तिथि (Move-in Date)</label>
-                    <input
-                      type="date"
-                      value={moveInDate}
-                      onChange={(e) => setMoveInDate(e.target.value)}
-                      className="bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:border-brand-500 focus:outline-none transition-colors"
-                    />
+                    <div className="relative">
+                      <input
+                        type="date"
+                        value={moveInDate}
+                        onChange={(e) => setMoveInDate(e.target.value)}
+                        onClick={(e) => { try { e.target.showPicker(); } catch (err) {} }}
+                        className="bg-slate-900 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-200 focus:border-brand-500 focus:outline-none transition-colors w-full cursor-pointer [color-scheme:dark]"
+                      />
+                      <Calendar size={12} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                    </div>
                   </div>
 
                   {occupancyStatus === 'Rented' && (
@@ -2702,7 +2707,16 @@ export const Directory = () => {
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold uppercase text-slate-400 text-left">प्रवेश तिथि (Move-in Date)</label>
-                    <input type="date" value={editUser.move_in_date ? editUser.move_in_date.substring(0, 10) : ''} onChange={(e) => setEditUser({ ...editUser, move_in_date: e.target.value })} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:border-brand-500 outline-none" />
+                    <div className="relative">
+                      <input 
+                        type="date" 
+                        value={editUser.move_in_date ? editUser.move_in_date.substring(0, 10) : ''} 
+                        onChange={(e) => setEditUser({ ...editUser, move_in_date: e.target.value })} 
+                        onClick={(e) => { try { e.target.showPicker(); } catch (err) {} }}
+                        className="bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-200 focus:border-brand-500 outline-none w-full cursor-pointer [color-scheme:dark]" 
+                      />
+                      <Calendar size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                    </div>
                   </div>
                 </div>
 
