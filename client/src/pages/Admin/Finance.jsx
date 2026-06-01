@@ -24,6 +24,7 @@ export const Finance = () => {
   const [deleteBillId, setDeleteBillId] = useState(null);
 
   const fetchFinanceData = async () => {
+    if (!token) return;
     setLoading(true);
     setError('');
     try {
@@ -61,7 +62,6 @@ export const Finance = () => {
       }
     } catch (err) {
       console.warn("⚠️ Server fetch failed, falling back to simulated mock database:", err.message);
-      setError(`डेटा लोड करने में विफल: ${err.message}`);
       
       setBills([
         {
