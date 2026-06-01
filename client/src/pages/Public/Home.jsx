@@ -6,9 +6,19 @@ import RulesPoster from './RulesPoster';
 import { SOCIETY_FLATS } from '../../utils/flats';
 
 export const Home = () => {
-  const [showRulePopup, setShowRulePopup] = useState(true);
-  const { login, register, token } = useAuth();
+  const { login, register, token, user } = useAuth();
   const navigate = useNavigate();
+
+  const [showRulePopup, setShowRulePopup] = useState(() => {
+    const hasSeen = localStorage.getItem('hasSeenRulesPoster') === 'true';
+    const isLoggedIn = !!token || !!user;
+    return !isLoggedIn && !hasSeen;
+  });
+
+  const handleCloseRulesPopup = () => {
+    localStorage.setItem('hasSeenRulesPoster', 'true');
+    setShowRulePopup(false);
+  };
 
   const [activeTab, setActiveTab] = useState('login');
 
@@ -162,14 +172,14 @@ export const Home = () => {
     {showRulePopup && (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-slate-900 border border-white/10 rounded-3xl max-w-lg w-full p-6 text-left shadow-2xl relative">
-        <button onClick={() => setShowRulePopup(false)} className="absolute top-4 right-4 text-slate-500 hover:text-white">
+        <button onClick={handleCloseRulesPopup} className="absolute top-4 right-4 text-slate-500 hover:text-white">
           <X size={18} />
         </button>
         <h2 className="text-lg font-bold text-white mb-4">नियमावली पोस्टर</h2>
         <div className="max-h-96 overflow-y-auto mb-4">
           <RulesPoster />
         </div>
-        <button onClick={() => setShowRulePopup(false)} className="w-full py-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-600 text-white rounded-xl text-xs font-bold uppercase">
+        <button onClick={handleCloseRulesPopup} className="w-full py-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-600 text-white rounded-xl text-xs font-bold uppercase">
           बंद करें (Close)
         </button>
       </div>
