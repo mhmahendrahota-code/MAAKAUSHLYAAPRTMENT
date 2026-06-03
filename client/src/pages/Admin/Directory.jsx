@@ -552,8 +552,7 @@ export const Directory = () => {
         return;
       }
 
-      let parsedCount = 0;
-      const newUsers = [...usersList];
+      const usersToImport = [];
 
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
@@ -579,6 +578,8 @@ export const Directory = () => {
 
         const rowName = row[nameIdx];
         const rowEmail = row[emailIdx];
+        if (!rowName || !rowEmail) continue;
+
         const rowRole = roleIdx !== -1 && row[roleIdx] ? row[roleIdx] : 'Resident';
         const rowGender = genderIdx !== -1 && row[genderIdx] ? row[genderIdx] : 'Male';
         const rowFlat = flatNoIdx !== -1 && row[flatNoIdx] ? row[flatNoIdx] : null;
@@ -604,10 +605,9 @@ export const Directory = () => {
         const rowLegacy = rowLegacyVal === 'yes' || rowLegacyVal === 'true';
         const rowExemption = exemptionRefIdx !== -1 && row[exemptionRefIdx] ? row[exemptionRefIdx] : null;
 
-        const payload = {
+        usersToImport.push({
           name: rowName,
           email: rowEmail,
-          password: 'password123',
           role: rowRole,
           gender: rowGender,
           flatNo: rowFlat,
@@ -628,56 +628,67 @@ export const Directory = () => {
           petDetails: rowPetDetails,
           isLegacyBachelor: rowLegacy,
           exemptionRef: rowExemption
-        };
-
-        try {
-          const res = await fetch('/api/auth/register', {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(payload)
-          });
-          const data = await res.json();
-          if (res.ok && data.success) {
-            parsedCount++;
-          }
-        } catch (err) {
-          const mockNewUser = {
-            id: newUsers.length + 1,
-            name: rowName,
-            email: rowEmail,
-            role: rowRole,
-            gender: rowGender,
-            flat_no: rowFlat,
-            phone: rowPhone,
-            occupancy_status: rowOccupancy,
-            owner_name: rowOwnerName,
-            owner_phone: rowOwnerPhone,
-            aadhaar_number: rowAadhaar,
-            family_members: rowFamilyMembers,
-            family_member_names: rowFamilyMemberNames,
-            vehicles: rowVehicles,
-            move_in_date: rowMoveInDate,
-            lease_duration: rowLeaseDuration,
-            emergency_contact_name: rowEmergencyName,
-            emergency_contact_phone: rowEmergencyPhone,
-            profile_picture: rowProfilePicture,
-            has_pet: rowHasPet,
-            pet_details: rowPetDetails,
-            is_legacy_bachelor: rowLegacy,
-            exemption_ref: rowExemption,
-            created_at: new Date()
-          };
-          newUsers.push(mockNewUser);
-          parsedCount++;
-        }
+        });
       }
 
-      setUsersList(newUsers);
-      setSuccess(`बल्क अपलोड पूरा हुआ! ${parsedCount} सदस्य जोड़े गए।`);
+      if (usersToImport.length === 0) {
+        setError("त्रुटि: CSV में कोई वैध सदस्य डेटा नहीं मिला।");
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/admin/users/bulk-import', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ users: usersToImport })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setSuccess(`बल्क अपलोड पूरा हुआ! ${data.count} सदस्य जोड़े गए।`);
+          fetchDirectory();
+        } else {
+          throw new Error(data.message || 'Bulk import failed');
+        }
+      } catch (err) {
+        console.warn("⚠️ Server offline, falling back to simulated bulk upload in local state.");
+        const newUsers = [...usersList];
+        let count = 0;
+        for (const u of usersToImport) {
+          newUsers.push({
+            id: newUsers.length + 1,
+            name: u.name,
+            email: u.email,
+            role: u.role,
+            gender: u.gender,
+            flat_no: u.flatNo,
+            phone: u.phone,
+            occupancy_status: u.occupancyStatus,
+            owner_name: u.ownerName,
+            owner_phone: u.ownerPhone,
+            aadhaar_number: u.aadhaarNumber,
+            family_members: u.familyMembers,
+            family_member_names: u.familyMemberNames,
+            vehicles: u.vehicles,
+            move_in_date: u.moveInDate,
+            lease_duration: u.leaseDuration,
+            emergency_contact_name: u.emergencyContactName,
+            emergency_contact_phone: u.emergencyContactPhone,
+            profile_picture: u.profilePicture,
+            has_pet: u.hasPet,
+            pet_details: u.petDetails,
+            is_legacy_bachelor: u.isLegacyBachelor,
+            exemption_ref: u.exemptionRef,
+            created_at: new Date()
+          });
+          count++;
+        }
+        setUsersList(newUsers);
+        setSuccess(`बल्क अपलोड पूरा हुआ (ऑफलाइन मॉक)! ${count} सदस्य जोड़े गए।`);
+      }
       setTimeout(() => setSuccess(''), 3000);
     };
     reader.readAsText(file);

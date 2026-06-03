@@ -89,76 +89,16 @@ export const AdminDashboard = () => {
   useEffect(() => {
     const fetchAdminStats = async () => {
       try {
-        // Fetch directory/users
-        const dirRes = await fetch('/api/users/directory', {
+        const res = await fetch('/api/admin/dashboard-stats', {
           credentials: 'include',
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        const dirData = await dirRes.json();
-
-        // Fetch tickets
-        const ticketsRes = await fetch('/api/tickets/history', {
-          credentials: 'include',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const ticketsData = await ticketsRes.json();
-
-        // Fetch visitors
-        const visitorsRes = await fetch('/api/visitors', {
-          credentials: 'include',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const visitorsData = await visitorsRes.json();
-
-        // Fetch bills
-        const billsRes = await fetch('/api/bills/history', {
-          credentials: 'include',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const billsData = await billsRes.json();
-
-        // Fetch bachelor alerts
-        const bachelorsRes = await fetch('/api/users/bachelor-alerts', {
-          credentials: 'include',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const bachelorsData = await bachelorsRes.json();
-
-        // Fetch gallery events count
-        const galleryRes = await fetch('/api/gallery', {
-          credentials: 'include',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const galleryData = await galleryRes.json();
-
-        // Fetch feature flags
-        const featuresRes = await fetch('/api/settings/features', {
-          credentials: 'include',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const featuresData = await featuresRes.json();
-        if (featuresData.success) {
-          setFeatures(featuresData.data);
-        }
-
-        if (dirData.success && ticketsData.success && visitorsData.success && billsData.success) {
-          const residents = dirData.data.filter(u => u.role === 'Resident').length;
-          const openTk = ticketsData.data.filter(t => t.status !== 'resolved').length;
-          const insideVisitors = visitorsData.data.filter(v => !v.check_out).length;
-          const collected = billsData.data.filter(b => b.status === 'paid').reduce((s, b) => s + parseFloat(b.amount), 0);
-          const unpaid = billsData.data.filter(b => b.status === 'unpaid').reduce((s, b) => s + parseFloat(b.amount), 0);
-          const bachelorList = bachelorsData.success ? bachelorsData.data : [];
-          const totalEvents = galleryData.success ? galleryData.data.length : 0;
-
-          setStats({
-            activeResidents: residents,
-            openComplaints: openTk,
-            activeVisitors: insideVisitors,
-            totalFunds: collected,
-            unpaidAmount: unpaid,
-            galleryCount: totalEvents,
-            bachelorAlerts: bachelorList
-          });
+        const result = await res.json();
+        if (res.ok && result.success) {
+          setStats(result.stats);
+          setFeatures(result.features);
+        } else {
+          throw new Error(result.message || 'Failed to fetch admin stats');
         }
       } catch (err) {
         console.warn("⚠️ Server offline, loading offline simulated Admin stats.");

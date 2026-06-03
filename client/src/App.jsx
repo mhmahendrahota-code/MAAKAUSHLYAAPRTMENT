@@ -27,6 +27,7 @@ import { Directory } from './pages/Admin/Directory';
 import { VisitorLogs } from './pages/Admin/VisitorLogs';
 import { Finance } from './pages/Admin/Finance';
 import { DatabaseInspector } from './pages/Admin/DatabaseInspector';
+import { Reports } from './pages/Admin/Reports';
 
 // Root Layout Wrapper
 const AppLayout = () => {
@@ -144,6 +145,14 @@ const AppLayout = () => {
               element={
                 <ProtectedRoute allowedRoles={['Admin']}>
                   <DatabaseInspector />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/reports"
+              element={
+                <ProtectedRoute allowedRoles={['Admin', 'Committee']}>
+                  <Reports />
                 </ProtectedRoute>
               }
             />

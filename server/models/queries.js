@@ -768,5 +768,91 @@ export const queries = {
       [isActive, key]
     );
     return res.rows[0] || null;
+  },
+
+  // --- SOCIETY EXPENSES ---
+  getExpenses: async () => {
+    if (isFallback()) {
+      return [...mockDb.society_expenses].sort((a, b) => new Date(b.expense_date) - new Date(a.expense_date));
+    }
+    const res = await query('SELECT * FROM society_expenses ORDER BY expense_date DESC, created_at DESC');
+    return res.rows;
+  },
+
+  createExpense: async ({ amount, category, expenseDate, vendor, description, referenceNo }) => {
+    if (isFallback()) {
+      const newExpense = {
+        id: mockDb.society_expenses.length > 0 ? Math.max(...mockDb.society_expenses.map(e => e.id)) + 1 : 1,
+        amount: parseFloat(amount),
+        category,
+        expense_date: expenseDate ? new Date(expenseDate) : new Date(),
+        vendor: vendor || null,
+        description: description || null,
+        reference_no: referenceNo || null,
+        created_at: new Date()
+      };
+      mockDb.society_expenses.push(newExpense);
+      saveMockDb();
+      return newExpense;
+    }
+    const res = await query(
+      `INSERT INTO society_expenses (amount, category, expense_date, vendor, description, reference_no)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [amount, category, expenseDate || new Date(), vendor || null, description || null, referenceNo || null]
+    );
+    return res.rows[0];
+  },
+
+  deleteExpense: async (id) => {
+    if (isFallback()) {
+      const idx = mockDb.society_expenses.findIndex(e => e.id === parseInt(id));
+      if (idx !== -1) {
+        const deleted = mockDb.society_expenses[idx];
+        mockDb.society_expenses.splice(idx, 1);
+        saveMockDb();
+        return deleted;
+      }
+      return null;
+    }
+    const res = await query('DELETE FROM society_expenses WHERE id = $1 RETURNING *', [id]);
+    return res.rows[0] || null;
+  },
+
+  // --- AUDIT LOGS ---
+  getAuditLogs: async () => {
+    if (isFallback()) {
+      return [...mockDb.audit_logs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    }
+    const res = await query(
+      `SELECT a.*, u.name as admin_name 
+       FROM audit_logs a 
+       LEFT JOIN users u ON a.admin_id = u.id 
+       ORDER BY a.timestamp DESC`
+    );
+    return res.rows;
+  },
+
+  createAuditLog: async ({ adminId, actionType, targetTable, recordId, oldValue, newValue }) => {
+    if (isFallback()) {
+      const newLog = {
+        id: mockDb.audit_logs.length > 0 ? Math.max(...mockDb.audit_logs.map(l => l.id)) + 1 : 1,
+        admin_id: adminId ? parseInt(adminId) : null,
+        action_type: actionType,
+        target_table: targetTable,
+        record_id: String(recordId),
+        old_value: oldValue || null,
+        new_value: newValue || null,
+        timestamp: new Date()
+      };
+      mockDb.audit_logs.push(newLog);
+      saveMockDb();
+      return newLog;
+    }
+    const res = await query(
+      `INSERT INTO audit_logs (admin_id, action_type, target_table, record_id, old_value, new_value)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [adminId || null, actionType, targetTable, String(recordId), oldValue || null, newValue || null]
+    );
+    return res.rows[0];
   }
 };

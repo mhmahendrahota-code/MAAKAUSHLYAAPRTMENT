@@ -23,7 +23,9 @@ import {
   Save,
   Trash2,
   X,
-  Code
+  Code,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 const tableFields = {
@@ -85,6 +87,28 @@ const tableFields = {
     { name: 'content', label: 'विवरण (Content)', type: 'textarea' },
     { name: 'image_url', label: 'छवि यूआरएल (Image URL)', type: 'text' },
     { name: 'event_date', label: 'घटना तिथि (Event Date)', type: 'date' }
+  ],
+  society_expenses: [
+    { name: 'amount', label: 'खर्च राशि (Amount)', type: 'number', required: true },
+    { name: 'category', label: 'श्रेणी (Category)', type: 'select', options: ['Guard Salary', 'Generator Diesel', 'Lift AMC', 'Gardening', 'Plumbing Repairs', 'Electricity Bills', 'Miscellaneous'], required: true },
+    { name: 'expense_date', label: 'व्यय तिथि (Date)', type: 'date', required: true },
+    { name: 'vendor', label: 'वेंडर (Vendor)', type: 'text' },
+    { name: 'description', label: 'विवरण (Description)', type: 'text' },
+    { name: 'reference_no', label: 'संदर्भ संख्या (Reference No)', type: 'text' }
+  ],
+  audit_logs: [
+    { name: 'admin_id', label: 'प्रशासक आईडी (Admin ID)', type: 'number' },
+    { name: 'action_type', label: 'कार्रवाई प्रकार (Action)', type: 'select', options: ['CREATE', 'UPDATE', 'DELETE'], required: true },
+    { name: 'target_table', label: 'तालिका (Table)', type: 'text', required: true },
+    { name: 'record_id', label: 'रिकॉर्ड आईडी (Record ID)', type: 'text', required: true },
+    { name: 'old_value', label: 'पुराना मान (Old Value)', type: 'textarea' },
+    { name: 'new_value', label: 'नया मान (New Value)', type: 'textarea' }
+  ],
+  feature_flags: [
+    { name: 'feature_key', label: 'फ़ीचर कुंजी (Key)', type: 'text', required: true },
+    { name: 'feature_name', label: 'फ़ीचर नाम (Name)', type: 'text', required: true },
+    { name: 'is_active', label: 'सक्रिय है (Active)', type: 'checkbox' },
+    { name: 'description', label: 'विवरण (Description)', type: 'text' }
   ]
 };
 
@@ -116,7 +140,7 @@ const FormRowEditor = ({ item, table, onSave, onDelete }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(item.id, formData);
+    onSave(item.id || item.feature_key, formData);
   };
 
   return (
@@ -175,7 +199,7 @@ const FormRowEditor = ({ item, table, onSave, onDelete }) => {
       <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/5">
         <button
           type="button"
-          onClick={() => onDelete(item.id)}
+          onClick={() => onDelete(item.id || item.feature_key)}
           className="px-4 py-2 bg-rose-500/10 border border-rose-500/25 hover:bg-rose-500/20 text-rose-400 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all"
         >
           <Trash2 size={13} /> रिकॉर्ड हटाएं (Delete)
@@ -194,7 +218,15 @@ const FormRowEditor = ({ item, table, onSave, onDelete }) => {
 
 export const DatabaseInspector = () => {
   const { token } = useAuth();
-  const [dbData, setDbData] = useState(null);
+  
+  // State management
+  const [items, setItems] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit] = useState(50);
+  const [mode, setMode] = useState('PostgreSQL');
+  const [stats, setStats] = useState(null);
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -202,8 +234,9 @@ export const DatabaseInspector = () => {
   // Tab Management
   const [activeTab, setActiveTab] = useState('users');
   
-  // Search query
+  // Search query & debounced search
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   // Row Expand/Collapse JSON details state
   const [expandedRows, setExpandedRows] = useState({});
@@ -214,7 +247,41 @@ export const DatabaseInspector = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newRecordFormData, setNewRecordFormData] = useState({});
 
-  const fetchDatabase = async () => {
+  const tablesList = ['users', 'bills', 'tickets', 'notices', 'visitor_logs', 'committee_members', 'helplines', 'gallery_events', 'feature_flags', 'society_expenses', 'audit_logs'];
+
+  // Debouncing search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setCurrentPage(1); // Reset page on new search
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch metrics/stats from dashboard stats endpoint
+  const fetchMetrics = async () => {
+    try {
+      const headers = {};
+      if (token && token !== 'null' && token !== 'undefined') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const res = await fetch('/api/admin/dashboard-stats', {
+        credentials: 'include',
+        headers
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setStats(data.stats);
+        }
+      }
+    } catch (err) {
+      console.warn("⚠️ Failed to fetch metrics:", err.message);
+    }
+  };
+
+  // Fetch paginated database records for the active tab
+  const fetchTableData = async () => {
     setLoading(true);
     setError('');
     try {
@@ -222,7 +289,16 @@ export const DatabaseInspector = () => {
       if (token && token !== 'null' && token !== 'undefined') {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      const res = await fetch('/api/users/db-inspect', {
+      const queryParams = new URLSearchParams({
+        table: activeTab,
+        page: currentPage.toString(),
+        limit: limit.toString()
+      });
+      if (debouncedSearch) {
+        queryParams.append('search', debouncedSearch);
+      }
+
+      const res = await fetch(`/api/users/db-inspect?${queryParams.toString()}`, {
         credentials: 'include',
         headers
       });
@@ -231,11 +307,11 @@ export const DatabaseInspector = () => {
       }
       const data = await res.json();
       if (data.success) {
-        setDbData(data);
-        setSuccess('डेटाबेस लाइव सिंक पूरा हुआ!');
-        setTimeout(() => setSuccess(''), 2000);
+        setItems(data.data || []);
+        setTotalCount(data.totalCount || 0);
+        setMode(data.mode === 'fallback' ? 'Offline (Mock)' : 'PostgreSQL');
       } else {
-        throw new Error(data.message || 'Failed to sync database');
+        throw new Error(data.message || 'Failed to fetch table records');
       }
     } catch (err) {
       console.error(err);
@@ -246,8 +322,18 @@ export const DatabaseInspector = () => {
   };
 
   useEffect(() => {
-    fetchDatabase();
+    fetchMetrics();
   }, [token]);
+
+  useEffect(() => {
+    fetchTableData();
+  }, [token, activeTab, currentPage, debouncedSearch]);
+
+  const fetchDatabase = async () => {
+    await Promise.all([fetchMetrics(), fetchTableData()]);
+    setSuccess('डेटाबेस लाइव सिंक पूरा हुआ!');
+    setTimeout(() => setSuccess(''), 2000);
+  };
 
   const toggleRow = (table, id) => {
     const key = `${table}-${id}`;
@@ -289,14 +375,8 @@ export const DatabaseInspector = () => {
         setSuccess('रिकॉर्ड सफलतापूर्वक अपडेट किया गया!');
         setTimeout(() => setSuccess(''), 3000);
         
-        // Update local state without fetching to keep view expanded and fluid
-        setDbData(prev => {
-          const tableList = prev[activeTab].map(item => item.id === id ? result.data : item);
-          return {
-            ...prev,
-            [activeTab]: tableList
-          };
-        });
+        // Update local state
+        setItems(prev => prev.map(item => (item.id === id || (activeTab === 'feature_flags' && item.feature_key === id)) ? result.data : item));
       } else {
         throw new Error(result.message || 'Failed to save record updates');
       }
@@ -328,13 +408,8 @@ export const DatabaseInspector = () => {
         setTimeout(() => setSuccess(''), 3000);
         
         // Remove from local table state
-        setDbData(prev => {
-          const tableList = prev[activeTab].filter(item => item.id !== id);
-          return {
-            ...prev,
-            [activeTab]: tableList
-          };
-        });
+        setItems(prev => prev.filter(item => (item.id !== id && !(activeTab === 'feature_flags' && item.feature_key === id))));
+        setTotalCount(prev => Math.max(0, prev - 1));
       } else {
         throw new Error(result.message || 'Deletion request failed');
       }
@@ -369,13 +444,8 @@ export const DatabaseInspector = () => {
         setNewRecordFormData({});
         
         // Insert into local state
-        setDbData(prev => {
-          const tableList = [result.data, ...(prev[activeTab] || [])];
-          return {
-            ...prev,
-            [activeTab]: tableList
-          };
-        });
+        setItems(prev => [result.data, ...prev]);
+        setTotalCount(prev => prev + 1);
       } else {
         throw new Error(result.message || 'Creation request failed');
       }
@@ -418,28 +488,6 @@ export const DatabaseInspector = () => {
       default: return <Database size={16} />;
     }
   };
-
-  // Filter lists in real-time based on query
-  const getFilteredData = () => {
-    if (!dbData || !dbData[activeTab]) return [];
-    const list = dbData[activeTab];
-    const q = searchQuery.toLowerCase().trim();
-    if (!q) return list;
-
-    return list.filter(item => {
-      const searchString = Object.values(item)
-        .map(val => (val === null || val === undefined ? '' : String(val).toLowerCase()))
-        .join(' ');
-      return searchString.includes(q);
-    });
-  };
-
-  const filteredItems = getFilteredData();
-
-  // Metrics Calculations
-  const getUserCount = (role) => dbData?.users?.filter(u => u.role === role).length || 0;
-  const getBillSum = (status) => dbData?.bills?.filter(b => b.status === status).reduce((acc, curr) => acc + parseFloat(curr.amount), 0) || 0;
-  const getOpenTicketCount = () => dbData?.tickets?.filter(t => t.status === 'open').length || 0;
 
   return (
     <div className="flex-1 p-6 text-left flex flex-col gap-6 max-w-5xl w-full mx-auto animate-fadeIn relative">
@@ -488,13 +536,13 @@ export const DatabaseInspector = () => {
       )}
 
       {/* Database Quick Stats Cards */}
-      {dbData && (
+      {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="glass-panel p-5 rounded-2xl border border-white/5 flex items-center justify-between">
             <div>
-              <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">कुल पंजीकृत सदस्य</span>
-              <h4 className="text-lg font-black text-white mt-1">{dbData.users?.length || 0}</h4>
-              <p className="text-[9px] text-slate-400 mt-1">प्रशासक: {getUserCount('Admin')} | निवासी: {getUserCount('Resident')}</p>
+              <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">सक्रिय निवासी</span>
+              <h4 className="text-lg font-black text-white mt-1">{stats.activeResidents || 0}</h4>
+              <p className="text-[9px] text-slate-400 mt-1">कोष गणना में सहायक</p>
             </div>
             <div className="w-9 h-9 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/25 flex items-center justify-center">
               <Users size={16} />
@@ -504,8 +552,8 @@ export const DatabaseInspector = () => {
           <div className="glass-panel p-5 rounded-2xl border border-white/5 flex items-center justify-between">
             <div>
               <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">एकत्रित कोष (Reserves)</span>
-              <h4 className="text-lg font-black text-emerald-400 mt-1">₹{getBillSum('paid').toFixed(2)}</h4>
-              <p className="text-[9px] text-slate-400 mt-1">बकाया (Dues): ₹{getBillSum('unpaid').toFixed(2)}</p>
+              <h4 className="text-lg font-black text-emerald-400 mt-1">₹{(stats.totalFunds || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h4>
+              <p className="text-[9px] text-slate-400 mt-1">बकाया: ₹{(stats.unpaidAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
             </div>
             <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 flex items-center justify-center">
               <DollarSign size={16} />
@@ -515,8 +563,8 @@ export const DatabaseInspector = () => {
           <div className="glass-panel p-5 rounded-2xl border border-white/5 flex items-center justify-between">
             <div>
               <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">ओपन शिकायत टिकट</span>
-              <h4 className="text-lg font-black text-rose-400 mt-1">{getOpenTicketCount()}</h4>
-              <p className="text-[9px] text-slate-400 mt-1">कुल शिकायतें: {dbData.tickets?.length || 0}</p>
+              <h4 className="text-lg font-black text-rose-400 mt-1">{stats.openComplaints || 0}</h4>
+              <p className="text-[9px] text-slate-400 mt-1">त्वरित समाधान आवश्यक</p>
             </div>
             <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/25 flex items-center justify-center">
               <LifeBuoy size={16} />
@@ -525,9 +573,9 @@ export const DatabaseInspector = () => {
 
           <div className="glass-panel p-5 rounded-2xl border border-white/5 flex items-center justify-between">
             <div>
-              <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">डेटाबेस मोड</span>
-              <h4 className="text-lg font-black text-indigo-400 mt-1 uppercase">{dbData.mode || 'PostgreSQL'}</h4>
-              <p className="text-[9px] text-slate-400 mt-1">कनेक्शन प्रकार: CRUD Interactive</p>
+              <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">डेटाबेस मोड (DB Engine)</span>
+              <h4 className="text-lg font-black text-indigo-400 mt-1 uppercase">{mode}</h4>
+              <p className="text-[9px] text-slate-400 mt-1">कनेक्शन प्रकार: SQL Live</p>
             </div>
             <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/25 flex items-center justify-center">
               <Database size={16} />
@@ -538,28 +586,29 @@ export const DatabaseInspector = () => {
 
       {/* Tabs Selector Navigation */}
       <div className="flex flex-wrap gap-1 border-b border-white/5 pb-1">
-        {dbData && Object.keys(dbData)
-          .filter(k => !['success', 'mode', 'directoryError', 'directoryDataCount', 'directoryDataSample'].includes(k))
-          .map(tab => (
-            <button
-              key={tab}
-              onClick={() => {
-                setActiveTab(tab);
-                setSearchQuery('');
-                setExpandedRows({});
-              }}
-              className={`px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all
-                ${activeTab === tab 
-                  ? 'bg-white/10 text-white border border-white/10' 
-                  : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
-                }`}
-            >
-              {getTableIcon(tab)} {tab.replace('_', ' ')}
+        {tablesList.map(tab => (
+          <button
+            key={tab}
+            onClick={() => {
+              setActiveTab(tab);
+              setSearchQuery('');
+              setExpandedRows({});
+              setCurrentPage(1);
+            }}
+            className={`px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all
+              ${activeTab === tab 
+                ? 'bg-white/10 text-white border border-white/10 shadow' 
+                : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
+              }`}
+          >
+            {getTableIcon(tab)} {tab.replace('_', ' ')}
+            {activeTab === tab && (
               <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-400">
-                {dbData[tab]?.length || 0}
+                {totalCount}
               </span>
-            </button>
-          ))}
+            )}
+          </button>
+        ))}
       </div>
 
       {/* Database Query Console with Live Search */}
@@ -578,40 +627,40 @@ export const DatabaseInspector = () => {
         </div>
 
         {/* Data list view */}
-        {loading && !dbData ? (
+        {loading && items.length === 0 ? (
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
           </div>
-        ) : filteredItems.length > 0 ? (
+        ) : items.length > 0 ? (
           <div className="flex flex-col gap-2">
             <div className="text-[10px] uppercase font-bold text-slate-500 tracking-widest px-1">
-              सारणी के सदस्य (Showing {filteredItems.length} records)
+              सारणी के सदस्य (Showing {items.length} of {totalCount} records)
             </div>
 
             <div className="flex flex-col gap-3">
-              {filteredItems.map((item, index) => {
-                const isExpanded = !!expandedRows[`${activeTab}-${item.id}`];
-                const key = `${activeTab}-${item.id}`;
+              {items.map((item, index) => {
+                const isExpanded = !!expandedRows[`${activeTab}-${item.id || item.feature_key}`];
+                const key = `${activeTab}-${item.id || item.feature_key}`;
                 const viewMode = rowViews[key] || 'form';
                 const jsonString = JSON.stringify(item, null, 2);
                 
                 return (
                   <div 
-                    key={item.id || index}
+                    key={item.id || item.feature_key || index}
                     className="glass-panel rounded-2xl border border-white/5 overflow-hidden transition-all duration-200 hover:border-white/10 text-left"
                   >
                     {/* Header Row Summary */}
                     <div 
-                      onClick={() => toggleRow(activeTab, item.id)}
+                      onClick={() => toggleRow(activeTab, item.id || item.feature_key)}
                       className="p-4 flex items-center justify-between gap-4 cursor-pointer select-none hover:bg-white/2"
                     >
                       <div className="flex items-center gap-3 overflow-hidden">
                         <div className="text-xs font-mono font-bold bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-white/5">
-                          ID: {item.id}
+                          ID: {item.id || item.feature_key}
                         </div>
                         <div className="flex flex-col overflow-hidden">
                           <span className="text-xs font-bold text-white truncate">
-                            {item.name || item.title || item.purpose || `Record #${item.id}`}
+                            {item.name || item.title || item.purpose || `Record #${item.id || item.feature_key}`}
                           </span>
                           <span className="text-[10px] text-slate-400 truncate">
                             {item.email || item.content || item.note || `Flat: ${item.flat_no || 'N/A'}`}
@@ -704,6 +753,29 @@ export const DatabaseInspector = () => {
                 );
               })}
             </div>
+
+            {/* PAGINATION CONTROLS FOOTER */}
+            {totalCount > limit && (
+              <div className="flex justify-between items-center mt-6 p-4 glass-panel border border-white/5 rounded-2xl">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3.5 py-2 bg-slate-900 border border-white/5 rounded-xl text-xs font-bold text-slate-400 hover:text-white disabled:opacity-40 disabled:hover:text-slate-400 transition-all flex items-center gap-1 uppercase"
+                >
+                  <ChevronLeft size={14} /> पिछला (Prev)
+                </button>
+                <div className="text-xs text-slate-400 font-bold uppercase tracking-wider">
+                  पृष्ठ (Page) {currentPage} / {Math.ceil(totalCount / limit)}
+                </div>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(Math.ceil(totalCount / limit), prev + 1))}
+                  disabled={currentPage >= Math.ceil(totalCount / limit)}
+                  className="px-3.5 py-2 bg-slate-900 border border-white/5 rounded-xl text-xs font-bold text-slate-400 hover:text-white disabled:opacity-40 disabled:hover:text-slate-400 transition-all flex items-center gap-1 uppercase"
+                >
+                  अगला (Next) <ChevronRight size={14} />
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="glass-panel p-16 rounded-3xl border border-white/5 text-center">

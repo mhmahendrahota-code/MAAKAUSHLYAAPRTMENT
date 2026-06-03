@@ -558,7 +558,9 @@ export const mockDb = createMockDbProxy({
     { feature_key: "gallery", feature_name: "सोसायटी गैलरी (Gallery)", is_active: true },
     { feature_key: "downloads", feature_name: "दस्तावेज़ डाउनलोड (Downloads)", is_active: true },
     { feature_key: "contact", feature_name: "RWA संपर्क डेस्क (Contact)", is_active: true }
-  ]
+  ],
+  society_expenses: [],
+  audit_logs: []
 });
 
 // Persistence Helpers for Mock Fallback Database
@@ -581,6 +583,8 @@ export const loadMockDb = () => {
         }
       };
       parseDates(parsed);
+      if (!parsed.society_expenses) parsed.society_expenses = [];
+      if (!parsed.audit_logs) parsed.audit_logs = [];
       Object.assign(mockDb, parsed);
       console.log("📂 Persistent JSON Fallback Database loaded successfully.");
     } else {

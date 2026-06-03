@@ -127,6 +127,30 @@ CREATE TABLE IF NOT EXISTS feature_flags (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 10. Society Expenses Table (Outbound Cash Tracker)
+CREATE TABLE IF NOT EXISTS society_expenses (
+    id SERIAL PRIMARY KEY,
+    amount DECIMAL(10, 2) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    expense_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    vendor VARCHAR(100),
+    description TEXT,
+    reference_no VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 11. Administrative Audit Logs Table (Database Inspector Trails)
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id SERIAL PRIMARY KEY,
+    admin_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    action_type VARCHAR(20) NOT NULL, -- e.g., 'CREATE', 'UPDATE', 'DELETE'
+    target_table VARCHAR(50) NOT NULL,
+    record_id VARCHAR(50) NOT NULL, -- handles both integer IDs and text keys
+    old_value TEXT,
+    new_value TEXT,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- =============================================
 -- SEED DATA - Complete Mock Data for All Tables
 -- =============================================

@@ -27,6 +27,7 @@ import committeeRoutes from './routes/committeeRoutes.js';
 import helplineRoutes from './routes/helplineRoutes.js';
 import galleryRoutes from './routes/galleryRoutes.js';
 import settingRoutes from './routes/settingRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 // Import Middlewares
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
@@ -109,6 +110,7 @@ app.use('/api/committee', committeeRoutes);
 app.use('/api/helplines', helplineRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/settings', settingRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Serve frontend static assets in production
 if (process.env.NODE_ENV === 'production') {

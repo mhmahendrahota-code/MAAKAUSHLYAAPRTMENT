@@ -320,13 +320,103 @@ export const updateOwnProfile = async (req, res, next) => {
   }
 };
 
-// @desc    Get complete database dump (Admin only)
+// @desc    Get complete database dump or paginated table records (Admin only)
 // @route   GET /api/users/db-inspect
 // @access  Private (Admin Only)
 export const getFullDatabaseDump = async (req, res, next) => {
   try {
     const { getDb, isFallback, mockDb } = await import('../config/db.js');
+    const { table, page, limit, search } = req.query;
 
+    const allowedTables = ['users', 'bills', 'tickets', 'notices', 'visitor_logs', 'committee_members', 'helplines', 'gallery_events', 'feature_flags', 'society_expenses', 'audit_logs'];
+
+    // If table is requested specifically, return paginated/filtered subset
+    if (table) {
+      if (!allowedTables.includes(table)) {
+        res.status(400);
+        throw new Error(`Unauthorized or invalid table name: '${table}'`);
+      }
+
+      const pgNum = parseInt(page, 10) || 1;
+      const limitNum = parseInt(limit, 10) || 50;
+      const offset = (pgNum - 1) * limitNum;
+
+      if (isFallback()) {
+        let list = [...(mockDb[table] || [])];
+        
+        // Local filter logic
+        if (search) {
+          const q = search.toLowerCase().trim();
+          list = list.filter(item => {
+            return Object.values(item).some(val => 
+              val !== null && val !== undefined && String(val).toLowerCase().includes(q)
+            );
+          });
+        }
+
+        // Sorting by ID or key
+        if (table === 'feature_flags') {
+          list.sort((a, b) => a.feature_key.localeCompare(b.feature_key));
+        } else {
+          list.sort((a, b) => (b.id || 0) - (a.id || 0));
+        }
+
+        const paginatedList = list.slice(offset, offset + limitNum);
+        return res.status(200).json({
+          success: true,
+          mode: 'fallback',
+          table,
+          page: pgNum,
+          limit: limitNum,
+          totalCount: list.length,
+          data: paginatedList
+        });
+      } else {
+        const db = getDb();
+        if (!db) {
+          throw new Error('Database connection is uninitialized');
+        }
+
+        let queryText = `SELECT * FROM "${table}"`;
+        let countText = `SELECT COUNT(*) FROM "${table}"`;
+        let queryParams = [];
+        let countParams = [];
+
+        // Build simple text search query condition
+        if (search) {
+          queryText += ` WHERE row_to_json("${table}")::text iLike $1`;
+          countText += ` WHERE row_to_json("${table}")::text iLike $1`;
+          queryParams.push(`%${search}%`);
+          countParams.push(`%${search}%`);
+        }
+
+        if (table === 'feature_flags') {
+          queryText += ` ORDER BY feature_key ASC`;
+        } else {
+          queryText += ` ORDER BY id DESC`;
+        }
+
+        queryText += ` LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
+        queryParams.push(limitNum, offset);
+
+        const [dataRes, countRes] = await Promise.all([
+          db.query(queryText, queryParams),
+          db.query(countText, countParams)
+        ]);
+
+        return res.status(200).json({
+          success: true,
+          mode: 'postgres',
+          table,
+          page: pgNum,
+          limit: limitNum,
+          totalCount: parseInt(countRes.rows[0].count, 10),
+          data: dataRes.rows
+        });
+      }
+    }
+
+    // Default: return fallback all tables dump or limited rows for Postgres
     if (isFallback()) {
       return res.status(200).json({
         success: true,
@@ -338,7 +428,9 @@ export const getFullDatabaseDump = async (req, res, next) => {
         visitor_logs: mockDb.visitor_logs,
         committee_members: mockDb.committee_members,
         helplines: mockDb.helplines,
-        gallery_events: mockDb.gallery_events
+        gallery_events: mockDb.gallery_events,
+        society_expenses: mockDb.society_expenses || [],
+        audit_logs: mockDb.audit_logs || []
       });
     }
 
@@ -347,14 +439,30 @@ export const getFullDatabaseDump = async (req, res, next) => {
       throw new Error('Database connection pool is uninitialized.');
     }
 
-    const usersRes = await db.query("SELECT * FROM users ORDER BY id ASC");
-    const billsRes = await db.query("SELECT * FROM bills ORDER BY id ASC");
-    const ticketsRes = await db.query("SELECT * FROM tickets ORDER BY id ASC");
-    const noticesRes = await db.query("SELECT * FROM notices ORDER BY id ASC");
-    const visitorsRes = await db.query("SELECT * FROM visitor_logs ORDER BY id ASC");
-    const committeeRes = await db.query("SELECT * FROM committee_members ORDER BY id ASC");
-    const helplinesRes = await db.query("SELECT * FROM helplines ORDER BY id ASC");
-    const galleryRes = await db.query("SELECT * FROM gallery_events ORDER BY id ASC");
+    // Return limited snapshot of all tables to prevent network/memory spikes
+    const [
+      usersRes,
+      billsRes,
+      ticketsRes,
+      noticesRes,
+      visitorsRes,
+      committeeRes,
+      helplinesRes,
+      galleryRes,
+      expensesRes,
+      auditsRes
+    ] = await Promise.all([
+      db.query("SELECT * FROM users ORDER BY id ASC LIMIT 100"),
+      db.query("SELECT * FROM bills ORDER BY id ASC LIMIT 100"),
+      db.query("SELECT * FROM tickets ORDER BY id ASC LIMIT 100"),
+      db.query("SELECT * FROM notices ORDER BY id ASC LIMIT 100"),
+      db.query("SELECT * FROM visitor_logs ORDER BY id ASC LIMIT 100"),
+      db.query("SELECT * FROM committee_members ORDER BY id ASC LIMIT 100"),
+      db.query("SELECT * FROM helplines ORDER BY id ASC LIMIT 100"),
+      db.query("SELECT * FROM gallery_events ORDER BY id ASC LIMIT 100"),
+      db.query("SELECT * FROM society_expenses ORDER BY id ASC LIMIT 100"),
+      db.query("SELECT * FROM audit_logs ORDER BY id DESC LIMIT 100")
+    ]);
 
     res.status(200).json({
       success: true,
@@ -366,7 +474,9 @@ export const getFullDatabaseDump = async (req, res, next) => {
       visitor_logs: visitorsRes.rows,
       committee_members: committeeRes.rows,
       helplines: helplinesRes.rows,
-      gallery_events: galleryRes.rows
+      gallery_events: galleryRes.rows,
+      society_expenses: expensesRes.rows,
+      audit_logs: auditsRes.rows
     });
   } catch (error) {
     next(error);
@@ -382,11 +492,14 @@ export const updateDatabaseRecord = async (req, res, next) => {
     const body = req.body;
     const { getDb, isFallback, mockDb, saveMockDb } = await import('../config/db.js');
 
-    const allowedTables = ['users', 'bills', 'tickets', 'notices', 'visitor_logs', 'committee_members', 'helplines', 'gallery_events', 'feature_flags'];
+    const allowedTables = ['users', 'bills', 'tickets', 'notices', 'visitor_logs', 'committee_members', 'helplines', 'gallery_events', 'feature_flags', 'society_expenses', 'audit_logs'];
     if (!allowedTables.includes(table)) {
       res.status(400);
       throw new Error(`Unauthorized or invalid table name: '${table}'`);
     }
+
+    let oldValue = null;
+    let updatedRecord = null;
 
     if (isFallback()) {
       const idx = mockDb[table].findIndex(item => item.id === parseInt(id) || (table === 'feature_flags' && item.feature_key === id));
@@ -395,6 +508,8 @@ export const updateDatabaseRecord = async (req, res, next) => {
         throw new Error(`Record with ID '${id}' not found in table '${table}'`);
       }
       
+      oldValue = { ...mockDb[table][idx] };
+
       // Keep structural integrity (keep id and created_at if present)
       mockDb[table][idx] = {
         ...mockDb[table][idx],
@@ -403,50 +518,67 @@ export const updateDatabaseRecord = async (req, res, next) => {
         created_at: mockDb[table][idx].created_at
       };
       
+      updatedRecord = mockDb[table][idx];
       saveMockDb();
-      return res.status(200).json({
-        success: true,
-        message: `Record ${id} updated in mock database table '${table}'`,
-        data: mockDb[table][idx]
-      });
-    }
-
-    const db = getDb();
-    if (!db) {
-      throw new Error('Database connection is uninitialized');
-    }
-
-    // Dynamic SQL update builder
-    const fields = Object.keys(body).filter(k => k !== 'id' && k !== 'created_at');
-    if (fields.length === 0) {
-      res.status(400);
-      throw new Error('No update fields provided');
-    }
-
-    const setClause = fields.map((f, i) => `"${f}" = $${i + 1}`).join(', ');
-    const values = fields.map(f => body[f]);
-    
-    let queryText;
-    let queryParams;
-    if (table === 'feature_flags') {
-      queryText = `UPDATE "${table}" SET ${setClause} WHERE feature_key = $${fields.length + 1} RETURNING *`;
-      queryParams = [...values, id];
     } else {
-      queryText = `UPDATE "${table}" SET ${setClause} WHERE id = $${fields.length + 1} RETURNING *`;
-      queryParams = [...values, parseInt(id)];
-    }
+      const db = getDb();
+      if (!db) {
+        throw new Error('Database connection is uninitialized');
+      }
 
-    const queryRes = await db.query(queryText, queryParams);
-    const updatedRecord = queryRes.rows[0];
+      // Fetch oldValue before update
+      const existingRes = (table === 'feature_flags')
+        ? await db.query(`SELECT * FROM "${table}" WHERE feature_key = $1`, [id])
+        : await db.query(`SELECT * FROM "${table}" WHERE id = $1`, [parseInt(id)]);
+      
+      if (existingRes.rows[0]) {
+        oldValue = existingRes.rows[0];
+      }
+
+      // Dynamic SQL update builder
+      const fields = Object.keys(body).filter(k => k !== 'id' && k !== 'created_at');
+      if (fields.length === 0) {
+        res.status(400);
+        throw new Error('No update fields provided');
+      }
+
+      const setClause = fields.map((f, i) => `"${f}" = $${i + 1}`).join(', ');
+      const values = fields.map(f => body[f]);
+      
+      let queryText;
+      let queryParams;
+      if (table === 'feature_flags') {
+        queryText = `UPDATE "${table}" SET ${setClause} WHERE feature_key = $${fields.length + 1} RETURNING *`;
+        queryParams = [...values, id];
+      } else {
+        queryText = `UPDATE "${table}" SET ${setClause} WHERE id = $${fields.length + 1} RETURNING *`;
+        queryParams = [...values, parseInt(id)];
+      }
+
+      const queryRes = await db.query(queryText, queryParams);
+      updatedRecord = queryRes.rows[0];
+    }
 
     if (!updatedRecord) {
       res.status(404);
-      throw new Error(`Record with ID '${id}' not found in database table '${table}'`);
+      throw new Error(`Record with ID '${id}' not found in table '${table}'`);
+    }
+
+    // Write audit trail
+    if (req.user) {
+      await queries.createAuditLog({
+        adminId: req.user.id,
+        actionType: 'UPDATE',
+        targetTable: table,
+        recordId: id,
+        oldValue: oldValue ? JSON.stringify(oldValue) : null,
+        newValue: JSON.stringify(updatedRecord)
+      });
     }
 
     res.status(200).json({
       success: true,
-      message: `Record ${id} updated in database table '${table}'`,
+      message: `Record ${id} updated in table '${table}'`,
       data: updatedRecord
     });
   } catch (error) {
@@ -463,46 +595,53 @@ export const createDatabaseRecord = async (req, res, next) => {
     const body = req.body;
     const { getDb, isFallback, mockDb, saveMockDb } = await import('../config/db.js');
 
-    const allowedTables = ['users', 'bills', 'tickets', 'notices', 'visitor_logs', 'committee_members', 'helplines', 'gallery_events'];
+    const allowedTables = ['users', 'bills', 'tickets', 'notices', 'visitor_logs', 'committee_members', 'helplines', 'gallery_events', 'feature_flags', 'society_expenses', 'audit_logs'];
     if (!allowedTables.includes(table)) {
       res.status(400);
       throw new Error(`Unauthorized or invalid table name: '${table}'`);
     }
 
+    let createdRecord = null;
+
     if (isFallback()) {
       const nextId = mockDb[table].length > 0 ? Math.max(...mockDb[table].map(item => item.id || 0)) + 1 : 1;
-      const newRecord = {
+      createdRecord = {
         ...body,
         id: nextId,
         created_at: new Date()
       };
       
-      mockDb[table].push(newRecord);
+      mockDb[table].push(createdRecord);
       saveMockDb();
-      
-      return res.status(201).json({
-        success: true,
-        message: `New record created in mock database table '${table}'`,
-        data: newRecord
+    } else {
+      const db = getDb();
+      if (!db) {
+        throw new Error('Database connection is uninitialized');
+      }
+
+      const fields = Object.keys(body).filter(k => k !== 'id' && k !== 'created_at');
+      const valuePlaceholders = fields.map((_, i) => `$${i + 1}`).join(', ');
+      const values = fields.map(f => body[f]);
+
+      const queryText = `INSERT INTO "${table}" (${fields.map(f => `"${f}"`).join(', ')}) VALUES (${valuePlaceholders}) RETURNING *`;
+      const queryRes = await db.query(queryText, values);
+      createdRecord = queryRes.rows[0];
+    }
+
+    // Write audit trail
+    if (req.user && createdRecord) {
+      await queries.createAuditLog({
+        adminId: req.user.id,
+        actionType: 'CREATE',
+        targetTable: table,
+        recordId: createdRecord.id || createdRecord.feature_key || 'N/A',
+        newValue: JSON.stringify(createdRecord)
       });
     }
 
-    const db = getDb();
-    if (!db) {
-      throw new Error('Database connection is uninitialized');
-    }
-
-    const fields = Object.keys(body).filter(k => k !== 'id' && k !== 'created_at');
-    const valuePlaceholders = fields.map((_, i) => `$${i + 1}`).join(', ');
-    const values = fields.map(f => body[f]);
-
-    const queryText = `INSERT INTO "${table}" (${fields.map(f => `"${f}"`).join(', ')}) VALUES (${valuePlaceholders}) RETURNING *`;
-    const queryRes = await db.query(queryText, values);
-    const createdRecord = queryRes.rows[0];
-
     res.status(201).json({
       success: true,
-      message: `New record created in database table '${table}'`,
+      message: `New record created in table '${table}'`,
       data: createdRecord
     });
   } catch (error) {
@@ -518,11 +657,13 @@ export const deleteDatabaseRecord = async (req, res, next) => {
     const { table, id } = req.params;
     const { getDb, isFallback, mockDb, saveMockDb } = await import('../config/db.js');
 
-    const allowedTables = ['users', 'bills', 'tickets', 'notices', 'visitor_logs', 'committee_members', 'helplines', 'gallery_events'];
+    const allowedTables = ['users', 'bills', 'tickets', 'notices', 'visitor_logs', 'committee_members', 'helplines', 'gallery_events', 'feature_flags', 'society_expenses', 'audit_logs'];
     if (!allowedTables.includes(table)) {
       res.status(400);
       throw new Error(`Unauthorized or invalid table name: '${table}'`);
     }
+
+    let deletedRecord = null;
 
     if (isFallback()) {
       const idx = mockDb[table].findIndex(item => item.id === parseInt(id));
@@ -531,34 +672,39 @@ export const deleteDatabaseRecord = async (req, res, next) => {
         throw new Error(`Record with ID '${id}' not found in table '${table}'`);
       }
       
-      const deletedRecord = mockDb[table][idx];
+      deletedRecord = mockDb[table][idx];
       mockDb[table].splice(idx, 1);
       saveMockDb();
-      
-      return res.status(200).json({
-        success: true,
-        message: `Record ${id} deleted from mock database table '${table}'`,
-        data: deletedRecord
-      });
-    }
+    } else {
+      const db = getDb();
+      if (!db) {
+        throw new Error('Database connection is uninitialized');
+      }
 
-    const db = getDb();
-    if (!db) {
-      throw new Error('Database connection is uninitialized');
+      const queryText = `DELETE FROM "${table}" WHERE id = $1 RETURNING *`;
+      const queryRes = await db.query(queryText, [parseInt(id)]);
+      deletedRecord = queryRes.rows[0];
     }
-
-    const queryText = `DELETE FROM "${table}" WHERE id = $1 RETURNING *`;
-    const queryRes = await db.query(queryText, [parseInt(id)]);
-    const deletedRecord = queryRes.rows[0];
 
     if (!deletedRecord) {
       res.status(404);
-      throw new Error(`Record with ID '${id}' not found in database table '${table}'`);
+      throw new Error(`Record with ID '${id}' not found in table '${table}'`);
+    }
+
+    // Write audit trail
+    if (req.user) {
+      await queries.createAuditLog({
+        adminId: req.user.id,
+        actionType: 'DELETE',
+        targetTable: table,
+        recordId: id,
+        oldValue: JSON.stringify(deletedRecord)
+      });
     }
 
     res.status(200).json({
       success: true,
-      message: `Record ${id} deleted from database table '${table}'`,
+      message: `Record ${id} deleted from table '${table}'`,
       data: deletedRecord
     });
   } catch (error) {
