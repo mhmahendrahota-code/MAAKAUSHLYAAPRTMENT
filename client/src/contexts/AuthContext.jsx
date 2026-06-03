@@ -41,12 +41,8 @@ export const AuthProvider = ({ children }) => {
           handleLogout();
         }
       } catch (err) {
-        console.warn("⚠️ Authentication server check failed. Using locally stored session context.", err);
-        // Only log out if it is explicitly an invalid token error from the server (e.g. 401)
-        // If it's a network error (server offline), we keep the local session active for offline simulation.
-        if (err.message && err.message.includes('status')) {
-          handleLogout();
-        }
+        console.error("Authentication server check failed.", err);
+        handleLogout();
       } finally {
         setLoading(false);
       }
@@ -132,19 +128,8 @@ export const AuthProvider = ({ children }) => {
         setError(err.message);
         throw err;
       }
-      console.warn("⚠️ Backend server offline. Simulating registration locally in mock mode.");
-      
-      const newMockUser = {
-        id: Math.floor(Math.random() * 1000) + 10,
-        name: userData.name,
-        email: userData.email,
-        role: userData.role,
-        flat_no: userData.flatNo || null,
-        phone: userData.phone || null
-      };
-
-      setUser(newMockUser);
-      return newMockUser;
+      setError('Authentication server is unavailable. Please try again later.');
+      throw err;
     } finally {
       setLoading(false);
     }

@@ -36,59 +36,8 @@ export const Complaints = () => {
         setTickets(data.data);
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, falling back to mock support tickets.");
-      // Seed fallback tickets matching user role
-      if (user?.role === 'Admin') {
-        setTickets([
-          {
-            id: 1,
-            title: "बाथरूम की छत से पानी का रिसाव (Water Seepage)",
-            description: "बाथरूम की सीलिंग से लगातार पानी टपक रहा है। ऊपर वाले फ्लैट के पाइप से रिसाव होने की आशंका है।",
-            category: "Plumbing",
-            status: "open",
-            creator_name: "निवासी जॉन डो (John Doe)",
-            flat_no: "B-304",
-            admin_remark: "",
-            created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-            updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)
-          },
-          {
-            id: 2,
-            title: "कॉरिडोर की लाइट खराब (Hallway Light Fused)",
-            description: "फ्लैट B-304 के ठीक सामने लगी कॉरिडोर की सीलिंग ट्यूबलाइट फ्यूज हो गई है, इसे बदलने की कृपा करें।",
-            category: "Electrical",
-            status: "resolved",
-            creator_name: "निवासी जॉन डो (John Doe)",
-            flat_no: "B-304",
-            admin_remark: "इलेक्ट्रीशियन ने आज सुबह लाइट बदल दी है।",
-            created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-            updated_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000)
-          }
-        ]);
-      } else {
-        setTickets([
-          {
-            id: 1,
-            title: "बाथरूम की छत से पानी का रिसाव (Water Seepage)",
-            description: "बाथरूम की सीलिंग से लगातार पानी टपक रहा है। ऊपर वाले फ्लैट के पाइप से रिसाव होने की आशंका है।",
-            category: "Plumbing",
-            status: "open",
-            admin_remark: "",
-            created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-            updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)
-          },
-          {
-            id: 2,
-            title: "कॉरिडोर की लाइट खराब (Hallway Light Fused)",
-            description: "फ्लैट B-304 के ठीक सामने लगी कॉरिडोर की सीलिंग ट्यूबलाइट फ्यूज हो गई है, इसे बदलने की कृपा करें।",
-            category: "Electrical",
-            status: "resolved",
-            admin_remark: "इलेक्ट्रीशियन ने आज सुबह लाइट बदल दी है।",
-            created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-            updated_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000)
-          }
-        ]);
-      }
+      console.error("Failed to fetch tickets:", err);
+      setTickets([]);
     } finally {
       setLoading(false);
     }
@@ -128,24 +77,8 @@ export const Complaints = () => {
         throw new Error(data.message || 'शिकायत दर्ज करने में विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, executing mock ticket create.");
-      const mockNewTicket = {
-        id: tickets.length + 1,
-        title,
-        description,
-        category,
-        status: 'open',
-        created_at: new Date(),
-        updated_at: new Date()
-      };
-      setTickets([mockNewTicket, ...tickets]);
-      setSuccess("शिकायत दर्ज की गई (स्थानीय रूप से सुरक्षित)!");
-      setTitle('');
-      setDescription('');
-      setTimeout(() => {
-        setShowForm(false);
-        setSuccess('');
-      }, 1200);
+      console.error("Error creating ticket:", err);
+      setError(err.message || 'शिकायत दर्ज करने में विफल');
     }
   };
 
@@ -171,17 +104,8 @@ export const Complaints = () => {
         throw new Error(data.message || 'स्थिति अपडेट करने में विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, simulating status change in local memory.");
-      const idx = tickets.findIndex(t => t.id === ticketId);
-      if (idx !== -1) {
-        const updated = [...tickets];
-        updated[idx] = {
-          ...updated[idx],
-          status: newStatus,
-          updated_at: new Date()
-        };
-        setTickets(updated);
-      }
+      console.error("Error updating status:", err);
+      alert('स्थिति अपडेट करने में विफल: ' + err.message);
     } finally {
       setUpdatingId(null);
     }
@@ -206,9 +130,8 @@ export const Complaints = () => {
         throw new Error('Failed to add remark');
       }
     } catch (err) {
-      console.warn("⚠️ Mock mode: adding remark locally.");
-      const updated = tickets.map(t => t.id === ticketId ? { ...t, admin_remark: replyText, updated_at: new Date() } : t);
-      setTickets(updated);
+      console.error("Error adding remark:", err);
+      alert('टिप्पणी भेजने में विफल: ' + err.message);
       setReplyingId(null);
       setReplyText('');
     }

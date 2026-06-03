@@ -26,29 +26,8 @@ export const MaintenanceBills = () => {
         setBills(data.data);
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, loading offline mock invoices.");
-      setBills([
-        {
-          id: 1,
-          resident_id: 2,
-          amount: 4500.00,
-          status: "unpaid",
-          billing_month: "मई 2026",
-          due_date: new Date(2026, 4, 30),
-          created_at: new Date(2026, 4, 1)
-        },
-        {
-          id: 2,
-          resident_id: 2,
-          amount: 4200.00,
-          status: "paid",
-          billing_month: "अप्रैल 2026",
-          due_date: new Date(2026, 3, 30),
-          paid_at: new Date(2026, 3, 10),
-          payment_reference: "TXN1029384756",
-          created_at: new Date(2026, 3, 1)
-        }
-      ]);
+      console.error("Failed to fetch bills:", err);
+      setBills([]);
     } finally {
       setLoading(false);
     }
@@ -103,23 +82,8 @@ export const MaintenanceBills = () => {
         throw new Error(data.message || 'भुगतान विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, executing local state pay simulation.");
-      // Simulating pay in mock state
-      const idx = bills.findIndex(b => b.id === activePaymentBill.id);
-      if (idx !== -1) {
-        const updated = [...bills];
-        updated[idx] = {
-          ...updated[idx],
-          status: 'paid',
-          paid_at: new Date(),
-          payment_reference: paymentRef
-        };
-        setBills(updated);
-      }
-      setPaymentSuccess("भुगतान सफलतापूर्वक सिम्युलेट किया गया!");
-      setTimeout(() => {
-        handleClosePayment();
-      }, 1200);
+      console.error("Payment error:", err);
+      setPaymentError(err.message || 'भुगतान विफल (सर्वर त्रुटि)');
     }
   };
 

@@ -29,23 +29,8 @@ export const Notices = () => {
         setNotices(data.data);
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, falling back to mock notices.");
-      setNotices([
-        {
-          id: 1,
-          title: "वार्षिक आम बैठक (Annual General Body Meeting - AGM)",
-          content: "माँ कौशल्या अपार्टमेंट, सेक्टर 1 की वार्षिक आम बैठक (AGM) रविवार, 14 जून, 2026 को सुबह 10:00 बजे क्लब हाउस में आयोजित की जाएगी। सोसायटी की सुविधाओं और विकास कार्यों पर चर्चा व मतदान करने के लिए सभी फ्लैट स्वामियों की गरिमामयी उपस्थिति सादर आमंत्रित है।",
-          creator_name: "रेसिडेंट वेलफेयर एसोसिएशन अध्यक्ष (Admin)",
-          created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
-        },
-        {
-          id: 2,
-          title: "लिफ्ट रखरखाव कार्यक्रम (Elevator Maintenance Schedule)",
-          content: "ब्लॉक बी (Block B) की लिफ्ट का मासिक रखरखाव और सर्विसिंग कल दोपहर 02:00 बजे से शाम 05:00 बजे तक किया जाएगा। इस दौरान कृपया सीढ़ियों का उपयोग करें या ब्लॉक ए की लिफ्ट का प्रयोग करें। सहयोग के लिए धन्यवाद।",
-          creator_name: "रेसिडेंट वेलफेयर एसोसिएशन अध्यक्ष (Admin)",
-          created_at: new Date()
-        }
-      ]);
+      console.error("Failed to fetch notices:", err);
+      setNotices([]);
     } finally {
       setLoading(false);
     }
@@ -85,22 +70,8 @@ export const Notices = () => {
         throw new Error(data.message || 'सूचना प्रेषित करने में विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, appending notice to mock state.");
-      const mockNewNotice = {
-        id: notices.length + 1,
-        title,
-        content,
-        creator_name: user?.name || 'रेसिडेंट वेलफेयर एसोसिएशन प्रशासक (Admin)',
-        created_at: new Date()
-      };
-      setNotices([mockNewNotice, ...notices]);
-      setSuccess("सूचना सफलतापूर्वक प्रकाशित हुई (मॉक स्टेट)!");
-      setTitle('');
-      setContent('');
-      setTimeout(() => {
-        setShowForm(false);
-        setSuccess('');
-      }, 1200);
+      console.error("Error creating notice:", err);
+      setError(err.message || 'सूचना प्रेषित करने में विफल');
     }
   };
 
@@ -121,11 +92,9 @@ export const Notices = () => {
         throw new Error('विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Mock mode: deleting notice locally.");
-      setNotices(notices.filter(n => n.id !== deleteNoticeId));
-      setSuccess("सूचना हटा दी गई (Mock Mode)!");
+      console.error("Error deleting notice:", err);
+      alert('सूचना हटाने में विफल: ' + err.message);
       setDeleteNoticeId(null);
-      setTimeout(() => setSuccess(''), 2000);
     }
   };
 

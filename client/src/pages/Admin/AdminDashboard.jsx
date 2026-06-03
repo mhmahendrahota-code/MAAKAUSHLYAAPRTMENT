@@ -74,13 +74,8 @@ export const AdminDashboard = () => {
         throw new Error(result.message || 'Failed to update feature');
       }
     } catch (err) {
-      console.warn("⚠️ Server fallback toggle applied.");
-      const nextStatus = !currentStatus;
-      
-      // Local fallback sync
-      setFeatures(prev => prev.map(f => f.feature_key === key ? { ...f, is_active: nextStatus } : f));
-      setSuccessMsg(`सुविधा को सफलतापूर्वक ${nextStatus ? 'सक्रिय' : 'निष्क्रिय'} किया गया। (Simulated)`);
-      setTimeout(() => setSuccessMsg(''), 4000);
+      console.error("Feature toggle failed:", err);
+      setErrorMsg(err.message || 'सुविधा अपडेट करने में विफल।');
     } finally {
       setUpdatingKey(null);
     }
@@ -101,28 +96,17 @@ export const AdminDashboard = () => {
           throw new Error(result.message || 'Failed to fetch admin stats');
         }
       } catch (err) {
-        console.warn("⚠️ Server offline, loading offline simulated Admin stats.");
+        console.error("Failed to fetch admin stats:", err);
         setStats({
-          activeResidents: 1,
-          openComplaints: 1,
-          activeVisitors: 1,
-          totalFunds: 4200.00,
-          unpaidAmount: 4500.00,
-          galleryCount: 3,
-          bachelorAlerts: [
-            { id: 9, name: "सर्वेश मिश्रा", police_verification_status: "pending", is_expiring_soon: false }
-          ]
+          activeResidents: 0,
+          openComplaints: 0,
+          activeVisitors: 0,
+          totalFunds: 0,
+          unpaidAmount: 0,
+          galleryCount: 0,
+          bachelorAlerts: []
         });
-        setFeatures([
-          { feature_key: "notices", feature_name: "सूचना पटल (Notices)", is_active: true },
-          { feature_key: "maintenance-bills", feature_name: "रखरखाव बिल (Bills)", is_active: true },
-          { feature_key: "complaints", feature_name: "शिकायतें एवं सहायता", is_active: true },
-          { feature_key: "visitor-logs", feature_name: "द्वारपाल लॉग (Security Logs)", is_active: true },
-          { feature_key: "committee", feature_name: "RWA प्रबंध समिति (Committee)", is_active: true },
-          { feature_key: "gallery", feature_name: "सोसायटी गैलरी (Gallery)", is_active: true },
-          { feature_key: "downloads", feature_name: "दस्तावेज़ डाउनलोड (Downloads)", is_active: true },
-          { feature_key: "contact", feature_name: "RWA संपर्क डेस्क (Contact)", is_active: true }
-        ]);
+        setFeatures([]);
       }
     };
 

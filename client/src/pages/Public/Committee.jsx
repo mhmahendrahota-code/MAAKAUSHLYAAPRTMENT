@@ -53,7 +53,7 @@ export const Committee = () => {
         throw new Error(data.message || 'विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, could not fetch committee data.");
+      console.error("Failed to fetch committee members:", err);
       setMembers([]);
     } finally {
       setLoading(false);
@@ -130,32 +130,8 @@ export const Committee = () => {
         throw new Error(data.message || 'प्रक्रिया विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Fallback Mode: Simulating committee operation locally.");
-      if (modalMode === 'add') {
-        const mockNewMember = {
-          id: Date.now(),
-          ...payload,
-          flat_no: payload.flatNo,
-          display_order: payload.displayOrder
-        };
-        const updated = [...members, mockNewMember].sort((a, b) => a.display_order - b.display_order);
-        setMembers(updated);
-        setSuccess('नया सदस्य जोड़ा गया (Simulated Offline Mode)!');
-      } else {
-        const updated = members.map(m => m.id === editingId ? {
-          ...m,
-          ...payload,
-          flat_no: payload.flatNo,
-          display_order: payload.displayOrder
-        } : m).sort((a, b) => a.display_order - b.display_order);
-        setMembers(updated);
-        setSuccess('विवरण अपडेट किया गया (Simulated Offline Mode)!');
-      }
-
-      setTimeout(() => {
-        setShowModal(false);
-        setSuccess('');
-      }, 1200);
+      console.error("Error saving member:", err);
+      setError(err.message || 'प्रक्रिया विफल');
     }
   };
 
@@ -175,11 +151,9 @@ export const Committee = () => {
         throw new Error('विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Fallback Mode: Deleting committee member locally.");
-      setMembers(members.filter(m => m.id !== deleteId));
-      setSuccess("सदस्य को हटाया गया (Simulated Offline Mode)!");
+      console.error("Error deleting member:", err);
+      alert('सदस्य हटाने में विफल: ' + err.message);
       setDeleteId(null);
-      setTimeout(() => setSuccess(''), 2000);
     }
   };
 

@@ -95,85 +95,11 @@ export const Finance = () => {
         setResidentId(filteredResidents[0].id);
       }
     } catch (err) {
-      console.warn("⚠️ Server fetch failed, falling back to simulated mock database:", err.message);
-      
-      setBills([
-        {
-          id: 1,
-          resident_name: "सूफी इलियास चिश्ती (Sufi Illias Chisti)",
-          flat_no: "B-304",
-          amount: 2000.00,
-          status: "unpaid",
-          billing_month: "अप्रैल 2026",
-          due_date: new Date(2026, 3, 20),
-          created_at: new Date(2026, 3, 1)
-        },
-        {
-          id: 2,
-          resident_name: "स्वदेश कटियार (Swadesh Katiyar)",
-          flat_no: "C-102",
-          amount: 2000.00,
-          status: "paid",
-          billing_month: "अप्रैल 2026",
-          due_date: new Date(2026, 3, 20),
-          paid_at: new Date(2026, 3, 12),
-          payment_reference: "TXN1029384756",
-          created_at: new Date(2026, 3, 1)
-        },
-        {
-          id: 3,
-          resident_name: "आलोक बारिया (Alok Bariya)",
-          flat_no: "C-103",
-          amount: 2000.00,
-          status: "unpaid",
-          billing_month: "मई 2026",
-          due_date: new Date(2026, 4, 30),
-          created_at: new Date(2026, 4, 1)
-        }
-      ]);
-      setExpenses([
-        {
-          id: 1,
-          amount: 1500.00,
-          category: "Generator Diesel",
-          expense_date: new Date(2026, 4, 10),
-          vendor: "Bharat Petroleum",
-          description: "Generator backup fuel refill",
-          reference_no: "BILL-1029",
-          created_at: new Date(2026, 4, 10)
-        },
-        {
-          id: 2,
-          amount: 5000.00,
-          category: "Guard Salary",
-          expense_date: new Date(2026, 4, 1),
-          vendor: "Security Services",
-          description: "Security guard monthly salary",
-          reference_no: "TXN-8877",
-          created_at: new Date(2026, 4, 1)
-        }
-      ]);
-      setResidents([
-        { id: 2, name: "सूफी इलियास चिश्ती (Sufi Illias Chisti)", flat_no: "B-304", email: "resident@maakaushalya.com" },
-        { id: 4, name: "स्वदेश कटियार (Swadesh Katiyar)", flat_no: "C-102", email: "swadesh@maakaushalya.com" },
-        { id: 5, name: "आलोक बारिया (Alok Bariya)", flat_no: "C-103", email: "alok@maakaushalya.com" },
-        { id: 6, name: "अयाज़ भाई (Ayaz Bhai)", flat_no: "C-104", email: "ayaz@maakaushalya.com" },
-        { id: 7, name: "डॉ. अमित सिंह (Dr. Amit Singh)", flat_no: "C-105", email: "amit@maakaushalya.com" },
-        { id: 8, name: "हेमलाल पाल (Hemlal Pal)", flat_no: "C-106", email: "hemlal@maakaushalya.com" },
-        { id: 9, name: "सर्वेश मिश्रा (Sarvesh Mishra)", flat_no: "C-107", email: "sarvesh@maakaushalya.com" },
-        { id: 10, name: "आकाश दुबे (Akash दुबे)", flat_no: "C-108", email: "akash@maakaushalya.com" },
-        { id: 11, name: "लाल बहादुर यादव (Lal Bahadur Yadav)", flat_no: "C-109", email: "lalbahadur@maakaushalya.com" },
-        { id: 12, name: "भरत कुमार अग्रवाल (Bharat Kumar Agrawal)", flat_no: "C-110", email: "bharat@maakaushalya.com" },
-        { id: 13, name: "चंद्रकांत बुरांडे (Chandrakant Burande)", flat_no: "C-111", email: "chandrakant@maakaushalya.com" },
-        { id: 14, name: "नरेंद्र परमार (Narendra Parmar)", flat_no: "C-112", email: "narendra@maakaushalya.com" },
-        { id: 15, name: "हिमांशु (Himanshu)", flat_no: "C-113", email: "himanshu@maakaushalya.com" },
-        { id: 16, name: "नरेश (Naresh)", flat_no: "C-114", email: "naresh@maakaushalya.com" },
-        { id: 17, name: "अशोक निषाद (Ashok Nishad)", flat_no: "C-115", email: "ashok@maakaushalya.com" },
-        { id: 18, name: "हेमंत पांडे (Hemant Pandey)", flat_no: "C-116", email: "hemant@maakaushalya.com" },
-        { id: 19, name: "केदार हंडघोरे (Kedar Handghore)", flat_no: "C-117", email: "kedar@maakaushalya.com" },
-        { id: 20, name: "राजू दास (Raju Das)", flat_no: "C-118", email: "raju@maakaushalya.com" }
-      ]);
-      setResidentId('2');
+      console.error("Failed to fetch finance data:", err);
+      setError(err.message || "डेटा लोड करने में विफल");
+      setBills([]);
+      setExpenses([]);
+      setResidents([]);
     } finally {
       setLoading(false);
     }
@@ -231,26 +157,8 @@ export const Finance = () => {
         throw new Error(data.message || 'बिल जनरेट करने में असमर्थ');
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, creating mock bill in state.");
-      const selected = residents.find(r => r.id === parseInt(residentId));
-      const mockNewBill = {
-        id: bills.length + 1,
-        resident_name: selected ? selected.name : 'निवासी सदस्य',
-        flat_no: selected ? selected.flat_no : 'N/A',
-        amount: parseFloat(amount),
-        status: 'unpaid',
-        billing_month: billingMonth,
-        due_date: new Date(dueDate),
-        created_at: new Date()
-      };
-      setBills([mockNewBill, ...bills]);
-      setSuccess(`रखरखाव चालान सफलतापूर्वक सिम्युलेट किया गया (ऑफलाइन मॉक)!`);
-      setAmount('');
-      setDueDate('');
-      setTimeout(() => {
-        setShowForm(false);
-        setSuccess('');
-      }, 1200);
+      console.error("Error generating bill:", err);
+      setError(err.message || 'बिल जनरेट करने में असमर्थ');
     }
   };
 
@@ -293,28 +201,8 @@ export const Finance = () => {
         throw new Error(data.message || 'स्वचालित बिलिंग विफल हो गई।');
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, generating mock auto-billing in state.");
-      const newBills = [...bills];
-      let successCount = 0;
-      for (const r of residents) {
-        const mockNewBill = {
-          id: newBills.length + 1,
-          resident_name: r.name,
-          flat_no: r.flat_no,
-          amount: parseFloat(autoAmount),
-          status: 'unpaid',
-          billing_month: autoMonth,
-          due_date: new Date(autoDueDate),
-          created_at: new Date()
-        };
-        newBills.unshift(mockNewBill);
-        successCount++;
-      }
-      setBills(newBills);
-      setSuccess(`स्वचालित मासिक मेंटेनेंस बिलिंग पूरी हुई (ऑफलाइन मॉक)! ${successCount} निवासियों के लिए ₹${autoAmount} का बिल उत्पन्न हुआ।`);
-      setShowAutoBillingModal(false);
-      setAutoDueDate('');
-      setTimeout(() => setSuccess(''), 4000);
+      console.error("Error auto billing:", err);
+      setError(err.message || 'स्वचालित बिलिंग विफल हो गई।');
     }
   };
 
@@ -362,28 +250,8 @@ export const Finance = () => {
         throw new Error(data.message || 'खर्च जोड़ने में विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, recording mock expense locally.");
-      const mockNewExpense = {
-        id: expenses.length + 1,
-        amount: parseFloat(expenseAmount),
-        category: expenseCategory,
-        expense_date: expenseDate ? new Date(expenseDate) : new Date(),
-        vendor: expenseVendor || 'N/A',
-        description: expenseDesc || '',
-        reference_no: expenseRef || '',
-        created_at: new Date()
-      };
-      setExpenses([mockNewExpense, ...expenses]);
-      setSuccess('खर्च सफलतापूर्वक दर्ज (ऑफलाइन मॉक Mode)!');
-      setExpenseAmount('');
-      setExpenseVendor('');
-      setExpenseDesc('');
-      setExpenseRef('');
-      setExpenseDate('');
-      setTimeout(() => {
-        setShowExpenseForm(false);
-        setSuccess('');
-      }, 1200);
+      console.error("Error logging expense:", err);
+      setError(err.message || 'खर्च जोड़ने में विफल');
     }
   };
 
@@ -403,10 +271,8 @@ export const Finance = () => {
         throw new Error('खर्च विवरण हटाने में असमर्थ');
       }
     } catch (err) {
-      console.warn("⚠️ Mock mode: deleting expense locally.");
-      setExpenses(expenses.filter(e => e.id !== expenseId));
-      setSuccess("खर्च विवरण हटा दिया गया (Mock Mode)!");
-      setTimeout(() => setSuccess(''), 2000);
+      console.error("Error deleting expense:", err);
+      alert('खर्च विवरण हटाने में असमर्थ: ' + err.message);
     }
   };
 
@@ -433,13 +299,10 @@ export const Finance = () => {
         throw new Error(data.message || 'भुगतान दर्ज करने में विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Mock mode: offline payment.");
-      const updated = bills.map(b => b.id === offlinePayBill.id ? { ...b, status: 'paid', paid_at: new Date(), payment_reference: offlineRef || 'CASH-OFFLINE' } : b);
-      setBills(updated);
-      setSuccess("भुगतान दर्ज किया गया (Mock Mode)!");
+      console.error("Error recording offline payment:", err);
+      alert('भुगतान दर्ज करने में विफल: ' + err.message);
       setOfflinePayBill(null);
       setOfflineRef('');
-      setTimeout(() => setSuccess(''), 2000);
     }
   };
 
@@ -460,11 +323,9 @@ export const Finance = () => {
         throw new Error('हटाने में विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Mock mode: deleting bill locally.");
-      setBills(bills.filter(b => b.id !== deleteBillId));
-      setSuccess("चालान हटा दिया गया (Mock Mode)!");
+      console.error("Error deleting bill:", err);
+      alert('हटाने में विफल: ' + err.message);
       setDeleteBillId(null);
-      setTimeout(() => setSuccess(''), 2000);
     }
   };
 

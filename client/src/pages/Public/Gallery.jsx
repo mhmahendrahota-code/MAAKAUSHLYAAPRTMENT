@@ -67,30 +67,8 @@ export const Gallery = () => {
         throw new Error(data.message || 'विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, using fallback simulated society gallery events.");
-      setEvents([
-        { 
-          id: 1, 
-          title: "गणेश चतुर्थी उत्सव (Ganesh Chaturthi Utsav)", 
-          content: "माँ कौशल्या अपार्टमेंट में गणेश चतुर्थी के पावन अवसर पर भव्य गणेश स्थापना और दैनिक संध्या आरती का आयोजन किया गया। अंतिम दिन सभी निवासियों की सहभागिता के साथ भंडारा और विसर्जन यात्रा निकाली गई।", 
-          image_url: "https://images.unsplash.com/photo-1567591974584-f18551452228?w=800&auto=format&fit=crop&q=60", 
-          event_date: "2025-09-15"
-        },
-        { 
-          id: 2, 
-          title: "स्वतंत्रता दिवस ध्वजारोहण (Independence Day Flag Hoisting)", 
-          content: "15 अगस्त के शुभ अवसर पर सोसायटी परिसर में आरडब्ल्यूए समिति द्वारा ध्वजारोहण कार्यक्रम आयोजित किया गया। बच्चों के लिए देशभक्ति गीत व सांस्कृतिक प्रतियोगिताएं रखी गईं और अंत में मिठाई वितरित की गई।", 
-          image_url: "https://images.unsplash.com/photo-1532375811409-905115e3b5a9?w=800&auto=format&fit=crop&q=60", 
-          event_date: "2025-08-15"
-        },
-        { 
-          id: 3, 
-          title: "स्वच्छता एवं वृक्षारोपण अभियान (Green & Clean Drive)", 
-          content: "माँ कौशल्या अपार्टमेंट को हरा-भरा और स्वच्छ बनाने के लिए आरडब्ल्यूए और युवा विंग द्वारा विशेष वृक्षारोपण अभियान चलाया गया। परिसर के विभिन्न कोनों में 50+ छायादार और औषधीय पौधे रोपे गए।", 
-          image_url: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop&q=60", 
-          event_date: "2026-05-10"
-        }
-      ]);
+      console.error("Failed to fetch gallery events:", err);
+      setEvents([]);
     } finally {
       setLoading(false);
     }
@@ -164,32 +142,8 @@ export const Gallery = () => {
         throw new Error(data.message || 'प्रक्रिया विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Fallback Mode: Simulating gallery event operation locally.");
-      if (modalMode === 'add') {
-        const mockNewEvent = {
-          id: Date.now(),
-          ...payload,
-          image_url: payload.imageUrl,
-          event_date: payload.eventDate
-        };
-        const updated = [mockNewEvent, ...events].sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
-        setEvents(updated);
-        setSuccess('इवेंट प्रकाशित हुआ (Simulated Offline Mode)!');
-      } else {
-        const updated = events.map(e => e.id === editingId ? {
-          ...e,
-          ...payload,
-          image_url: payload.imageUrl,
-          event_date: payload.eventDate
-        } : e).sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
-        setEvents(updated);
-        setSuccess('इवेंट विवरण अपडेट हुआ (Simulated Offline Mode)!');
-      }
-
-      setTimeout(() => {
-        setShowModal(false);
-        setSuccess('');
-      }, 1200);
+      console.error("Error saving gallery event:", err);
+      setError(err.message || 'प्रक्रिया विफल');
     }
   };
 
@@ -209,11 +163,9 @@ export const Gallery = () => {
         throw new Error('विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Fallback Mode: Deleting gallery event locally.");
-      setEvents(events.filter(e => e.id !== deleteId));
-      setSuccess("इवेंट को हटाया गया (Simulated Offline Mode)!");
+      console.error("Error deleting event:", err);
+      alert('इवेंट हटाने में विफल: ' + err.message);
       setDeleteId(null);
-      setTimeout(() => setSuccess(''), 2000);
     }
   };
 

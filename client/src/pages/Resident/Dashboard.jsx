@@ -54,21 +54,7 @@ export const Dashboard = () => {
           }
         }
       } catch (err) {
-        console.warn("⚠️ Backend disconnected, simulating dashboard metrics.");
-        // Mock offline fallback stats
-        setStats({
-          noticesCount: 2,
-          outstandingBills: 1,
-          outstandingAmount: 4500.00,
-          activeTickets: 1
-        });
-        setRecentNotice({
-          id: 2,
-          title: "लिफ्ट रखरखाव अनुसूची (Elevator)",
-          content: "ब्लॉक बी के लिए लिफ्ट की सर्विसिंग कल दोपहर 2:00 बजे से शाम 5:00 बजे तक की जाएगी।",
-          creator_name: "रेसिडेंट वेलफेयर एसोसिएशन अध्यक्ष (प्रशासक)",
-          created_at: new Date()
-        });
+        console.error("Failed to fetch dashboard stats:", err);
       } finally {
         setLoading(false);
       }

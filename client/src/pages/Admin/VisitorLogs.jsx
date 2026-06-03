@@ -34,37 +34,8 @@ export const VisitorLogs = () => {
         setLogs(data.data);
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, falling back to mock visitor logs.");
-      // Seed mock visitor logs depending on role
-      const mockHistorical = [
-        {
-          id: 1,
-          name: "रमेश शर्मा (Ramesh Sharma)",
-          phone: "+919876543210",
-          purpose: "Amazon Delivery",
-          flat_no: "B-304",
-          check_in: new Date(Date.now() - 2 * 60 * 60 * 1000),
-          check_out: new Date(Date.now() - 110 * 60 * 1000),
-          logged_by_name: "सुरक्षा गार्ड शिंदे (Gatekeeper)"
-        },
-        {
-          id: 2,
-          name: "डॉ. विनय मेहता (Dr. Vinay Mehta)",
-          phone: "+918887776665",
-          purpose: "Guest",
-          flat_no: "A-101",
-          check_in: new Date(Date.now() - 1 * 60 * 60 * 1000),
-          check_out: null,
-          logged_by_name: "सुरक्षा गार्ड शिंदे (Gatekeeper)"
-        }
-      ];
-
-      if (user?.role === 'Resident') {
-        const flat = user.flat_no;
-        setLogs(mockHistorical.filter(l => (l.flat_no || '').toLowerCase() === (flat || '').toLowerCase()));
-      } else {
-        setLogs(mockHistorical);
-      }
+      console.error("Failed to fetch logs:", err);
+      setLogs([]);
     } finally {
       setLoading(false);
     }
@@ -108,28 +79,8 @@ export const VisitorLogs = () => {
         throw new Error(data.message || 'आगमन दर्ज करने में विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, simulating visitor check-in.");
-      const mockNewLog = {
-        id: logs.length + 1,
-        name,
-        phone,
-        gender,
-        purpose,
-        flat_no: flatNo,
-        check_in: new Date(),
-        check_out: null,
-        logged_by_name: user?.name || "सुरक्षा गार्ड (Security)"
-      };
-      setLogs([mockNewLog, ...logs]);
-      setSuccess(`आगंतुक ${name} का आगमन दर्ज हुआ (मॉक Mode)!`);
-      setName('');
-      setPhone('');
-      setGender('Male');
-      setFlatNo('');
-      setTimeout(() => {
-        setShowCheckinForm(false);
-        setSuccess('');
-      }, 1200);
+      console.error("Error creating checkin log:", err);
+      setError(err.message || 'आगमन दर्ज करने में विफल');
     }
   };
 
@@ -151,16 +102,8 @@ export const VisitorLogs = () => {
         throw new Error(data.message || 'प्रस्थान दर्ज करने में विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, checking out visitor in mock memory state.");
-      const idx = logs.findIndex(l => l.id === logId);
-      if (idx !== -1) {
-        const updated = [...logs];
-        updated[idx] = {
-          ...updated[idx],
-          check_out: new Date()
-        };
-        setLogs(updated);
-      }
+      console.error("Error checking out visitor:", err);
+      alert('प्रस्थान दर्ज करने में विफल: ' + err.message);
     } finally {
       setCheckingOutId(null);
     }

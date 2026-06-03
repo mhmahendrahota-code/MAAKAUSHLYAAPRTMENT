@@ -142,293 +142,8 @@ export const Directory = () => {
         throw new Error(data.message || 'Failed to fetch directory');
       }
     } catch (err) {
-      console.warn("⚠️ Server offline or query failed, falling back to mock user directory database.", err.message);
-      setUsersList([
-        {
-          id: 100,
-          name: "आरडब्ल्यूए प्रशासक (RWA Admin)",
-          email: "admin@maakaushalya.com",
-          role: "Admin",
-          flat_no: "A-100",
-          phone: "9876543210",
-          occupancy_status: "Self-Occupied",
-          aadhaar_number: "2233 4455 6677",
-          family_members: 3,
-          family_member_names: JSON.stringify([{name: "सीमा सिंह", phone: "9876543211"}, {name: "रोहन सिंह", phone: "9876543212"}]),
-          vehicles: JSON.stringify([{type: "Car", number: "CG 04 AD 4321", sticker: true}]),
-          move_in_date: "2020-04-15",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 1,
-          name: "नौशाद अहमद (Naushad Ahmad)",
-          email: "naushad@maakaushalya.com",
-          role: "Resident",
-          flat_no: "A-101",
-          phone: "9770779072",
-          occupancy_status: "Self-Occupied",
-          aadhaar_number: "4321 8765 9900",
-          family_members: 4,
-          family_member_names: JSON.stringify([{name: "शबाना अहमद", phone: "9770779073"}, {name: "आसिफ अहमद", phone: "9770779074"}]),
-          vehicles: JSON.stringify([{type: "Car", number: "CG 04 MB 0101", sticker: true}, {type: "Bike", number: "CG 04 K 9876", sticker: false}]),
-          move_in_date: "2021-08-10",
-          has_pet: true,
-          pet_details: "1 Labra Dog (Jack)",
-          created_at: new Date()
-        },
-        {
-          id: 2,
-          name: "सूफी इलियास चिश्ती (Sufi Illias Chisti)",
-          email: "resident@maakaushalya.com",
-          role: "Resident",
-          flat_no: "B-304",
-          phone: "7869551226",
-          occupancy_status: "Self-Occupied",
-          aadhaar_number: "8888 7777 6666",
-          family_members: 2,
-          family_member_names: JSON.stringify([{name: "नूर बानो", phone: "7869551227"}]),
-          vehicles: JSON.stringify([{type: "Bike", number: "CG 04 Z 7860", sticker: true}]),
-          move_in_date: "2019-11-20",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 3,
-          name: "सुरक्षा गार्ड शिंदे (Gatekeeper Shinde)",
-          email: "guard@maakaushalya.com",
-          role: "Security",
-          flat_no: null,
-          phone: "+918888877777",
-          aadhaar_number: "1111 2222 3333",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 4,
-          name: "स्वदेश कटियार (Swadesh Katiyar)",
-          email: "swadesh@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-102",
-          phone: "8966996677",
-          occupancy_status: "Self-Occupied",
-          aadhaar_number: "9900 8811 7722",
-          family_members: 3,
-          family_member_names: JSON.stringify([{name: "आरती कटियार", phone: "8966996678"}]),
-          vehicles: JSON.stringify([{type: "Car", number: "CG 04 AC 5050", sticker: false}]),
-          move_in_date: "2022-01-05",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 5,
-          name: "आलोक बारिया (Alok Bariya)",
-          email: "alok@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-103",
-          phone: "9109328032",
-          occupancy_status: "Rented",
-          owner_name: "प्रकाश बारिया",
-          owner_phone: "9988776655",
-          aadhaar_number: "5544 3322 1100",
-          family_members: 2,
-          lease_duration: "11 months",
-          lease_agreement_submitted: true,
-          police_verification_status: "verified",
-          move_in_date: "2023-05-01",
-          has_pet: true,
-          pet_details: "1 Persian Cat",
-          is_legacy_bachelor: true,
-          exemption_ref: "RWA-2024-U72 (Date: 12-May-2024)",
-          created_at: new Date()
-        },
-        {
-          id: 6,
-          name: "अयाज़ भाई (Ayaz Bhai)",
-          email: "ayaz@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-104",
-          phone: "7879553997",
-          occupancy_status: "Vacant",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 7,
-          name: "डॉ. अमित सिंह (Dr. Amit Singh)",
-          email: "amit@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-105",
-          phone: "9926974248",
-          occupancy_status: "Self-Occupied",
-          aadhaar_number: "6677 8899 0011",
-          family_members: 5,
-          vehicles: JSON.stringify([{type: "Car", number: "CG 04 D 7777", sticker: true}]),
-          move_in_date: "2018-06-15",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 8,
-          name: "हेमलाल पाल (Hemlal Pal)",
-          email: "hemlal@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-106",
-          phone: "9575836600",
-          occupancy_status: "Self-Occupied",
-          aadhaar_number: "1234 9876 5432",
-          family_members: 4,
-          move_in_date: "2021-03-12",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 9,
-          name: "सर्वेश मिश्रा (Sarvesh Mishra)",
-          email: "sarvesh@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-107",
-          phone: "9907749456",
-          occupancy_status: "Rented",
-          owner_name: "गोपाल मिश्रा",
-          owner_phone: "9111222333",
-          aadhaar_number: "7766 5544 3322",
-          family_members: 3,
-          lease_duration: "24 months",
-          lease_agreement_submitted: false,
-          police_verification_status: "pending",
-          move_in_date: "2022-10-01",
-          has_pet: true,
-          pet_details: "2 Lovebirds",
-          created_at: new Date()
-        },
-        {
-          id: 10,
-          name: "आकाश दुबे (Akash Dubey)",
-          email: "akash@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-108",
-          phone: "8823006747",
-          occupancy_status: "Self-Occupied",
-          aadhaar_number: "9898 7676 5454",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 11,
-          name: "लाल बहादुर यादव (Lal Bahadur Yadav)",
-          email: "lalbahadur@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-109",
-          phone: "9329995551",
-          occupancy_status: "Self-Occupied",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 12,
-          name: "भरत कुमार अग्रवाल (Bharat Kumar Agrawal)",
-          email: "bharat@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-110",
-          phone: "7758895539",
-          occupancy_status: "Self-Occupied",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 13,
-          name: "चंद्रकांत बुरांडे (Chandrakant Burande)",
-          email: "chandrakant@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-111",
-          phone: "8602451035",
-          occupancy_status: "Rented",
-          owner_name: "महेश बुरांडे",
-          owner_phone: "9425201234",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 14,
-          name: "नरेंद्र परमार (Narendra Parmar)",
-          email: "narendra@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-112",
-          phone: "9827920102",
-          occupancy_status: "Self-Occupied",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 15,
-          name: "हिमांशु (Himanshu)",
-          email: "himanshu@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-113",
-          phone: "7240889708",
-          occupancy_status: "Self-Occupied",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 16,
-          name: "नरेश (Naresh)",
-          email: "naresh@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-114",
-          phone: "8602333455",
-          occupancy_status: "Vacant",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 17,
-          name: "अशोक निषाद (Ashok Nishad)",
-          email: "ashok@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-115",
-          phone: "9827928559",
-          occupancy_status: "Self-Occupied",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 18,
-          name: "हेमंत पांडे (Hemant Pandey)",
-          email: "hemant@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-116",
-          phone: "9981112078",
-          occupancy_status: "Self-Occupied",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 19,
-          name: "केदार हंडघोरे (Kedar Handghore)",
-          email: "kedar@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-117",
-          phone: "9022544971",
-          occupancy_status: "Rented",
-          owner_name: "रघुनाथ हंडघोरे",
-          owner_phone: "9022544972",
-          has_pet: false,
-          created_at: new Date()
-        },
-        {
-          id: 20,
-          name: "राजू दास (Raju Das)",
-          email: "raju@maakaushalya.com",
-          role: "Resident",
-          flat_no: "C-118",
-          phone: "7697187098",
-          occupancy_status: "Self-Occupied",
-          has_pet: false,
-          created_at: new Date()
-        }
-      ]);
+      console.error("Failed to fetch directory:", err);
+      setUsersList([]);
     } finally {
       setLoading(false);
     }
@@ -654,40 +369,8 @@ export const Directory = () => {
           throw new Error(data.message || 'Bulk import failed');
         }
       } catch (err) {
-        console.warn("⚠️ Server offline, falling back to simulated bulk upload in local state.");
-        const newUsers = [...usersList];
-        let count = 0;
-        for (const u of usersToImport) {
-          newUsers.push({
-            id: newUsers.length + 1,
-            name: u.name,
-            email: u.email,
-            role: u.role,
-            gender: u.gender,
-            flat_no: u.flatNo,
-            phone: u.phone,
-            occupancy_status: u.occupancyStatus,
-            owner_name: u.ownerName,
-            owner_phone: u.ownerPhone,
-            aadhaar_number: u.aadhaarNumber,
-            family_members: u.familyMembers,
-            family_member_names: u.familyMemberNames,
-            vehicles: u.vehicles,
-            move_in_date: u.moveInDate,
-            lease_duration: u.leaseDuration,
-            emergency_contact_name: u.emergencyContactName,
-            emergency_contact_phone: u.emergencyContactPhone,
-            profile_picture: u.profilePicture,
-            has_pet: u.hasPet,
-            pet_details: u.petDetails,
-            is_legacy_bachelor: u.isLegacyBachelor,
-            exemption_ref: u.exemptionRef,
-            created_at: new Date()
-          });
-          count++;
-        }
-        setUsersList(newUsers);
-        setSuccess(`बल्क अपलोड पूरा हुआ (ऑफलाइन मॉक)! ${count} सदस्य जोड़े गए।`);
+        console.error("Bulk upload failed:", err);
+        setError(err.message || 'बल्क अपलोड विफल');
       }
       setTimeout(() => setSuccess(''), 3000);
     };
@@ -779,39 +462,8 @@ export const Directory = () => {
         throw new Error(data.message || 'पंजीकरण विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, registering member into simulated directory state.");
-      const mockNewUser = {
-        id: usersList.length + 1,
-        name,
-        email,
-        role,
-        gender,
-        flat_no: role === 'Resident' ? flatNo : null,
-        phone,
-        occupancy_status: role === 'Resident' ? occupancyStatus : 'Self-Occupied',
-        tenant_type: role === 'Resident' && occupancyStatus === 'Rented' ? tenantType : 'Family',
-        owner_name: (role === 'Resident' && occupancyStatus === 'Rented') ? ownerName : null,
-        owner_phone: (role === 'Resident' && occupancyStatus === 'Rented') ? ownerPhone : null,
-        aadhaar_number: aadhaarNumber || null,
-        family_members: familyMembers ? parseInt(familyMembers) : null,
-        family_member_names: familyMemberNames.length > 0 ? JSON.stringify(familyMemberNames) : null,
-        vehicles: vehicles.length > 0 ? JSON.stringify(vehicles) : null,
-        move_in_date: moveInDate || null,
-        lease_duration: (role === 'Resident' && occupancyStatus === 'Rented') ? leaseDuration : null,
-        emergency_contact_name: emergencyContactName || null,
-        emergency_contact_phone: emergencyContactPhone || null,
-        profile_picture: profilePicture || null,
-        has_pet: role === 'Resident' ? hasPet : false,
-        pet_details: (role === 'Resident' && hasPet) ? petDetails : null,
-        created_at: new Date()
-      };
-      setUsersList([...usersList, mockNewUser]);
-      setSuccess(`सदस्य ${name} सफलतापूर्वक पंजीकृत (मॉक Mode)!`);
-      resetForm();
-      setTimeout(() => {
-        setShowAddForm(false);
-        setSuccess('');
-      }, 1200);
+      console.error("Error adding member:", err);
+      setError(err.message || 'पंजीकरण विफल');
     }
   };
 
@@ -974,29 +626,8 @@ export const Directory = () => {
         throw new Error(data.message || 'अपडेट विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Mock mode: updating user locally.");
-      
-      const updatedUser = {
-        ...editUser,
-        family_member_names: serializedFamily,
-        vehicles: serializedVehicles,
-        has_pet: editUser.role === 'Resident' ? editUser.has_pet : false,
-        pet_details: (editUser.role === 'Resident' && editUser.has_pet) ? editUser.pet_details : null,
-        is_legacy_bachelor: editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' ? editUser.is_legacy_bachelor : false,
-        exemption_ref: (editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' && editUser.is_legacy_bachelor) ? editUser.exemption_ref : null,
-        tenant_type: editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' ? editUser.tenant_type : 'Family',
-        lease_agreement_submitted: editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' ? editUser.lease_agreement_submitted : false,
-        police_verification_status: editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' ? editUser.police_verification_status : 'pending'
-      };
-
-      delete updatedUser.family_member_names_arr;
-      delete updatedUser.vehicles_arr;
-
-      const updatedList = usersList.map(u => u.id === editUser.id ? { ...u, ...updatedUser, updated_at: new Date() } : u);
-      setUsersList(updatedList);
-      setSuccess("सदस्य अद्यतन सफल (Mock Mode)!");
-      setEditUser(null);
-      setTimeout(() => setSuccess(''), 2000);
+      console.error("Error updating member:", err);
+      setError(err.message || 'अपडेट विफल');
     }
   };
 
@@ -1017,11 +648,9 @@ export const Directory = () => {
         throw new Error(data.message || 'हटाना विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Mock mode: deleting user locally.");
-      setUsersList(usersList.filter(u => u.id !== deleteUserId));
-      setSuccess("सदस्य हटा दिया गया (Mock Mode)!");
+      console.error("Error deleting member:", err);
+      alert('हटाना विफल: ' + err.message);
       setDeleteUserId(null);
-      setTimeout(() => setSuccess(''), 2000);
     }
   };
 
@@ -1041,10 +670,8 @@ export const Directory = () => {
         throw new Error(data.message || 'स्वीकृति विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Mock mode: approving user locally.");
-      setUsersList(usersList.map(u => u.id === userId ? { ...u, is_approved: true } : u));
-      setSuccess("खाता स्वीकृत (Mock Mode)!");
-      setTimeout(() => setSuccess(''), 2000);
+      console.error("Error approving member:", err);
+      alert('स्वीकृति विफल: ' + err.message);
     }
   };
 

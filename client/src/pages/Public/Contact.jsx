@@ -58,13 +58,8 @@ export const Contact = () => {
         throw new Error(data.message || 'विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Server offline, using fallback simulated emergency contacts.");
-      setHelplines([
-        { id: 1, title: "मुख्य गार्ड गेट हाउस (Gate)", number: "+91 80 4910291", note: "इंटरकॉम: 99 / 24 घंटे आपातकालीन", display_order: 1 },
-        { id: 2, title: "सोसायटी एडमिन डेस्क (Resident Welfare Association)", number: "+91 80 4910292", note: "सोम - शनि: सुबह 9:30 - शाम 5:30", display_order: 2 },
-        { id: 3, title: "विद्युत रखरखाव (Electricity)", number: "+91 9988010291", note: "बिजली कट, प्लग, जनरेटर हेल्प", display_order: 3 },
-        { id: 4, title: "जल एवं प्लम्बर हेल्पलाइन (Water)", number: "+91 9988010292", note: "पानी रिसाव, टैंक शेड्यूल", display_order: 4 }
-      ]);
+      console.error("Failed to fetch helplines:", err);
+      setHelplines([]);
     } finally {
       setLoading(false);
     }
@@ -144,30 +139,8 @@ export const Contact = () => {
         throw new Error(data.message || 'प्रक्रिया विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Fallback Mode: Simulating helpline operation locally.");
-      if (modalMode === 'add') {
-        const mockNewItem = {
-          id: Date.now(),
-          ...payload,
-          display_order: payload.displayOrder
-        };
-        const updated = [...helplines, mockNewItem].sort((a, b) => a.display_order - b.display_order);
-        setHelplines(updated);
-        setSuccess('हेल्पलाइन जोड़ा गया (Simulated Offline Mode)!');
-      } else {
-        const updated = helplines.map(h => h.id === editingId ? {
-          ...h,
-          ...payload,
-          display_order: payload.displayOrder
-        } : h).sort((a, b) => a.display_order - b.display_order);
-        setHelplines(updated);
-        setSuccess('विवरण अपडेट किया गया (Simulated Offline Mode)!');
-      }
-
-      setTimeout(() => {
-        setShowModal(false);
-        setSuccess('');
-      }, 1200);
+      console.error("Error saving helpline:", err);
+      setError(err.message || 'प्रक्रिया विफल');
     }
   };
 
@@ -187,11 +160,9 @@ export const Contact = () => {
         throw new Error('विफल');
       }
     } catch (err) {
-      console.warn("⚠️ Fallback Mode: Deleting helpline locally.");
-      setHelplines(helplines.filter(h => h.id !== deleteId));
-      setSuccess("हेल्पलाइन हटाया गया (Simulated Offline Mode)!");
+      console.error("Error deleting helpline:", err);
+      alert('हेल्पलाइन हटाने में विफल: ' + err.message);
       setDeleteId(null);
-      setTimeout(() => setSuccess(''), 2000);
     }
   };
 
