@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Home, ShieldCheck, LogOut, LogIn, Menu, User, Eye, EyeOff, Lock, Check, ShieldAlert } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const Navbar = ({ onMenuClick }) => {
   const { user, token, logout } = useAuth();
@@ -103,10 +104,29 @@ export const Navbar = ({ onMenuClick }) => {
         
         {/* Brand Logo */}
         <Link to="/" className="flex items-center gap-2.5 group">
-          <img
+          <motion.img
             src="/logo.jpg"
             alt="माँ कौशल्या अपार्टमेंट लोगो"
-            className="w-10 h-10 rounded-full object-cover shadow-[0_0_15px_rgba(245,158,11,0.3)] group-hover:shadow-[0_0_22px_rgba(245,158,11,0.5)] group-hover:scale-105 transition-all duration-300 border-2 border-amber-500/40"
+            animate={{
+              scale: [1, 1.02, 1],
+              boxShadow: [
+                "0 0 15px rgba(245,158,11,0.3)",
+                "0 0 25px rgba(245,158,11,0.7)",
+                "0 0 15px rgba(245,158,11,0.3)"
+              ]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            whileHover={{ 
+              scale: 1.15,
+              y: -3,
+              transition: { type: "spring", stiffness: 400, damping: 10 }
+            }}
+            whileTap={{ scale: 0.9 }}
+            className="w-10 h-10 rounded-full object-cover border-2 border-amber-500/40 cursor-pointer"
           />
           <div className="flex flex-col">
             <span className="font-extrabold text-base tracking-wide bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-400 bg-clip-text text-transparent group-hover:from-yellow-100 group-hover:via-white group-hover:to-yellow-200 transition-all">
@@ -238,9 +258,20 @@ export const Navbar = ({ onMenuClick }) => {
       </div>
 
       {/* Upgraded Credentials Change Settings Modal */}
+      <AnimatePresence>
       {showSettingsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-md animate-fadeIn">
-          <div className="glass-panel p-6 rounded-3xl border border-white/10 w-full max-w-md flex flex-col gap-4 text-left relative animate-scaleIn shadow-premium">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-md"
+        >
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="glass-panel p-6 rounded-3xl border border-white/10 w-full max-w-md flex flex-col gap-4 text-left relative shadow-premium"
+          >
             <div className="flex items-center gap-2 border-b border-white/5 pb-2.5">
               <div className="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-400 border border-brand-500/20 flex items-center justify-center">
                 <Lock size={15} />
@@ -376,9 +407,10 @@ export const Navbar = ({ onMenuClick }) => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </nav>
   );
 };

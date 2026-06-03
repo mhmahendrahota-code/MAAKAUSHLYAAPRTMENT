@@ -76,7 +76,7 @@ export const Reports = () => {
     } else if (activeTab === 'visitor_logs' && Array.isArray(reportData)) {
       csvContent += "Visitor Name,Phone,Host Flat,Check In,Check Out\n";
       reportData.forEach(v => {
-        csvContent += `${v.visitor_name},${v.visitor_phone},${v.host_flat_no},${v.check_in},${v.check_out || 'N/A'}\n`;
+        csvContent += `${v.visitor_name || v.name},${v.visitor_phone || v.phone},${v.host_flat_no || v.flat_no},${v.check_in},${v.check_out || 'N/A'}\n`;
       });
     } else if (activeTab === 'occupancy' && reportData.users) {
       csvContent += "Name,Flat No,Phone,Occupancy Status,Tenant Type\n";
@@ -246,9 +246,9 @@ export const Reports = () => {
             <tbody className="divide-y divide-white/5">
               {reportData.map((item, i) => (
                 <tr key={i} className="hover:bg-white/5 print:hover:bg-transparent">
-                  <td className="p-3 text-sm text-slate-300 print:text-black print:border">{item.visitor_name}</td>
-                  <td className="p-3 text-sm text-slate-400 print:text-black print:border">{item.visitor_phone}</td>
-                  <td className="p-3 text-sm font-bold text-white print:text-black print:border">{item.host_flat_no}</td>
+                  <td className="p-3 text-sm text-slate-300 print:text-black print:border">{item.visitor_name || item.name}</td>
+                  <td className="p-3 text-sm text-slate-400 print:text-black print:border">{item.visitor_phone || item.phone}</td>
+                  <td className="p-3 text-sm font-bold text-white print:text-black print:border">{item.host_flat_no || item.flat_no}</td>
                   <td className="p-3 text-sm text-slate-400 print:text-black print:border">
                     {new Date(item.check_in).toLocaleString()}
                   </td>

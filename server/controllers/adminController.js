@@ -349,9 +349,14 @@ export const getReportData = async (req, res, next) => {
             expenses: (mockDb.society_expenses || []).filter(e => isWithinDate(e.expense_date, startDate, endDate))
           };
           break;
-        case 'defaulters':
-          data = mockDb.bills.filter(b => b.status === 'unpaid' && new Date(b.due_date) < new Date());
+        case 'defaulters': {
+          const unpaidBills = mockDb.bills.filter(b => b.status === 'unpaid' && new Date(b.due_date) < new Date());
+          data = unpaidBills.map(b => {
+            const user = mockDb.users.find(u => u.id === b.resident_id) || {};
+            return { ...b, user_name: user.name, flat_no: user.flat_no, phone: user.phone };
+          });
           break;
+        }
         case 'visitor_logs':
           data = mockDb.visitor_logs.filter(v => isWithinDate(v.check_in, startDate, endDate));
           break;
@@ -405,7 +410,7 @@ export const getReportData = async (req, res, next) => {
           const defQuery = `
             SELECT b.*, u.name as user_name, u.flat_no, u.phone 
             FROM bills b
-            JOIN users u ON b.user_id = u.id
+            JOIN users u ON b.resident_id = u.id
             WHERE b.status = 'unpaid' AND b.due_date < CURRENT_DATE
           `;
           const defRes = await db.query(defQuery);

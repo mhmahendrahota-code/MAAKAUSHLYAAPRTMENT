@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { CreditCard, Megaphone, FileText, ChevronRight, User, Compass, HelpCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const Dashboard = () => {
   const { user, token } = useAuth();
@@ -72,9 +73,14 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="flex-1 p-6 text-left flex flex-col gap-6 max-w-5xl">
+    <div className="flex-1 p-6 text-left flex flex-col gap-6 max-w-5xl w-full">
       {/* Greetings banner */}
-      <div className="glass-panel p-8 rounded-3xl border border-white/5 bg-gradient-to-r from-brand-900/40 via-indigo-950/20 to-transparent flex items-start gap-4">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.5 }}
+        className="glass-panel p-8 rounded-3xl border border-white/5 bg-gradient-to-r from-brand-900/40 via-indigo-950/20 to-transparent flex items-start gap-4"
+      >
         <div className="w-12 h-12 rounded-2xl bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30">
           <Compass size={24} />
         </div>
@@ -86,12 +92,22 @@ export const Dashboard = () => {
             आपका स्वागत है, {user?.name}। आप <span className="text-brand-300 font-bold">फ्लैट {user?.flat_no}</span> के निवासी के रूप में लॉग इन हैं।
           </p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Grid: Stat indicators */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, staggerChildren: 0.1 }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+      >
         {/* Stat 1: Maintenance */}
-        <div className="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col justify-between">
+        <motion.div 
+          whileHover={{ scale: 1.02, y: -4 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col justify-between"
+        >
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-1">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">रखरखाव शुल्क (Maintenance)</span>
@@ -107,10 +123,15 @@ export const Dashboard = () => {
               बिल चुकाएं <ChevronRight size={14} />
             </Link>
           </div>
-        </div>
+        </motion.div>
 
         {/* Stat 2: Active Tickets */}
-        <div className="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col justify-between">
+        <motion.div 
+          whileHover={{ scale: 1.02, y: -4 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col justify-between"
+        >
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-1">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">शिकायतें (Complaints)</span>
@@ -126,10 +147,15 @@ export const Dashboard = () => {
               शिकायत दर्ज करें <ChevronRight size={14} />
             </Link>
           </div>
-        </div>
+        </motion.div>
 
         {/* Stat 3: Total Notices */}
-        <div className="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col justify-between">
+        <motion.div 
+          whileHover={{ scale: 1.02, y: -4 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col justify-between"
+        >
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-1">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">घोषणाएं (Announcements)</span>
@@ -145,13 +171,21 @@ export const Dashboard = () => {
               सूचना पटल <ChevronRight size={14} />
             </Link>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Main sections block */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+      >
         {/* Notice spotlight */}
-        <div className="glass-panel p-6 rounded-3xl border border-white/5 lg:col-span-2 flex flex-col gap-4">
+        <motion.div 
+          whileHover={{ boxShadow: '0 0 20px rgba(212, 175, 55, 0.1)' }}
+          className="glass-panel p-6 rounded-3xl border border-white/5 lg:col-span-2 flex flex-col gap-4"
+        >
           <h3 className="text-lg font-bold text-white uppercase tracking-wider flex items-center gap-2 border-b border-white/5 pb-3">
             <Megaphone size={16} className="text-brand-400" />
             मुख्य सूचना (Spotlight)
@@ -171,10 +205,13 @@ export const Dashboard = () => {
           ) : (
             <p className="text-xs text-slate-500 py-6 text-center">हाल ही में कोई सोसायटी घोषणा पोस्ट नहीं की गई है।</p>
           )}
-        </div>
+        </motion.div>
 
         {/* Quick Help directory shortcuts */}
-        <div className="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col gap-4">
+        <motion.div 
+          whileHover={{ boxShadow: '0 0 20px rgba(99, 102, 241, 0.1)' }}
+          className="glass-panel p-6 rounded-3xl border border-white/5 flex flex-col gap-4"
+        >
           <h3 className="text-lg font-bold text-white uppercase tracking-wider flex items-center gap-2 border-b border-white/5 pb-3">
             <HelpCircle size={16} className="text-indigo-400" />
             त्वरित लिंक्स (Fast Links)
@@ -205,8 +242,8 @@ export const Dashboard = () => {
               <ChevronRight size={14} className="text-slate-500 group-hover:text-brand-400 transition-colors" />
             </Link>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

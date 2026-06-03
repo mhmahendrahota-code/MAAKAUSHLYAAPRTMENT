@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import { PageTransition } from './components/PageTransition';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { FeatureProtectedRoute } from './components/FeatureProtectedRoute';
@@ -29,6 +31,17 @@ import { Finance } from './pages/Admin/Finance';
 import { DatabaseInspector } from './pages/Admin/DatabaseInspector';
 import { Reports } from './pages/Admin/Reports';
 
+const AnimatedOutlet = () => {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <PageTransition key={location.pathname}>
+        <Outlet />
+      </PageTransition>
+    </AnimatePresence>
+  );
+};
+
 // Root Layout Wrapper
 const AppLayout = () => {
   const { user } = useAuth();
@@ -48,8 +61,9 @@ const AppLayout = () => {
         {/* Dynamic content rendering zone */}
         <main className="flex-1 min-w-0 overflow-y-auto bg-transparent flex flex-col items-center">
           <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Home />} />
+            <Route element={<AnimatedOutlet />}>
+              {/* Public Routes */}
+              <Route path="/" element={<Home />} />
             <Route path="/login" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<FeatureProtectedRoute featureKey="contact"><Contact /></FeatureProtectedRoute>} />
@@ -171,6 +185,7 @@ const AppLayout = () => {
 
             {/* Redirect anything else back to Home */}
             <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
           </Routes>
         </main>
       </div>
