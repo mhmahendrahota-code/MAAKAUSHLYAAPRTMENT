@@ -557,7 +557,8 @@ export const mockDb = createMockDbProxy({
     { feature_key: "committee", feature_name: "RWA प्रबंध समिति (Committee)", is_active: true },
     { feature_key: "gallery", feature_name: "सोसायटी गैलरी (Gallery)", is_active: true },
     { feature_key: "downloads", feature_name: "दस्तावेज़ डाउनलोड (Downloads)", is_active: true },
-    { feature_key: "contact", feature_name: "RWA संपर्क डेस्क (Contact)", is_active: true }
+    { feature_key: "contact", feature_name: "RWA संपर्क डेस्क (Contact)", is_active: true },
+    { feature_key: "developer", feature_name: "डेवलपर विवरण (Developer)", is_active: true }
   ],
   society_expenses: [],
   audit_logs: []

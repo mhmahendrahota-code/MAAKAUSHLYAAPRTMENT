@@ -71,7 +71,8 @@ export const Sidebar = ({ isOpen, onClose }) => {
     '/committee': 'committee',
     '/gallery': 'gallery',
     '/downloads': 'downloads',
-    '/contact': 'contact'
+    '/contact': 'contact',
+    '/developer': 'developer'
   };
 
   // Define sidebar menus based on RBAC user role

@@ -72,25 +72,23 @@ export const getDashboardStats = async (req, res, next) => {
       bachelorAlerts = bachelorsRes.rows;
       featureFlags = featuresRes.rows;
       
-      // Auto-heal missing feature flags if table is empty
-      if (featureFlags.length === 0) {
-        try {
-          const { mockDb } = await import('../config/db.js');
-          if (mockDb.feature_flags && mockDb.feature_flags.length > 0) {
-            for (const flag of mockDb.feature_flags) {
-              await db.query(
-                `INSERT INTO feature_flags (feature_key, feature_name, is_active)
-                 VALUES ($1::VARCHAR, $2::VARCHAR, $3::BOOLEAN) ON CONFLICT (feature_key) DO NOTHING`,
-                [flag.feature_key, flag.feature_name, flag.is_active]
-              );
-            }
-            const healedFeaturesRes = await db.query("SELECT * FROM feature_flags ORDER BY feature_key ASC");
-            featureFlags = healedFeaturesRes.rows;
-            console.log("🛡️ Auto-healed feature flags during dashboard fetch.");
+      // Auto-heal missing feature flags (if table is empty or missing newly added flags)
+      try {
+        const { mockDb } = await import('../config/db.js');
+        if (mockDb.feature_flags && mockDb.feature_flags.length > featureFlags.length) {
+          for (const flag of mockDb.feature_flags) {
+            await db.query(
+              `INSERT INTO feature_flags (feature_key, feature_name, is_active)
+               VALUES ($1::VARCHAR, $2::VARCHAR, $3::BOOLEAN) ON CONFLICT (feature_key) DO NOTHING`,
+              [flag.feature_key, flag.feature_name, flag.is_active]
+            );
           }
-        } catch (healErr) {
-          console.warn("⚠️ Failed to auto-heal feature flags:", healErr.message);
+          const healedFeaturesRes = await db.query("SELECT * FROM feature_flags ORDER BY feature_key ASC");
+          featureFlags = healedFeaturesRes.rows || [];
+          console.log("🛡️ Auto-healed missing feature flags during dashboard fetch.");
         }
+      } catch (healErr) {
+        console.warn("⚠️ Failed to auto-heal feature flags:", healErr.message);
       }
     }
 

@@ -67,7 +67,7 @@ const AppLayout = () => {
             <Route path="/login" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<FeatureProtectedRoute featureKey="contact"><Contact /></FeatureProtectedRoute>} />
-            <Route path="/developer" element={<Developer />} />
+            <Route path="/developer" element={<FeatureProtectedRoute featureKey="developer"><Developer /></FeatureProtectedRoute>} />
 
             {/* Resident Protected Portal Routes */}
             <Route
