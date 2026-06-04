@@ -33,6 +33,16 @@ export const getDashboardStats = async (req, res, next) => {
       }
 
       // Execute SQL aggregated queries in parallel
+      // Helper to safely execute queries and return a default if they fail (e.g. missing column/table during migration)
+      const safeQuery = async (queryText, defaultResult) => {
+        try {
+          return await db.query(queryText);
+        } catch (err) {
+          console.warn(`Dashboard safeQuery failed: ${queryText}`, err.message);
+          return { rows: [defaultResult] };
+        }
+      };
+
       const [
         residentsRes,
         ticketsRes,
@@ -43,14 +53,14 @@ export const getDashboardStats = async (req, res, next) => {
         bachelorsRes,
         featuresRes
       ] = await Promise.all([
-        db.query("SELECT COUNT(*)::INTEGER FROM users WHERE role = 'Resident'"),
-        db.query("SELECT COUNT(*)::INTEGER FROM tickets WHERE status != 'resolved'"),
-        db.query("SELECT COUNT(*)::INTEGER FROM visitor_logs WHERE check_out IS NULL"),
-        db.query("SELECT COALESCE(SUM(amount), 0.00)::DECIMAL FROM bills WHERE status = 'paid'"),
-        db.query("SELECT COALESCE(SUM(amount), 0.00)::DECIMAL FROM bills WHERE status = 'unpaid'"),
-        db.query("SELECT COUNT(*)::INTEGER FROM gallery_events"),
-        db.query("SELECT * FROM users WHERE tenant_type = 'Bachelor' ORDER BY move_in_date DESC"),
-        db.query("SELECT * FROM feature_flags ORDER BY feature_key ASC")
+        safeQuery("SELECT COUNT(*)::INTEGER FROM users WHERE role = 'Resident'", { count: 0 }),
+        safeQuery("SELECT COUNT(*)::INTEGER FROM tickets WHERE status != 'resolved'", { count: 0 }),
+        safeQuery("SELECT COUNT(*)::INTEGER FROM visitor_logs WHERE check_out IS NULL", { count: 0 }),
+        safeQuery("SELECT COALESCE(SUM(amount), 0.00)::DECIMAL FROM bills WHERE status = 'paid'", { coalesce: 0 }),
+        safeQuery("SELECT COALESCE(SUM(amount), 0.00)::DECIMAL FROM bills WHERE status = 'unpaid'", { coalesce: 0 }),
+        safeQuery("SELECT COUNT(*)::INTEGER FROM gallery_events", { count: 0 }),
+        safeQuery("SELECT * FROM users WHERE tenant_type = 'Bachelor' ORDER BY move_in_date DESC", {}).then(res => ({ rows: res.rows || [] })),
+        safeQuery("SELECT * FROM feature_flags ORDER BY feature_key ASC", {}).then(res => ({ rows: res.rows || [] }))
       ]);
 
       residentsCount = residentsRes.rows[0].count;
@@ -61,6 +71,27 @@ export const getDashboardStats = async (req, res, next) => {
       totalEventsCount = eventsRes.rows[0].count;
       bachelorAlerts = bachelorsRes.rows;
       featureFlags = featuresRes.rows;
+      
+      // Auto-heal missing feature flags if table is empty
+      if (featureFlags.length === 0) {
+        try {
+          const { mockDb } = await import('../config/db.js');
+          if (mockDb.feature_flags && mockDb.feature_flags.length > 0) {
+            for (const flag of mockDb.feature_flags) {
+              await db.query(
+                `INSERT INTO feature_flags (feature_key, feature_name, is_active)
+                 VALUES ($1::VARCHAR, $2::VARCHAR, $3::BOOLEAN) ON CONFLICT (feature_key) DO NOTHING`,
+                [flag.feature_key, flag.feature_name, flag.is_active]
+              );
+            }
+            const healedFeaturesRes = await db.query("SELECT * FROM feature_flags ORDER BY feature_key ASC");
+            featureFlags = healedFeaturesRes.rows;
+            console.log("🛡️ Auto-healed feature flags during dashboard fetch.");
+          }
+        } catch (healErr) {
+          console.warn("⚠️ Failed to auto-heal feature flags:", healErr.message);
+        }
+      }
     }
 
     // Process bachelor Alerts lease calculations matching userController logic

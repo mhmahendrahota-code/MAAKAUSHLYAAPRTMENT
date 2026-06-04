@@ -58,7 +58,11 @@ export const Gallery = () => {
     try {
       const res = await fetch('/api/gallery', {
         credentials: 'include',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
       });
       const data = await res.json();
       if (data.success) {

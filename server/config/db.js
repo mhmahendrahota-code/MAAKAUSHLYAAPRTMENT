@@ -625,7 +625,11 @@ const initializeSchema = async () => {
         });
         
       for (const statement of statements) {
-        await dbPool.query(statement);
+        try {
+          await dbPool.query(statement);
+        } catch (stmtErr) {
+          console.warn(`⚠️ Non-blocking schema execution warning for statement:`, stmtErr.message);
+        }
       }
       
       console.log("🚀 PostgreSQL Database tables initialized successfully from schema.sql.");
