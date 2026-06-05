@@ -743,14 +743,44 @@ export const Directory = () => {
   };
 
   // Real-time directory filtering based on Query + Tab selections
-  const occupiedFlatsSet = new Set(
-    usersList
-      .filter(u => u.role === 'Resident' && u.is_approved !== false && (u.occupancy_status === 'Self-Occupied' || u.occupancy_status === 'Rented') && u.flat_no)
-      .map(u => u.flat_no)
-  );
+  const occupiedFlatsMap = new Map();
+  usersList
+    .filter(u => u.role === 'Resident' && u.is_approved !== false && (u.occupancy_status === 'Self-Occupied' || u.occupancy_status === 'Rented') && u.flat_no)
+    .forEach(u => {
+      occupiedFlatsMap.set(u.flat_no, u);
+    });
+
+  const occupiedFlatsSet = new Set(occupiedFlatsMap.keys());
 
   let filteredUsers = [];
-  if (activeOccupancyFilter === 'Vacant') {
+  if (activeOccupancyFilter === 'All_Flats') {
+    // Show all 512 flats: occupied flats show resident details, vacant flats show virtual vacant object
+    filteredUsers = SOCIETY_FLATS.map(flatNo => {
+      if (occupiedFlatsMap.has(flatNo)) {
+        return occupiedFlatsMap.get(flatNo);
+      } else {
+        return {
+          id: `vacant-${flatNo}`,
+          flat_no: flatNo,
+          name: 'रिक्त फ्लैट (Vacant Flat)',
+          email: '—',
+          phone: '—',
+          role: 'Resident',
+          occupancy_status: 'Vacant',
+          is_approved: true,
+          is_vacant_flat: true
+        };
+      }
+    });
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filteredUsers = filteredUsers.filter(u => 
+        u.flat_no.toLowerCase().includes(q) || 
+        (u.name || '').toLowerCase().includes(q)
+      );
+    }
+  } else if (activeOccupancyFilter === 'Vacant') {
     const vacantFlats = SOCIETY_FLATS.filter(f => !occupiedFlatsSet.has(f));
     filteredUsers = vacantFlats.map(flatNo => ({
       id: `vacant-${flatNo}`,
@@ -930,7 +960,30 @@ export const Directory = () => {
       </div>
 
       {/* RWA Overview Statistics Panel */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-fadeIn">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 animate-fadeIn">
+        {/* Stat 0: Total Flats */}
+        <div 
+          onClick={() => {
+            setActiveRoleFilter('Resident');
+            setActiveOccupancyFilter('All_Flats');
+            setCurrentPage(1);
+          }}
+          className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${
+            activeRoleFilter === 'Resident' && activeOccupancyFilter === 'All_Flats'
+              ? 'border-indigo-500/60 bg-indigo-900/20 shadow-premium glow-indigo-sm'
+              : 'border-white/5 bg-slate-950/40 hover:border-indigo-500/35'
+          }`}
+        >
+          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-600/5 rounded-full blur-2xl group-hover:bg-indigo-600/10 transition-all"></div>
+          <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">कुल फ्लैट (Total Flats)</span>
+          <div className="flex items-end justify-between mt-2">
+            <span className="text-2xl font-black text-white">512</span>
+            <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-400 border border-indigo-500/20 font-bold uppercase">
+              Flats
+            </span>
+          </div>
+        </div>
+
         {/* Stat 1: Total Directory */}
         <div 
           onClick={() => {
@@ -1694,7 +1747,8 @@ export const Directory = () => {
             <div className="flex flex-wrap items-center gap-2 border-t border-white/5 pt-3 animate-fadeIn">
               <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider w-24">स्थिति (Occupancy):</span>
               {[
-                { id: 'All', label: 'सभी फ्लैट (All Occupancies)' },
+                { id: 'All', label: 'सभी सदस्य (All Members)' },
+                { id: 'All_Flats', label: 'कुल फ्लैट (All 512 Flats)' },
                 { id: 'Self-Occupied', label: 'स्व-कब्जा (Self-Occupied Owners)' },
                 { id: 'Rented', label: 'किरायेदार (Tenants)' },
                 { id: 'Vacant', label: 'खाली फ्लैट (Vacant)' }
