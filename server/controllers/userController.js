@@ -24,30 +24,31 @@ export const getSocietyDirectory = async (req, res, next) => {
   try {
     const allUsers = await queries.getAllUsers();
     
-    const isAdmin = req.user && req.user.role === 'Admin';
+    const hasFullAccess = req.user && (req.user.role === 'Admin' || req.user.role === 'Committee');
 
     // Format a directory of residents and admins, hiding sensitive credentials & masking PII
     const directory = allUsers.map(user => ({
       id: user.id,
       name: user.name,
-      email: user.email,
+      email: hasFullAccess ? user.email : (user.email ? user.email.split('@')[0].slice(0, 2) + '***@' + user.email.split('@')[1] : null),
       role: user.role,
       gender: user.gender,
       flat_no: user.flat_no,
-      phone: user.phone,
+      phone: hasFullAccess ? user.phone : (user.phone ? 'XXXXXX' + user.phone.trim().slice(-4) : null),
       occupancy_status: user.occupancy_status,
       tenant_type: user.tenant_type,
       owner_name: user.owner_name,
-      owner_phone: user.owner_phone,
-      aadhaar_number: isAdmin ? user.aadhaar_number : (user.aadhaar_number ? 'XXXX XXXX ' + user.aadhaar_number.trim().slice(-4) : null),
+      owner_phone: hasFullAccess ? user.owner_phone : (user.owner_phone ? 'XXXXXX' + user.owner_phone.trim().slice(-4) : null),
+      aadhaar_number: hasFullAccess ? user.aadhaar_number : (user.aadhaar_number ? 'XXXX XXXX ' + user.aadhaar_number.trim().slice(-4) : null),
       family_members: user.family_members,
-      family_member_names: user.family_member_names,
-      vehicles: user.vehicles,
+      family_member_names: hasFullAccess ? user.family_member_names : null,
+      vehicles: hasFullAccess ? user.vehicles : null,
       move_in_date: user.move_in_date,
+      lease_expiry_date: user.lease_expiry_date,
       lease_duration: user.lease_duration,
       lease_agreement_submitted: user.lease_agreement_submitted,
-      emergency_contact_name: user.emergency_contact_name,
-      emergency_contact_phone: user.emergency_contact_phone,
+      emergency_contact_name: hasFullAccess ? user.emergency_contact_name : null,
+      emergency_contact_phone: hasFullAccess ? user.emergency_contact_phone : null,
       profile_picture: user.profile_picture,
       has_pet: user.has_pet,
       pet_details: user.pet_details,
@@ -56,7 +57,7 @@ export const getSocietyDirectory = async (req, res, next) => {
       police_verification_status: user.police_verification_status,
       police_verification_date: user.police_verification_date,
       noc_document_ref: user.noc_document_ref,
-      bachelor_notes: user.bachelor_notes,
+      bachelor_notes: hasFullAccess ? user.bachelor_notes : null,
       is_approved: user.is_approved,
       created_at: user.created_at
     }));
@@ -78,7 +79,7 @@ export const updateUser = async (req, res, next) => {
   try {
     const {
       userId, name, email, password, phone, role, gender, flatNo, occupancyStatus, tenantType, ownerName, ownerPhone,
-      aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration, leaseAgreementSubmitted,
+      aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseExpiryDate, leaseDuration, leaseAgreementSubmitted,
       emergencyContactName, emergencyContactPhone, profilePicture, hasPet, petDetails,
       isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes
     } = req.body;
@@ -98,9 +99,23 @@ export const updateUser = async (req, res, next) => {
       passwordHash = await bcrypt.hash(password, salt);
     }
 
+    // Business Rule: यदि status Vacant है तो flat_no null होना चाहिए
+    const resolvedFlatNo = occupancyStatus === 'Vacant' ? null : flatNo;
+    const resolvedOwnerName = occupancyStatus === 'Vacant' ? null : ownerName;
+    const resolvedOwnerPhone = occupancyStatus === 'Vacant' ? null : ownerPhone;
+    const resolvedLeaseDuration = occupancyStatus === 'Vacant' ? null : leaseDuration;
+    const resolvedLeaseExpiryDate = occupancyStatus === 'Vacant' ? null : leaseExpiryDate;
+
     const updatedUser = await queries.updateUser(userId, {
-      name, email, phone, role, gender, flatNo, occupancyStatus, tenantType, ownerName, ownerPhone,
-      aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration, leaseAgreementSubmitted,
+      name, email, phone, role, gender,
+      flatNo: resolvedFlatNo,
+      occupancyStatus, tenantType,
+      ownerName: resolvedOwnerName,
+      ownerPhone: resolvedOwnerPhone,
+      aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate,
+      leaseExpiryDate: resolvedLeaseExpiryDate,
+      leaseDuration: resolvedLeaseDuration,
+      leaseAgreementSubmitted,
       emergencyContactName, emergencyContactPhone, profilePicture, hasPet, petDetails,
       isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes,
       passwordHash
@@ -250,6 +265,35 @@ export const approveUser = async (req, res, next) => {
       success: true,
       message: 'Account approved successfully',
       data: approved
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Checkout/Vacate a resident (Admin/Committee only)
+// @route   PUT /api/users/checkout/:id
+// @access  Private (Admin/Committee)
+export const checkoutUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      res.status(400);
+      throw new Error('User ID is required');
+    }
+
+    const checkedOut = await queries.checkoutUser(id);
+
+    if (!checkedOut) {
+      res.status(404);
+      throw new Error('User account not found');
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Resident checked out successfully, flat is now vacant',
+      data: checkedOut
     });
   } catch (error) {
     next(error);

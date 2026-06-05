@@ -133,6 +133,7 @@ export const Home = () => {
         flatNo: regRole === 'Resident' ? regFlatNo : null,
         phone: regPhone,
         occupancyStatus: regRole === 'Resident' ? (residentType === 'Owner' ? 'Self-Occupied' : 'Rented') : null,
+        tenantType: (regRole === 'Resident' && residentType === 'Renter') ? tenantCategory : 'Family',
         ownerName: (regRole === 'Resident' && residentType === 'Renter') ? ownerName : null,
         ownerPhone: (regRole === 'Resident' && residentType === 'Renter') ? ownerPhone : null,
         aadhaarNumber: aadhaarNumber || null,

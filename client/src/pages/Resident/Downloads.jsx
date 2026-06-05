@@ -245,132 +245,49 @@ export const Downloads = () => {
   const [newDocType, setNewDocType] = useState('PDF');
   const [newDocSize, setNewDocSize] = useState('250 KB');
   const [newDocFileName, setNewDocFileName] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [fileBase64, setFileBase64] = useState('');
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+
+    const ext = file.name.split('.').pop().toUpperCase();
+    setNewDocType(ext === 'PDF' ? 'PDF' : ext === 'DOCX' ? 'DOCX' : ext === 'XLSX' ? 'XLSX' : 'PDF');
+    
+    const sizeInKb = file.size / 1024;
+    if (sizeInKb > 1024) {
+      setNewDocSize(`${(sizeInKb / 1024).toFixed(1)} MB`);
+    } else {
+      setNewDocSize(`${sizeInKb.toFixed(0)} KB`);
+    }
+
+    const baseName = file.name.substring(0, file.name.lastIndexOf('.'));
+    setNewDocFileName(baseName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, ''));
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64String = reader.result.split(',')[1];
+      setFileBase64(base64String);
+    };
+    reader.onerror = (error) => {
+      console.error('Error converting file to Base64:', error);
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Notification States
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Default Society Documents
-  const defaultDocuments = [
-    {
-      id: 1,
-      title: "सोसायटी उप-नियम (Society Bye-Laws)",
-      englishTitle: "Society Constitution & Bye-Laws",
-      description: "सोसायटी के सुचारू संचालन के लिए आरडब्ल्यूए (Resident Welfare Association) के आधिकारिक नियम और निवासियों के कर्तव्य व अधिकार पत्र।",
-      category: "Rules",
-      type: "PDF",
-      size: "1.2 MB",
-      fileName: "makaushalya_society_bye_laws",
-      color: "from-violet-500/20 to-indigo-500/20 border-violet-500/30 text-violet-400"
-    },
-    {
-      id: 2,
-      title: "किरायेदार पुलिस सत्यापन फॉर्म",
-      englishTitle: "Tenant Police Verification Form",
-      description: "स्थानीय रायपुर पुलिस थाने में किरायेदार सत्यापन आवेदन हेतु आवश्यक आधिकारिक कानूनी दिशानिर्देश एवं प्रपत्र फॉर्म।",
-      category: "Forms",
-      type: "PDF",
-      size: "240 KB",
-      fileName: "tenant_verification_form_raipur",
-      color: "from-sky-500/20 to-blue-500/20 border-sky-500/30 text-sky-400",
-      isInteractiveForm: true
-    },
-    {
-      id: 3,
-      title: "अनापत्ति प्रमाण पत्र (NOC) आवेदन पत्र",
-      englishTitle: "NOC Renovation & Sale Request Form",
-      description: "फ्लैट के आंतरिक निर्माण/नवीनीकरण (Renovation), बैंक लोन या फ्लैट बिक्री के लिए एनओसी आवेदन प्रस्तुत करने का प्रारूप।",
-      category: "Forms",
-      type: "DOCX",
-      size: "150 KB",
-      fileName: "rwa_noc_application_form",
-      color: "from-emerald-500/20 to-teal-500/20 border-emerald-500/30 text-emerald-400",
-      isInteractiveForm: true
-    },
-    {
-      id: 4,
-      title: "वाहन पार्किंग स्टिकर फॉर्म",
-      englishTitle: "RWA Vehicle Parking Sticker Request",
-      description: "सोसायटी परिसर के भीतर नए निवासियों के चार पहिया एवं दो पहिया वाहनों के आधिकारिक गेट पास पार्किंग स्टिकर हेतु फॉर्म।",
-      category: "Forms",
-      type: "PDF",
-      size: "180 KB",
-      fileName: "vehicle_parking_sticker_form",
-      color: "from-amber-500/20 to-orange-500/20 border-amber-500/30 text-amber-400",
-      isInteractiveForm: true
-    },
-    {
-      id: 7,
-      title: "बैचलर किरायेदार सहमति एवं घोषणा-पत्र",
-      englishTitle: "Bachelor Tenant Undertaking Agreement",
-      description: "बैचलर/सहोदर किरायेदारों के लिए आरडब्ल्यूए सुरक्षा नियमों के अनुपालन, अभिभावक सहमति और मकान मालिक की संयुक्त जिम्मेदारी का आधिकारिक घोषणा-पत्र।",
-      category: "Forms",
-      type: "PDF",
-      size: "190 KB",
-      fileName: "bachelor_tenant_undertaking",
-      color: "from-purple-500/20 to-pink-500/20 border-purple-500/30 text-purple-400",
-      isInteractiveForm: true
-    },
-    {
-      id: 5,
-      title: "मासिक वित्तीय ऑडिट रिपोर्ट - अप्रैल 2026",
-      englishTitle: "RWA Treasury Balance Sheets - April 2026",
-      description: "रेसिडेंट वेलफेयर एसोसिएशन रायपुर द्वारा जारी किया गया मासिक आय, व्यय और एकत्रित रखरखाव निधि (Reserves) का विस्तृत लेखा विवरण।",
-      category: "Audits",
-      type: "PDF",
-      size: "850 KB",
-      fileName: "society_financial_audit_april_2026",
-      color: "from-rose-500/20 to-pink-500/20 border-rose-500/30 text-rose-400"
-    },
-    {
-      id: 6,
-      title: "आपातकालीन सुरक्षा एवं आपात नंबर गाइड",
-      englishTitle: "RWA Emergency & Safety Action Plan",
-      description: "आग, प्राकृतिक आपदा या आपातकालीन चिकित्सा के दौरान बरती जाने वाली सावधानियां और रायपुर स्थानीय प्रशासन के आवश्यक फोन नंबर्स।",
-      category: "Safety",
-      type: "PDF",
-      size: "400 KB",
-      fileName: "emergency_safety_action_guide",
-      color: "from-red-500/20 to-rose-600/20 border-red-500/30 text-rose-500"
-    },
-    {
-      id: 8,
-      title: "सार्वभौमिक निवासी विवरण प्रपत्र (Universal Form)",
-      englishTitle: "Universal Resident Registration Sheets",
-      description: "नये निवासियों से हार्ड कॉपी (Hard Copy) में जानकारी प्राप्त करने या प्रिंट कर भौतिक विवरण सहेजने हेतु आरडब्ल्यूए का सार्वभौमिक विवरण प्रपत्र।",
-      category: "Forms",
-      type: "PDF",
-      size: "320 KB",
-      fileName: "universal_resident_registration_form",
-      color: "from-amber-500/20 to-yellow-500/20 border-amber-500/30 text-amber-400",
-      isInteractiveForm: true,
-      isUniversalForm: true
-    }
-  ];
+  const [documentsList, setDocumentsList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Load from localStorage or use default
-  const [documentsList, setDocumentsList] = useState(() => {
-    try {
-      const saved = localStorage.getItem('rwa_downloads_list');
-      if (saved && saved !== 'undefined') {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.error("⚠️ Failed to parse saved downloads list:", e);
-    }
-    return defaultDocuments;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('rwa_downloads_list', JSON.stringify(documentsList));
-  }, [documentsList]);
-
-  // Seed default templates helper if someone wipes out
-  const resetToDefaults = () => {
-    setDocumentsList(defaultDocuments);
-    setSuccessMsg("दस्तावेज़ों की सूची सफलतापूर्वक रीसेट हो गई है!");
-    setTimeout(() => setSuccessMsg(''), 2000);
-  };
+  // Submissions State
+  const [submissionsList, setSubmissionsList] = useState([]);
+  const [loadingSubmissions, setLoadingSubmissions] = useState(true);
 
   // Helper colors for new custom documents
   const getCategoryColor = (category) => {
@@ -383,16 +300,256 @@ export const Downloads = () => {
     }
   };
 
+  // Fetch documents from backend on mount
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        const response = await fetch('/api/documents', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        if (data.success) {
+          const mappedDocs = data.data.map(doc => ({
+            id: doc.id,
+            title: doc.title,
+            englishTitle: doc.english_title,
+            description: doc.description,
+            category: doc.category,
+            type: doc.file_type,
+            size: doc.file_size,
+            fileName: doc.file_name,
+            fileContent: doc.file_content,
+            isInteractiveForm: doc.is_interactive,
+            isUniversalForm: doc.id === 8 || doc.file_name === 'universal_resident_registration_form',
+            color: getCategoryColor(doc.category)
+          }));
+          setDocumentsList(mappedDocs);
+        } else {
+          setErrorMsg(data.message || 'दस्तावेज़ प्राप्त करने में विफल');
+        }
+      } catch (err) {
+        console.error('Error fetching documents:', err);
+        setErrorMsg('सर्वर से कनेक्ट करने में विफल');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (token) {
+      fetchDocuments();
+    }
+  }, [token]);
+
+  // Fetch form submissions on mount/token change
+  useEffect(() => {
+    const fetchSubmissions = async () => {
+      try {
+        const response = await fetch('/api/documents/submissions', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        if (data.success) {
+          setSubmissionsList(data.data);
+        }
+      } catch (err) {
+        console.error("Error fetching form submissions:", err);
+      } finally {
+        setLoadingSubmissions(false);
+      }
+    };
+
+    if (token) {
+      fetchSubmissions();
+    }
+  }, [token]);
+
+  // Auto Pre-fill Form Fields when modal opens
+  useEffect(() => {
+    if (!activeFormDoc || !user) return;
+
+    // Split name helper
+    const nameParts = (user.name || '').trim().split(/\s+/);
+    let firstName = '';
+    let middleName = '';
+    let lastName = '';
+    if (nameParts.length === 1) {
+      firstName = nameParts[0];
+    } else if (nameParts.length === 2) {
+      firstName = nameParts[0];
+      lastName = nameParts[1];
+    } else if (nameParts.length > 2) {
+      firstName = nameParts[0];
+      middleName = nameParts.slice(1, -1).join(' ');
+      lastName = nameParts[nameParts.length - 1];
+    }
+
+    if (activeFormDoc.id === 2) {
+      // Tenant Verification Form
+      if (user.occupancy_status === 'Rented') {
+        setTFirstName(firstName);
+        setTMiddleName(middleName);
+        setTLastName(lastName);
+        setTPhone(user.phone || '');
+        setTGender(user.gender || 'Male');
+        setCurrHouseNo(user.flat_no || '');
+        
+        const ownerNameParts = (user.owner_name || '').trim().split(/\s+/);
+        setLlFirstName(ownerNameParts[0] || '');
+        setLlLastName(ownerNameParts.slice(1).join(' ') || '');
+        setLlPhone(user.owner_phone || '');
+        setLlHouseNo(user.flat_no || '');
+      } else {
+        setLlFirstName(firstName);
+        setLlMiddleName(middleName);
+        setLlLastName(lastName);
+        setLlEmail(user.email || '');
+        setLlPhone(user.phone || '');
+        setLlHouseNo(user.flat_no || '');
+      }
+    } else if (activeFormDoc.id === 3) {
+      setNocName(user.name || '');
+      setNocFlat(user.flat_no || '');
+    } else if (activeFormDoc.id === 4) {
+      setParkingName(user.name || '');
+      setParkingFlat(user.flat_no || '');
+    } else if (activeFormDoc.id === 7) {
+      setBachelorName(user.name || '');
+      setBachelorFlat(user.flat_no || '');
+      setBachelorOwner(user.owner_name || '');
+    } else if (activeFormDoc.id === 8 || activeFormDoc.isUniversalForm) {
+      setUnivName(user.name || '');
+      setUnivEmail(user.email || '');
+      setUnivPhone(user.phone || '');
+      setUnivFlatNo(user.flat_no || '');
+      setUnivAadhaar(user.aadhaar_number || '');
+      
+      if (user.move_in_date) {
+        try {
+          const d = new Date(user.move_in_date);
+          if (!isNaN(d.getTime())) {
+            setUnivMoveInDate(d.toISOString().split('T')[0]);
+          }
+        } catch (err) {
+          setUnivMoveInDate(user.move_in_date);
+        }
+      }
+      
+      setUnivEmergencyName(user.emergency_contact_name || '');
+      setUnivEmergencyPhone(user.emergency_contact_phone || '');
+      setUnivOccupancyStatus(user.occupancy_status || 'Self-Occupied');
+      setUnivTenantCategory(user.tenant_type || 'Family');
+      setUnivOwnerName(user.owner_name || '');
+      setUnivOwnerPhone(user.owner_phone || '');
+      setUnivLeaseDuration(user.lease_duration || '');
+      setUnivTenantAgreement(user.lease_agreement_submitted || false);
+      setUnivPoliceVerification(user.police_verification_status === 'verified');
+      setUnivHasPet(user.has_pet || false);
+      setUnivPetDetails(user.pet_details || '');
+      setUnivProfilePic(user.profile_picture || '');
+
+      if (user.family_member_names) {
+        try {
+          const list = typeof user.family_member_names === 'string'
+            ? JSON.parse(user.family_member_names)
+            : user.family_member_names;
+          if (Array.isArray(list)) {
+            setUnivFamilyMembersList(list.map(m => ({
+              name: m.name || '',
+              phone: m.phone || '',
+              gender: m.gender || 'Male'
+            })));
+            setUnivFamilyMembersCount(String(list.length));
+          }
+        } catch (e) {
+          console.warn("Failed to parse family_member_names", e);
+        }
+      }
+
+      if (user.vehicles) {
+        try {
+          const list = typeof user.vehicles === 'string'
+            ? JSON.parse(user.vehicles)
+            : user.vehicles;
+          if (Array.isArray(list)) {
+            setUnivVehiclesList(list.map(v => ({
+              type: v.type || 'Car',
+              number: v.number || '',
+              sticker: v.sticker || false
+            })));
+          }
+        } catch (e) {
+          console.warn("Failed to parse vehicles", e);
+        }
+      }
+    }
+  }, [activeFormDoc, user]);
+
+
+  // Seed default templates helper if someone wipes out
+  const resetToDefaults = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/documents', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        const mappedDocs = data.data.map(doc => ({
+            id: doc.id,
+            title: doc.title,
+            englishTitle: doc.english_title,
+            description: doc.description,
+            category: doc.category,
+            type: doc.file_type,
+            size: doc.file_size,
+            fileName: doc.file_name,
+            fileContent: doc.file_content,
+            isInteractiveForm: doc.is_interactive,
+            isUniversalForm: doc.id === 8 || doc.file_name === 'universal_resident_registration_form',
+            color: getCategoryColor(doc.category)
+          }));
+        setDocumentsList(mappedDocs);
+        setSuccessMsg("दस्तावेज़ों की सूची सफलतापूर्वक अपडेट हो गई है!");
+      }
+    } catch (e) {
+      setErrorMsg("रीसेट करने में त्रुटि आई");
+    } finally {
+      setLoading(false);
+      setTimeout(() => { setSuccessMsg(''); setErrorMsg(''); }, 2000);
+    }
+  };
+
   // Admin: Delete Document
-  const handleDeleteDoc = (id) => {
-    const updated = documentsList.filter(doc => doc.id !== id);
-    setDocumentsList(updated);
-    setSuccessMsg("दस्तावेज़ सूची से हटा दिया गया है!");
-    setTimeout(() => setSuccessMsg(''), 2000);
+  const handleDeleteDoc = async (id) => {
+    try {
+      const response = await fetch(`/api/documents/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        const updated = documentsList.filter(doc => doc.id !== id);
+        setDocumentsList(updated);
+        setSuccessMsg("दस्तावेज़ सूची से हटा दिया गया है!");
+      } else {
+        setErrorMsg(data.message || 'दस्तावेज़ हटाने में विफल');
+      }
+    } catch (err) {
+      setErrorMsg('सर्वर त्रुटि');
+    }
+    setTimeout(() => { setSuccessMsg(''); setErrorMsg(''); }, 2000);
   };
 
   // Admin: Add New Document
-  const handleAddDocSubmit = (e) => {
+  const handleAddDocSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
@@ -402,38 +559,86 @@ export const Downloads = () => {
       return;
     }
 
-    const cleanFileName = newDocFileName.trim().toLowerCase().replace(/\s+/g, '_');
-    const newDoc = {
-      id: Date.now(),
-      title: newDocTitle,
-      englishTitle: newDocEnglishTitle,
-      description: newDocDescription,
-      category: newDocCategory,
-      type: newDocType,
-      size: newDocSize,
-      fileName: cleanFileName,
-      color: getCategoryColor(newDocCategory),
-      isInteractiveForm: false // Custom uploads are general attachments
-    };
+    try {
+      const cleanFileName = newDocFileName.trim().toLowerCase().replace(/\s+/g, '_');
+      const response = await fetch('/api/documents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: newDocTitle,
+          englishTitle: newDocEnglishTitle,
+          description: newDocDescription,
+          category: newDocCategory,
+          fileType: newDocType,
+          fileSize: newDocSize,
+          fileName: cleanFileName,
+          fileContent: fileBase64,
+          isInteractive: false
+        })
+      });
 
-    setDocumentsList([...documentsList, newDoc]);
-    setSuccessMsg("नया दस्तावेज़ बुलेटिन में जोड़ दिया गया है!");
-    
-    // Clear state
-    setNewDocTitle('');
-    setNewDocEnglishTitle('');
-    setNewDocDescription('');
-    setNewDocFileName('');
-    setShowAddDocModal(false);
-    setTimeout(() => setSuccessMsg(''), 2000);
+      const data = await response.json();
+      if (data.success) {
+        const doc = data.data;
+        const newMappedDoc = {
+          id: doc.id,
+          title: doc.title,
+          englishTitle: doc.english_title,
+          description: doc.description,
+          category: doc.category,
+          type: doc.file_type,
+          size: doc.file_size,
+          fileName: doc.file_name,
+          fileContent: doc.file_content,
+          isInteractiveForm: doc.is_interactive,
+          isUniversalForm: doc.id === 8 || doc.file_name === 'universal_resident_registration_form',
+          color: getCategoryColor(doc.category)
+        };
+        setDocumentsList([newMappedDoc, ...documentsList]);
+        setSuccessMsg("नया दस्तावेज़ डेटाबेस में जोड़ दिया गया है!");
+        
+        // Clear state
+        setNewDocTitle('');
+        setNewDocEnglishTitle('');
+        setNewDocDescription('');
+        setNewDocFileName('');
+        setSelectedFile(null);
+        setFileBase64('');
+        setShowAddDocModal(false);
+      } else {
+        setErrorMsg(data.message || 'दस्तावेज़ जोड़ने में विफल');
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorMsg('सर्वर त्रुटि');
+    }
+    setTimeout(() => { setSuccessMsg(''); setErrorMsg(''); }, 2000);
   };
 
   // Standard Certified Download Generator
   const handleStandardDownload = (doc) => {
+    if (doc.fileContent) {
+      const mimeType = doc.type.toLowerCase() === 'pdf' 
+        ? 'application/pdf' 
+        : doc.type.toLowerCase() === 'docx' 
+          ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+          : doc.type.toLowerCase() === 'xlsx' 
+            ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+            : 'application/octet-stream';
+      
+      triggerBinaryDownload(doc.fileContent, `${doc.fileName}.${doc.type.toLowerCase()}`, mimeType);
+      setDownloadSuccess(doc.id);
+      setTimeout(() => setDownloadSuccess(null), 3000);
+      return;
+    }
+
     const content = `========================================================================
      रेसिडेंट वेलफेयर एसोसिएशन (Resident Welfare Association) रायपुर
                   माँ कौशल्या अपार्टमेंट (Maa Kaushalya Apartment RWA)
-        कौशल्या माता विहार, सेक्टर 1, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015
+        सेक्टर 1, कौशल्या माता विहार, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015
 ========================================================================
 
 प्रमाणित दस्तावेज़ डाउनलोड रिपोर्ट (CERTIFIED RWA DIGITAL DOCUMENT)
@@ -462,6 +667,31 @@ export const Downloads = () => {
     setTimeout(() => setDownloadSuccess(null), 3000);
   };
 
+  // Trigger Binary File Download from Base64
+  const triggerBinaryDownload = (base64Content, fileName, mimeType) => {
+    try {
+      const byteCharacters = atob(base64Content);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("⚠️ Failed to download binary file:", e);
+      setErrorMsg("फ़ाइल डाउनलोड करने में त्रुटि आई।");
+      setTimeout(() => setErrorMsg(''), 3000);
+    }
+  };
+
   // Trigger File Download
   const triggerTextDownload = (content, fileName) => {
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -475,8 +705,10 @@ export const Downloads = () => {
     URL.revokeObjectURL(url);
   };
 
+
+
   // Interactive Prefilled PDF/Form Generator
-  const handlePrefilledFormSubmit = (e) => {
+  const handlePrefilledFormSubmit = async (e) => {
     e.preventDefault();
     if (!activeFormDoc) return;
 
@@ -687,7 +919,77 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
       downloadName = `universal_resident_profile_flat_${univFlatNo || 'unknown'}.txt`;
     }
 
-    triggerTextDownload(formContent, downloadName);
+    // Save to Database
+    let formType = '';
+    let flatNo = user?.flat_no || 'N/A';
+    let submissionData = {};
+
+    if (activeFormDoc.id === 2) {
+      formType = 'tenant_verification';
+      flatNo = llHouseNo || currHouseNo || user?.flat_no || 'N/A';
+      submissionData = {
+        llFirstName, llMiddleName, llLastName, llFatherName, llEmail, llPhone, llLandline, llOccupation,
+        llHouseNo, llCountry, llStreet, llState, llColony, llDistrict, llCity, llPoliceStation, llTehsil, llPinCode,
+        tFirstName, tMiddleName, tLastName, tFatherName, tPhone, tLandline, tRelativeName, tGender, tRelationType,
+        tOccupation, tPurpose, tDOB, currHouseNo, currCountry, currStreet, currState, currColony, currDistrict,
+        currCity, currPoliceStation, currTehsil, currPinCode, prevHouseNo, prevCountry, prevStreet, prevState,
+        prevColony, prevDistrict, prevCity, prevPoliceStation, prevTehsil, prevPinCode, prevStayFrom, prevStayTo,
+        permHouseNo, permCountry, permStreet, permState, permColony, permDistrict, permCity, permPoliceStation,
+        permTehsil, permPinCode, tenantFamilyMembersList, tHasCriminalRecord, tCriminalDetails, tInfoCorrect
+      };
+    } else if (activeFormDoc.id === 3) {
+      formType = 'noc';
+      flatNo = nocFlat || user?.flat_no || 'N/A';
+      submissionData = { nocName, nocFlat, nocPurpose, nocDetails };
+    } else if (activeFormDoc.id === 4) {
+      formType = 'parking_sticker';
+      flatNo = parkingFlat || user?.flat_no || 'N/A';
+      submissionData = { parkingName, parkingFlat, parkingVehicleType, parkingVehicleNo, parkingVehicleModel };
+    } else if (activeFormDoc.id === 7) {
+      formType = 'bachelor_undertaking';
+      flatNo = bachelorFlat || user?.flat_no || 'N/A';
+      submissionData = { bachelorName, bachelorFlat, bachelorOrg, bachelorGuardian, bachelorGuardianPhone, bachelorOwner, bachelorAgreeRules };
+    } else if (activeFormDoc.id === 8 || activeFormDoc.isUniversalForm) {
+      formType = 'universal_resident';
+      flatNo = univFlatNo || user?.flat_no || 'N/A';
+      submissionData = {
+        univName, univEmail, univPhone, univFlatNo, univAadhaar, univMoveInDate, univEmergencyName, univEmergencyPhone,
+        univOccupancyStatus, univTenantCategory, univOwnerName, univOwnerPhone, univLeaseDuration, univTenantAgreement,
+        univPoliceVerification, univHasPet, univPetDetails, univProfilePic, univFamilyMembersList, univVehiclesList
+      };
+    }
+
+    if (formType) {
+      try {
+        const response = await fetch('/api/documents/submissions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ formType, flatNo, submissionData })
+        });
+        const data = await response.json();
+        if (data.success) {
+          setSubmissionsList(prev => [data.data, ...prev]);
+        }
+      } catch (err) {
+        console.error("Failed to save submission in database:", err);
+      }
+    }
+
+    // Instead of raw text file download, trigger high-fidelity A4 printing for the submission
+    if (activeFormDoc.id === 2) {
+      handlePrintTenantVerificationForm(false);
+    } else if (activeFormDoc.id === 3) {
+      handlePrintNocForm();
+    } else if (activeFormDoc.id === 4) {
+      handlePrintParkingStickerForm();
+    } else if (activeFormDoc.id === 7) {
+      handlePrintBachelorUndertakingForm();
+    } else if (activeFormDoc.id === 8 || activeFormDoc.isUniversalForm) {
+      handlePrintUniversalForm(false);
+    }
     
     // Clear states
     setTenantName('');
@@ -943,7 +1245,7 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
               <td class="header-text-cell">
                 <h1 class="rwa-title-hi">माँ कौशल्या अपार्टमेंट (RWA) रायपुर</h1>
                 <h2 class="rwa-title-en">MAA KAUSHALYA APARTMENT WELFARE ASSOCIATION</h2>
-                <p class="rwa-address">कौशल्या माता विहार, सेक्टर 1, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015</p>
+                <p class="rwa-address">सेक्टर 1, कौशल्या माता विहार, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015</p>
               </td>
             </tr>
           </table>
@@ -1287,7 +1589,7 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
     if (safeFamilyList.length > 0) {
       safeFamilyList.forEach((member, index) => {
         familyRowsHtml += `
-          <tr>
+          <tr style="${isBlank ? 'height: 28px;' : ''}">
             <td style="border: 1px solid #111; padding: 6px; text-align: center; font-size: 10px;">${index + 1}</td>
             <td style="border: 1px solid #111; padding: 6px; font-weight: bold; font-size: 10.5px;">${member.name || ''}</td>
             <td style="border: 1px solid #111; padding: 6px; font-size: 10px;">${member.phone || ''}</td>
@@ -1311,7 +1613,7 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
     if (safeVehiclesList.length > 0) {
       safeVehiclesList.forEach((vehicle, index) => {
         vehicleRowsHtml += `
-          <tr>
+          <tr style="${isBlank ? 'height: 28px;' : ''}">
             <td style="border: 1px solid #111; padding: 6px; text-align: center; font-size: 10px;">${index + 1}</td>
             <td style="border: 1px solid #111; padding: 6px; font-weight: bold; font-size: 10px;">${vehicle.type || ''}</td>
             <td style="border: 1px solid #111; padding: 6px; font-family: monospace; font-size: 10.5px;">${(vehicle.number || '').toUpperCase()}</td>
@@ -1560,7 +1862,7 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
                 <h1 class="rwa-title-hi">माँ कौशल्या अपार्टमेंट (RWA) रायपुर</h1>
                 <h2 class="rwa-title-en">MAA KAUSHALYA APARTMENT WELFARE ASSOCIATION</h2>
                 <p class="rwa-address">
-                  सेक्टर 1, कौशल्या माता विहार, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015
+                  सेक्टर 1, कौशल्या माता विहार, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015
                 </p>
               </td>
             </tr>
@@ -1616,34 +1918,34 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
             <tr>
               <th>पूरा नाम (Full Name)</th>
               <td class="full-width-cell" colspan="3" style="font-weight: bold; font-size: 11.5px;">
-                ${isBlank ? '' : univName}
+                ${isBlank ? '....................................................................................................' : univName}
               </td>
             </tr>
             <tr>
               <th>मोबाइल नंबर (Mobile No)</th>
-              <td>${isBlank ? '' : univPhone}</td>
+              <td>${isBlank ? '...........................................................' : univPhone}</td>
               <th>ईमेल पता (Email Address)</th>
-              <td>${isBlank ? '' : univEmail}</td>
+              <td>${isBlank ? '...........................................................' : univEmail}</td>
             </tr>
             <tr>
               <th>आधार संख्या / ID Number</th>
-              <td>${isBlank ? '' : univAadhaar}</td>
+              <td>${isBlank ? '...........................................................' : univAadhaar}</td>
               <th>फ्लैट नंबर (Flat Number)</th>
-              <td style="font-weight: bold; font-size: 11.5px;">${isBlank ? '' : univFlatNo}</td>
+              <td style="font-weight: bold; font-size: 11.5px;">${isBlank ? '...........................................................' : univFlatNo}</td>
             </tr>
             <tr>
               <th>प्रवेश तिथि (Move-in Date)</th>
-              <td>${isBlank ? '' : univMoveInDate}</td>
+              <td>${isBlank ? '...........................................................' : univMoveInDate}</td>
               <th>पालतू जानवर (Pet Owned)</th>
               <td>
-                ${isBlank ? 'हाँ (Yes) / नहीं (No)' : (univHasPet ? `हाँ: ${univPetDetails}` : 'नहीं (No)')}
+                ${isBlank ? 'हाँ (Yes) / नहीं (No) | विवरण: .......................' : (univHasPet ? `हाँ: ${univPetDetails}` : 'नहीं (No)')}
               </td>
             </tr>
             <tr>
               <th>आपातकालीन संपर्क नाम</th>
-              <td>${isBlank ? '' : univEmergencyName}</td>
+              <td>${isBlank ? '...........................................................' : univEmergencyName}</td>
               <th>आपातकालीन संपर्क नंबर</th>
-              <td>${isBlank ? '' : univEmergencyPhone}</td>
+              <td>${isBlank ? '...........................................................' : univEmergencyPhone}</td>
             </tr>
           </table>
 
@@ -1660,18 +1962,25 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
             <tr>
               <th>किरायेदार श्रेणी (Category)</th>
               <td colspan="3">
-                ${isBlank ? 'पारिवारिक (Family) / बैचलर (Bachelor)' : (univTenantCategory === 'Family' ? 'पारिवारिक किरायेदार (Family Tenant)' : 'बैचलर किरायेदार (Bachelor Tenant - RWA Approved)')}
+                ${isBlank ? 'पारिवारिक (Family) / अविवाहित (Bachelor) [टिक करें]' : (univTenantCategory === 'Family' ? 'पारिवारिक किरायेदार (Family Tenant)' : 'बैचलर किरायेदार (Bachelor Tenant - RWA Approved)')}
               </td>
             </tr>
+            ${(!isBlank && univTenantCategory === 'Bachelor') ? `
+            <tr style="background-color: #fff1f2;">
+              <td colspan="4" style="color: #be123c; font-weight: bold; font-size: 9px; padding: 6px; border: 1px solid #be123c;">
+                ⚠️ आरडब्ल्यूए चेतावनी (RWA Security Warning): अविवाहित किरायेदार (Bachelor Tenant) श्रेणी के पंजीकरण के लिए RWA नियमों के अनुसार संयुक्त सुरक्षा घोषणा-पत्र (Bachelor Undertaking - Form 7) का विधिवत हस्ताक्षर कर संलग्न होना अनिवार्य है।
+              </td>
+            </tr>
+            ` : ''}
             <tr>
               <th>फ्लैट मालिक का नाम</th>
-              <td>${isBlank ? '' : univOwnerName}</td>
-              <th>मालिक का फोन नंबर</th>
-              <td>${isBlank ? '' : univOwnerPhone}</td>
+              <td>${isBlank ? '...........................................................' : univOwnerName}</td>
+              <th>малик का फोन नंबर</th>
+              <td>${isBlank ? '...........................................................' : univOwnerPhone}</td>
             </tr>
             <tr>
               <th>पट्टा अवधि (Lease Period)</th>
-              <td colspan="3">${isBlank ? '.............................' : univLeaseDuration}</td>
+              <td colspan="3">${isBlank ? '....................................................................................................' : univLeaseDuration}</td>
             </tr>
             <tr>
               <th>एग्रीमेंट जमा? (Lease Agreement?)</th>
@@ -1753,6 +2062,730 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
       </body>
       </html>
     `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
+
+  const handlePrintNocForm = () => {
+    const printWindow = window.open('', '_blank', 'width=900,height=950,scrollbars=yes');
+    if (!printWindow) {
+      alert("पॉपअप अवरोधक सक्रिय है! कृपया इस साईट के लिए अनुमति दें।");
+      return;
+    }
+
+    const dateStr = new Date().toLocaleDateString('hi-IN');
+    const authCode = `RWA-NOC-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>NOC आवेदन - माँ कौशल्या अपार्टमेंट</title>
+        <meta charset="utf-8" />
+        <style>
+          body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; line-height: 1.6; color: #000; background-color: #fff; }
+          .container { max-width: 800px; margin: 0 auto; }
+          .header-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border-bottom: 2px double #000; }
+          .header-logo-cell { width: 60px; text-align: center; vertical-align: middle; }
+          .header-text-cell { text-align: center; padding-right: 60px; }
+          .rwa-title-hi { font-size: 20px; font-weight: bold; margin: 0; }
+          .rwa-title-en { font-size: 11px; font-weight: bold; margin: 2px 0 0 0; letter-spacing: 1px; }
+          .rwa-address { font-size: 9px; color: #555; }
+          .form-title { text-align: center; font-size: 14px; font-weight: bold; text-decoration: underline; margin: 20px 0; }
+          .meta { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 11px; font-weight: bold; }
+          .box { border: 1px solid #000; padding: 15px; background: #fafafa; margin-bottom: 20px; font-size: 11px; }
+          .field { margin-bottom: 8px; }
+          .label { font-weight: bold; display: inline-block; width: 180px; }
+          .details { border: 1px solid #111; padding: 15px; font-size: 11px; min-height: 150px; margin-top: 10px; background: #fff; white-space: pre-wrap; }
+          .footer-table { width: 100%; margin-top: 50px; }
+          .footer-table td { width: 50%; text-align: center; }
+          .sig-line { width: 180px; border-bottom: 1px solid #000; margin: 0 auto 5px auto; }
+          .print-btn { background-color: #0284c7; color: white; border: none; padding: 8px 20px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-bottom: 20px; }
+          @media print { .print-btn { display: none; } }
+        </style>
+      </head>
+      <body>
+        <div style="text-align: center;"><button class="print-btn" onclick="window.print()">प्रिंट करें / PDF सहेजें</button></div>
+        <div class="container">
+          <table class="header-table">
+            <tr>
+              <td class="header-logo-cell"><span style="font-size: 32px;">🏢</span></td>
+              <td class="header-text-cell">
+                <h1 class="rwa-title-hi">माँ कौशल्या अपार्टमेंट (RWA) रायपुर</h1>
+                <p class="rwa-title-en">MAA KAUSHALYA APARTMENT WELFARE ASSOCIATION</p>
+                <p class="rwa-address">सेक्टर 1, कौशल्या माता विहार, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015</p>
+              </td>
+            </tr>
+          </table>
+          <div class="form-title">अनापत्ति प्रमाण पत्र (NOC) आवेदन पत्र</div>
+          <div class="meta"><span>संदर्भ आईडी: ${authCode}</span><span>दिनांक: ${dateStr}</span></div>
+          <div class="box">
+            <div class="field"><span class="label">आवेदक का पूरा नाम:</span><span>${nocName || '____________________'}</span></div>
+            <div class="field"><span class="label">आवंटित फ्लैट संख्या:</span><span>${nocFlat || '____________________'}</span></div>
+            <div class="field"><span class="label">आवेदन का उद्देश्य:</span><span>${nocPurpose === 'Renovation' ? 'आंतरिक नवीनीकरण (Renovation)' : nocPurpose === 'BankLoan' ? 'बैंक ऋण अनापत्ति (Bank Loan)' : 'फ्लैट हस्तांतरण/बिक्री (Flat Sale)'}</span></div>
+          </div>
+          <p><strong>आवेदन का विवरण (NOC Request Details):</strong></p>
+          <div class="details">${nocDetails || 'N/A'}</div>
+          <p style="font-size: 9.5px; color: #444; margin-top: 15px;">उपरोक्त विवरण के आधार पर RWA माँ कौशल्या अपार्टमेंट रायपुर द्वारा यह पुष्टि की जाती है कि आवेदक का सोसायटी रखरखाव शुल्क (Maintenance dues) पूरी तरह शून्य है और उक्त गतिविधियों हेतु अनापत्ति दी जाती है।</p>
+          <table class="footer-table">
+            <tr>
+              <td><div class="sig-line"></div><div>आवेदक के हस्ताक्षर</div></td>
+              <td><div class="sig-line"></div><div>RWA प्रशासनिक डेस्क</div></td>
+            </tr>
+          </table>
+        </div>
+      </body>
+      </html>
+    `;
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
+
+  const handlePrintParkingStickerForm = () => {
+    const printWindow = window.open('', '_blank', 'width=900,height=950,scrollbars=yes');
+    if (!printWindow) {
+      alert("पॉपअप अवरोधक सक्रिय है! कृपया इस साईट के लिए अनुमति दें।");
+      return;
+    }
+
+    const dateStr = new Date().toLocaleDateString('hi-IN');
+    const authCode = `RWA-PARK-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>वाहन पार्किंग स्टिकर - माँ कौशल्या अपार्टमेंट</title>
+        <meta charset="utf-8" />
+        <style>
+          body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; line-height: 1.6; color: #000; background-color: #fff; }
+          .container { max-width: 800px; margin: 0 auto; }
+          .header-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border-bottom: 2px double #000; }
+          .header-logo-cell { width: 60px; text-align: center; vertical-align: middle; }
+          .header-text-cell { text-align: center; padding-right: 60px; }
+          .rwa-title-hi { font-size: 20px; font-weight: bold; margin: 0; }
+          .rwa-title-en { font-size: 11px; font-weight: bold; margin: 2px 0 0 0; letter-spacing: 1px; }
+          .rwa-address { font-size: 9px; color: #555; }
+          .form-title { text-align: center; font-size: 14px; font-weight: bold; text-decoration: underline; margin: 20px 0; }
+          .meta { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 11px; font-weight: bold; }
+          .box { border: 1px solid #000; padding: 15px; background: #fafafa; margin-bottom: 20px; font-size: 11px; }
+          .field { margin-bottom: 8px; }
+          .label { font-weight: bold; display: inline-block; width: 180px; }
+          .rules-list { font-size: 10px; color: #444; border: 1px solid #ccc; padding: 15px; border-radius: 8px; background: #fff; }
+          .footer-table { width: 100%; margin-top: 50px; }
+          .footer-table td { width: 50%; text-align: center; }
+          .sig-line { width: 180px; border-bottom: 1px solid #000; margin: 0 auto 5px auto; }
+          .print-btn { background-color: #0284c7; color: white; border: none; padding: 8px 20px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-bottom: 20px; }
+          @media print { .print-btn { display: none; } }
+        </style>
+      </head>
+      <body>
+        <div style="text-align: center;"><button class="print-btn" onclick="window.print()">प्रिंट करें / PDF सहेजें</button></div>
+        <div class="container">
+          <table class="header-table">
+            <tr>
+              <td class="header-logo-cell"><span style="font-size: 32px;">🏢</span></td>
+              <td class="header-text-cell">
+                <h1 class="rwa-title-hi">माँ कौशल्या अपार्टमेंट (RWA) रायपुर</h1>
+                <p class="rwa-title-en">MAA KAUSHALYA APARTMENT WELFARE ASSOCIATION</p>
+                <p class="rwa-address">सेक्टर 1, कौशल्या माता विहार, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015</p>
+              </td>
+            </tr>
+          </table>
+          <div class="form-title">वाहन गेट-पास एवं पार्किंग स्टिकर प्रपत्र</div>
+          <div class="meta"><span>संदर्भ आईडी: ${authCode}</span><span>दिनांक: ${dateStr}</span></div>
+          <div class="box">
+            <div class="field"><span class="label">वाहन स्वामी का नाम:</span><span>${parkingName || '____________________'}</span></div>
+            <div class="field"><span class="label">संबंधित फ्लैट नंबर:</span><span>${parkingFlat || '____________________'}</span></div>
+            <div class="field"><span class="label">वाहन का प्रकार:</span><span>${parkingVehicleType === 'Car' ? 'चार पहिया वाहन (Car)' : 'दो पहिया वाहन (Bike/Scooty)'}</span></div>
+            <div class="field"><span class="label">वाहन का नंबर प्लेट:</span><span>${parkingVehicleNo || '____________________'}</span></div>
+            <div class="field"><span class="label">ब्रांड एवं मॉडल:</span><span>${parkingVehicleModel || '____________________'}</span></div>
+          </div>
+          <p><strong>पार्किंग एवं सुरक्षा नियम (Parking Regulations):</strong></p>
+          <div class="rules-list" style="padding: 12px 20px;">
+            1. स्टिकर को वाहन की बाईं विंडस्क्रीन/मडगार्ड पर चिपकाना अनिवार्य है।<br/>
+            2. निर्धारित पार्किंग स्थल (Reserved slot) पर ही पार्क करें।<br/>
+            3. परिसर के भीतर वाहन की गति सीमा 10 किमी/घंटा से कम रखें।<br/>
+            4. Gate पर सुरक्षा गार्ड को स्टिकर स्पष्ट दिखना चाहिए।
+          </div>
+          <table class="footer-table">
+            <tr>
+              <td><div class="sig-line"></div><div>वाहन स्वामी के हस्ताक्षर</div></td>
+              <td><div class="sig-line"></div><div>सुरक्षा विंग अधिकृत हस्ताक्षर</div></td>
+            </tr>
+          </table>
+        </div>
+      </body>
+      </html>
+    `;
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
+
+  const handlePrintBachelorUndertakingForm = () => {
+    const printWindow = window.open('', '_blank', 'width=900,height=950,scrollbars=yes');
+    if (!printWindow) {
+      alert("पॉपअप अवरोधक सक्रिय है! कृपया इस साईट के लिए अनुमति दें।");
+      return;
+    }
+
+    const dateStr = new Date().toLocaleDateString('hi-IN');
+    const authCode = `RWA-BACH-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>घोषणा-पत्र - माँ कौशल्या अपार्टमेंट</title>
+        <meta charset="utf-8" />
+        <style>
+          body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; line-height: 1.6; color: #000; background-color: #fff; }
+          .container { max-width: 800px; margin: 0 auto; }
+          .header-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border-bottom: 2px double #000; }
+          .header-logo-cell { width: 60px; text-align: center; vertical-align: middle; }
+          .header-text-cell { text-align: center; padding-right: 60px; }
+          .rwa-title-hi { font-size: 18px; font-weight: bold; margin: 0; }
+          .rwa-title-en { font-size: 11px; font-weight: bold; margin: 2px 0 0 0; letter-spacing: 1px; }
+          .rwa-address { font-size: 9px; color: #555; }
+          .form-title { text-align: center; font-size: 13px; font-weight: bold; text-decoration: underline; margin: 15px 0; }
+          .meta { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 11px; font-weight: bold; }
+          .box { border: 1px solid #000; padding: 15px; background: #fafafa; margin-bottom: 15px; font-size: 11px; }
+          .field { margin-bottom: 8px; }
+          .label { font-weight: bold; display: inline-block; width: 180px; }
+          .rules-list { font-size: 10px; color: #444; border: 1px solid #ccc; padding: 15px; border-radius: 8px; background: #fff; text-align: justify; }
+          .footer-table { width: 100%; margin-top: 50px; }
+          .footer-table td { width: 50%; text-align: center; }
+          .sig-line { width: 180px; border-bottom: 1px solid #000; margin: 0 auto 5px auto; }
+          .print-btn { background-color: #0284c7; color: white; border: none; padding: 8px 20px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-bottom: 20px; }
+          @media print { .print-btn { display: none; } }
+        </style>
+      </head>
+      <body>
+        <div style="text-align: center;"><button class="print-btn" onclick="window.print()">प्रिंट करें / PDF सहेजें</button></div>
+        <div class="container">
+          <table class="header-table">
+            <tr>
+              <td class="header-logo-cell"><span style="font-size: 32px;">🏢</span></td>
+              <td class="header-text-cell">
+                <h1 class="rwa-title-hi">माँ कौशल्या अपार्टमेंट (RWA) रायपुर</h1>
+                <p class="rwa-title-en">MAA KAUSHALYA APARTMENT WELFARE ASSOCIATION</p>
+                <p class="rwa-address">सेक्टर 1, कौशल्या माता विहार, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015</p>
+              </td>
+            </tr>
+          </table>
+          <div class="form-title">बैचलर किरायेदार सहमति एवं सुरक्षा घोषणा-पत्र (UNDERTAKING)</div>
+          <div class="meta"><span>घोषणा आईडी: ${authCode}</span><span>दिनांक: ${dateStr}</span></div>
+          <div class="box">
+            <div class="field"><span class="label">फ्लैट संख्या:</span><span>${bachelorFlat || '____________________'}</span></div>
+            <div class="field"><span class="label">फ्लैट मालिक का नाम:</span><span>${bachelorOwner || '____________________'}</span></div>
+            <div class="field"><span class="label">किरायेदार का पूरा नाम:</span><span>${bachelorName || '____________________'}</span></div>
+            <div class="field"><span class="label">कॉलेज / संस्थान / कंपनी:</span><span>${bachelorOrg || '____________________'}</span></div>
+            <div class="field"><span class="label">अभिभावक का नाम:</span><span>${bachelorGuardian || '____________________'}</span></div>
+            <div class="field"><span class="label">अभिभावक का मोबाइल:</span><span>${bachelorGuardianPhone || '____________________'}</span></div>
+          </div>
+          <p><strong>सुरक्षा एवं नैतिक दिशानिर्देश अनुपालन (RWA Guidelines compliance):</strong></p>
+          <div class="rules-list" style="padding: 12px 20px;">
+            1. आवंटित फ्लैट में शांत समय (Silent Hours) रात 10:00 बजे से सुबह 06:00 बजे तक रहेगा, इस दौरान शोरगुल पूरी तरह से प्रतिबंधित है।<br/>
+            2. फ्लैट के भीतर अनधिकृत बाहरी मेहमान या रात में ठहरने वाले आगंतुक की जानकारी सुरक्षा गेट तथा सुरक्षा गार्ड रजिस्टर में दर्ज कराना अनिवार्य होगा।<br/>
+            3. किसी भी प्रकार की असामाजिक, अवैध या अनैतिक गतिविधियों के पाए जाने पर RWA को बिना किसी पूर्व सूचना के 24 घंटे के भीतर फ्लैट खाली कराने का पूर्ण अधिकार होगा।<br/>
+            4. मकान मालिक (Owner) किरायेदार के किसी भी प्रकार के दुर्व्यवहार या अनुशासनहीनता की स्थिति में समिति के समक्ष अंतिम रूप से उत्तरदायी रहेंगे।
+          </div>
+          <table class="footer-table">
+            <tr>
+              <td><div class="sig-line"></div><div>हस्ताक्षर किरायेदार</div></td>
+              <td><div class="sig-line"></div><div>हस्ताक्षर मकान मालिक</div></td>
+            </tr>
+          </table>
+        </div>
+      </body>
+      </html>
+    `;
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
+
+  const printSubmission = (sub) => {
+    const printWindow = window.open('', '_blank', 'width=900,height=950,scrollbars=yes');
+    if (!printWindow) {
+      alert("पॉपअप अवरोधक सक्रिय है! कृपया इस साईट के लिए अनुमति दें।");
+      return;
+    }
+
+    const dateStr = new Date(sub.created_at).toLocaleDateString('hi-IN');
+    const authCode = `RWA-SUB-0${sub.id}`;
+    const d = sub.submission_data || {};
+
+    let htmlContent = "";
+
+    if (sub.form_type === 'tenant_verification') {
+      let familyRowsHtml = '';
+      const safeFamilyList = d.tenantFamilyMembersList || [];
+      if (safeFamilyList.length > 0) {
+        safeFamilyList.forEach((member, index) => {
+          familyRowsHtml += `
+            <tr>
+              <td style="border: 1px solid #111; padding: 6px; text-align: center; font-size: 10px;">${index + 1}</td>
+              <td style="border: 1px solid #111; padding: 6px; font-weight: bold; font-size: 10.5px;">${member.name || ''}</td>
+              <td style="border: 1px solid #111; padding: 6px; font-size: 10px;">${member.relation || ''}</td>
+              <td style="border: 1px solid #111; padding: 6px; text-align: center; font-size: 10px;">${member.phone || ''}</td>
+            </tr>
+          `;
+        });
+      } else {
+        familyRowsHtml = `<tr><td colspan="4" style="border: 1px solid #111; padding: 12px; text-align: center; color: #555; font-style: italic; font-size: 10px;">कोई पारिवारिक सदस्य पंजीकृत नहीं है</td></tr>`;
+      }
+
+      htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>किरायेदार पुलिस सत्यापन अनुरोध - माँ कौशल्या अपार्टमेंट</title>
+          <meta charset="utf-8" />
+          <style>
+            @page { size: A4; margin: 15mm; }
+            body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #000; margin: 0; padding: 0; font-size: 11px; line-height: 1.4; }
+            .container { width: 100%; max-width: 800px; margin: 0 auto; }
+            .header-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; border-bottom: 2px double #000; }
+            .header-logo-cell { width: 60px; text-align: center; vertical-align: middle; }
+            .header-text-cell { text-align: center; padding-right: 60px; }
+            .rwa-title-hi { font-size: 18px; font-weight: 900; margin: 0; }
+            .rwa-title-en { font-size: 11px; font-weight: bold; margin: 2px 0 0 0; letter-spacing: 1px; }
+            .rwa-address { font-size: 8.5px; color: #555; margin: 2px 0 0 0; }
+            .form-title-container { text-align: center; margin: 5px 0 10px 0; }
+            .form-title-hi { font-size: 12px; font-weight: bold; background-color: #eee; padding: 3px 10px; border: 1px solid #222; display: inline-block; }
+            .photo-box { width: 100px; height: 120px; border: 1.5px dashed #333; text-align: center; vertical-align: middle; font-size: 8.5px; color: #555; }
+            .section-heading { font-size: 10px; font-weight: bold; background-color: #f2f2f2; padding: 3px 8px; border: 1px solid #111; margin-top: 8px; margin-bottom: 4px; }
+            .data-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+            .data-table th, .data-table td { border: 1px solid #111; padding: 4px 6px; text-align: left; }
+            .data-table th { background-color: #fafafa; font-weight: bold; width: 25%; font-size: 9px; }
+            .data-table td { width: 25%; }
+            .signatures-table { width: 100%; margin-top: 25px; border-collapse: collapse; }
+            .signatures-table td { width: 50%; text-align: center; vertical-align: bottom; }
+            .sig-line { width: 180px; border-bottom: 1px solid #000; margin: 0 auto 5px auto; }
+            .sig-label { font-weight: bold; font-size: 9.5px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <table class="header-table">
+              <tr>
+                <td class="header-logo-cell"><span style="font-size: 28px;">🏢</span></td>
+                <td class="header-text-cell">
+                  <h1 class="rwa-title-hi">माँ कौशल्या अपार्टमेंट (RWA) रायपुर</h1>
+                  <h2 class="rwa-title-en">MAA KAUSHALYA APARTMENT WELSERVATION</h2>
+                  <p class="rwa-address">सेक्टर 1, कौशल्या माता विहार, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015</p>
+                </td>
+              </tr>
+            </table>
+            <div class="form-title-container">
+              <div class="form-title-hi">किरायेदार पुलिस सत्यापन अनुरोध फॉर्म (सहेजा गया आवेदन)</div>
+            </div>
+            <table style="width: 100%; margin-bottom: 5px;">
+              <tr>
+                <td>
+                  <table style="font-size: 9px; line-height: 1.5;">
+                    <tr><td style="font-weight: bold; width: 120px;">सबमिशन संदर्भ:</td><td>${authCode}</td></tr>
+                    <tr><td style="font-weight: bold;">दिनांक (Date):</td><td>${dateStr}</td></tr>
+                    <tr><td style="font-weight: bold;">थाना (Police PS):</td><td>${d.currPoliceStation || 'N/A'}</td></tr>
+                  </table>
+                </td>
+                <td style="width: 100px; text-align: right;">
+                  <div class="photo-box"><div style="padding-top: 40px; font-weight: bold;">किरायेदार फोटो</div></div>
+                </td>
+              </tr>
+            </table>
+
+            <div class="section-heading">मकान मालिक की सूचना (Landlord Information)</div>
+            <table class="data-table">
+              <tr><th>नाम</th><td>${d.llFirstName || ''} ${d.llMiddleName || ''} ${d.llLastName || ''}</td><th>पिता/पति का नाम</th><td>${d.llFatherName || 'N/A'}</td></tr>
+              <tr><th>ईमेल</th><td>${d.llEmail || 'N/A'}</td><th>मोबाइल नम्बर</th><td>${d.llPhone || 'N/A'}</td></tr>
+              <tr><th>मकान संख्या</th><td>${d.llHouseNo || 'N/A'}</td><th>गली/क्षेत्र</th><td>${d.llStreet || 'N/A'}, ${d.llColony || 'N/A'}</td></tr>
+              <tr><th>शहर/जिला</th><td>${d.llCity || 'N/A'}, ${d.llDistrict || 'N/A'}</td><th>राज्य/देश/पिन</th><td>${d.llState || 'N/A'}, ${d.llCountry || 'N/A'} - ${d.llPinCode || ''}</td></tr>
+            </table>
+
+            <div class="section-heading">किरायेदार की सूचना (Tenant Information)</div>
+            <table class="data-table">
+              <tr><th>नाम</th><td>${d.tFirstName || ''} ${d.tMiddleName || ''} ${d.tLastName || ''}</td><th>पिता/पति का नाम</th><td>${d.tFatherName || 'N/A'}</td></tr>
+              <tr><th>मोबाइल</th><td>${d.tPhone || 'N/A'}</td><th>रिश्तेदार/लिंग</th><td>${d.tRelativeName || 'N/A'} (${d.tGender || 'Male'})</td></tr>
+              <tr><th>व्यवसाय</th><td>${d.tOccupation || 'N/A'}</td><th>जन्म तिथी (DOB)</th><td>${d.tDOB || 'N/A'}</td></tr>
+            </table>
+
+            <div class="section-heading">वर्तमान पता (Current Address)</div>
+            <table class="data-table">
+              <tr><th>मकान संख्या</th><td>${d.currHouseNo || 'N/A'}</td><th>गली/शहर</th><td>${d.currStreet || 'N/A'}, ${d.currCity || 'N/A'}</td></tr>
+              <tr><th>पुलिस स्टेशन/पिन</th><td>${d.currPoliceStation || 'N/A'} - ${d.currPinCode || ''}</td><th>राज्य/देश</th><td>${d.currState || 'N/A'}, ${d.currCountry || 'N/A'}</td></tr>
+            </table>
+
+            <div class="section-heading">स्थायी पता (Permanent Address)</div>
+            <table class="data-table">
+              <tr><th>मकान संख्या</th><td>${d.permHouseNo || 'N/A'}</td><th>गली/शहर</th><td>${d.permStreet || 'N/A'}, ${d.permCity || 'N/A'}</td></tr>
+              <tr><th>पुलिस स्टेशन/पिन</th><td>${d.permPoliceStation || 'N/A'} - ${d.permPinCode || ''}</td><th>राज्य/देश</th><td>${d.permState || 'N/A'}, ${d.permCountry || 'N/A'}</td></tr>
+            </table>
+
+            <div class="section-heading">पारिवारिक सदस्य</div>
+            <table class="data-table">${familyRowsHtml}</table>
+
+            <div class="section-heading">घोषणा/Undertaking</div>
+            <div style="border: 1px solid #111; padding: 6px; background-color: #fafafa;">
+              criminal record: ${d.tHasCriminalRecord || 'नहीं'}<br/>
+              declarative verify: ${d.tInfoCorrect || 'हाँ'}
+            </div>
+
+            <table class="signatures-table">
+              <tr>
+                <td><div class="sig-line"></div><div class="sig-label">हस्ताक्षर मकान मालिक</div></td>
+                <td><div class="sig-line"></div><div class="sig-label">हस्ताक्षर किरायेदार</div></td>
+              </tr>
+            </table>
+          </div>
+          <script>window.onload = function() { setTimeout(function() { window.print(); }, 350); };</script>
+        </body>
+        </html>
+      `;
+    } else if (sub.form_type === 'noc') {
+      htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>NOC आवेदन - माँ कौशल्या अपार्टमेंट</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; line-height: 1.6; }
+            .letterhead { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px; }
+            .meta { display: flex; justify-content: space-between; margin-bottom: 20px; font-weight: bold; }
+            .content { margin: 20px 0; }
+            .footer { margin-top: 50px; text-align: right; }
+          </style>
+        </head>
+        <body>
+          <div class="letterhead">
+            <h2>माँ कौशल्या अपार्टमेंट (RWA) रायपुर</h2>
+            <p>सेक्टर 1, कौशल्या माता विहार, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015</p>
+          </div>
+          <div class="meta">
+            <span>संदर्भ: RWA-NOC-SUB-0${sub.id}</span>
+            <span>दिनांक: ${dateStr}</span>
+          </div>
+          <h3>विषय: अनापत्ति प्रमाण पत्र (NOC) हेतु आवेदन</h3>
+          <div class="content">
+            <p><strong>आवेदक का नाम:</strong> ${d.nocName || 'N/A'}</p>
+            <p><strong>फ्लैट संख्या:</strong> ${d.nocFlat || 'N/A'}</p>
+            <p><strong>उद्देश्य:</strong> ${d.nocPurpose || 'N/A'}</p>
+            <br/>
+            <p><strong>अनुरोध पत्र विवरण:</strong></p>
+            <p style="border: 1px solid #ddd; padding: 15px; background: #f9f9f9; border-radius: 8px;">"${d.nocDetails || 'N/A'}"</p>
+          </div>
+          <div class="footer">
+            <p>आवेदक के हस्ताक्षर: ___________________</p>
+            <br/><br/>
+            <p>RWA अध्यक्ष / सचिव</p>
+          </div>
+          <script>window.onload = function() { window.print(); };</script>
+        </body>
+        </html>
+      `;
+    } else if (sub.form_type === 'parking_sticker') {
+      htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>वाहन पार्किंग स्टिकर - माँ कौशल्या अपार्टमेंट</title>
+          <meta charset="utf-8" />
+          <style>
+            body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; line-height: 1.6; color: #000; background-color: #fff; }
+            .container { max-width: 800px; margin: 0 auto; }
+            .header-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border-bottom: 2px double #000; }
+            .header-logo-cell { width: 60px; text-align: center; vertical-align: middle; }
+            .header-text-cell { text-align: center; padding-right: 60px; }
+            .rwa-title-hi { font-size: 20px; font-weight: bold; margin: 0; }
+            .rwa-title-en { font-size: 11px; font-weight: bold; margin: 2px 0 0 0; letter-spacing: 1px; }
+            .rwa-address { font-size: 9px; color: #555; }
+            .form-title { text-align: center; font-size: 14px; font-weight: bold; text-decoration: underline; margin: 20px 0; }
+            .meta { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 11px; font-weight: bold; }
+            .box { border: 1px solid #000; padding: 15px; background: #fafafa; margin-bottom: 20px; font-size: 11px; }
+            .field { margin-bottom: 8px; }
+            .label { font-weight: bold; display: inline-block; width: 180px; }
+            .rules-list { font-size: 10px; color: #444; border: 1px solid #ccc; padding: 15px; border-radius: 8px; background: #fff; }
+            .footer-table { width: 100%; margin-top: 50px; }
+            .footer-table td { width: 50%; text-align: center; }
+            .sig-line { width: 180px; border-bottom: 1px solid #000; margin: 0 auto 5px auto; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <table class="header-table">
+              <tr>
+                <td class="header-logo-cell"><span style="font-size: 32px;">🏢</span></td>
+                <td class="header-text-cell">
+                  <h1 class="rwa-title-hi">माँ कौशल्या अपार्टमेंट (RWA) रायपुर</h1>
+                  <p class="rwa-title-en">MAA KAUSHALYA APARTMENT WELSERVATION</p>
+                  <p class="rwa-address">सेक्टर 1, कौशल्या माता विहार, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015</p>
+                </td>
+              </tr>
+            </table>
+            <div class="form-title">वाहन गेट-पास एवं पार्किंग स्टिकर प्रपत्र (सहेजा गया आवेदन)</div>
+            <div class="meta"><span>संदर्भ आईडी: ${authCode}</span><span>दिनांक: ${dateStr}</span></div>
+            <div class="box">
+              <div class="field"><span class="label">वाहन स्वामी का नाम:</span><span>${d.parkingName || 'N/A'}</span></div>
+              <div class="field"><span class="label">संबंधित फ्लैट नंबर:</span><span>${d.parkingFlat || 'N/A'}</span></div>
+              <div class="field"><span class="label">वाहन का प्रकार:</span><span>${d.parkingVehicleType === 'Car' ? 'चार पहिया वाहन (Car)' : 'दो पहिया वाहन (Bike/Scooty)'}</span></div>
+              <div class="field"><span class="label">वाहन का नंबर प्लेट:</span><span>${d.parkingVehicleNo || 'N/A'}</span></div>
+              <div class="field"><span class="label">ब्रांड एवं मॉडल:</span><span>${d.parkingVehicleModel || 'N/A'}</span></div>
+            </div>
+            <p><strong>पार्किंग एवं सुरक्षा नियम (Parking Regulations):</strong></p>
+            <div class="rules-list" style="padding: 12px 20px;">
+              1. स्टिकर को वाहन की बाईं विंडस्क्रीन/मडगार्ड पर चिपकाना अनिवार्य है।<br/>
+              2. निर्धारित पार्किंग स्थल (Reserved slot) पर ही पार्क करें।<br/>
+              3. परिसर के भीतर वाहन की गति सीमा 10 किमी/घंटा से कम रखें।<br/>
+              4. Gate पर सुरक्षा गार्ड को स्टिकर स्पष्ट दिखना चाहिए।
+            </div>
+            <table class="footer-table">
+              <tr>
+                <td><div class="sig-line"></div><div>वाहन स्वामी के हस्ताक्षर</div></td>
+                <td><div class="sig-line"></div><div>सुरक्षा विंग अधिकृत हस्ताक्षर</div></td>
+              </tr>
+            </table>
+          </div>
+          <script>window.onload = function() { window.print(); };</script>
+        </body>
+        </html>
+      `;
+    } else if (sub.form_type === 'bachelor_undertaking') {
+      htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>घोषणा-पत्र - माँ कौशल्या अपार्टमेंट</title>
+          <meta charset="utf-8" />
+          <style>
+            body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; line-height: 1.6; color: #000; background-color: #fff; }
+            .container { max-width: 800px; margin: 0 auto; }
+            .header-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border-bottom: 2px double #000; }
+            .header-logo-cell { width: 60px; text-align: center; vertical-align: middle; }
+            .header-text-cell { text-align: center; padding-right: 60px; }
+            .rwa-title-hi { font-size: 18px; font-weight: bold; margin: 0; }
+            .rwa-title-en { font-size: 11px; font-weight: bold; margin: 2px 0 0 0; letter-spacing: 1px; }
+            .rwa-address { font-size: 9px; color: #555; }
+            .form-title { text-align: center; font-size: 13px; font-weight: bold; text-decoration: underline; margin: 15px 0; }
+            .meta { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 11px; font-weight: bold; }
+            .box { border: 1px solid #000; padding: 15px; background: #fafafa; margin-bottom: 15px; font-size: 11px; }
+            .field { margin-bottom: 8px; }
+            .label { font-weight: bold; display: inline-block; width: 180px; }
+            .rules-list { font-size: 10px; color: #444; border: 1px solid #ccc; padding: 15px; border-radius: 8px; background: #fff; text-align: justify; }
+            .footer-table { width: 100%; margin-top: 50px; }
+            .footer-table td { width: 50%; text-align: center; }
+            .sig-line { width: 180px; border-bottom: 1px solid #000; margin: 0 auto 5px auto; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <table class="header-table">
+              <tr>
+                <td class="header-logo-cell"><span style="font-size: 32px;">🏢</span></td>
+                <td class="header-text-cell">
+                  <h1 class="rwa-title-hi">माँ कौशल्या अपार्टमेंट (RWA) रायपुर</h1>
+                  <p class="rwa-title-en">MAA KAUSHALYA APARTMENT WELSERVATION</p>
+                  <p class="rwa-address">सेक्टर 1, कौशल्या माता विहार, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015</p>
+                </td>
+              </tr>
+            </table>
+            <div class="form-title">बैचलर किरायेदार सहमति एवं सुरक्षा घोषणा-पत्र (UNDERTAKING)</div>
+            <div class="meta"><span>घोषणा आईडी: ${authCode}</span><span>दिनांक: ${dateStr}</span></div>
+            <div class="box">
+              <div class="field"><span class="label">फ्लैट संख्या:</span><span>${d.bachelorFlat || 'N/A'}</span></div>
+              <div class="field"><span class="label">फ्लैट मालिक का नाम:</span><span>${d.bachelorOwner || 'N/A'}</span></div>
+              <div class="field"><span class="label">किरायेदार का पूरा नाम:</span><span>${d.bachelorName || 'N/A'}</span></div>
+              <div class="field"><span class="label">कॉलेज / संस्थान / कंपनी:</span><span>${d.bachelorOrg || 'N/A'}</span></div>
+              <div class="field"><span class="label">माता-पिता / अभिभावक का नाम:</span><span>${d.bachelorGuardian || 'N/A'}</span></div>
+              <div class="field"><span class="label">अभिभावक का मोबाइल नंबर:</span><span>${d.bachelorGuardianPhone || 'N/A'}</span></div>
+            </div>
+            <p><strong>आरडब्ल्यूए सुरक्षा एवं नैतिक दिशानिर्देश अनुपालन (Undertaking Terms):</strong></p>
+            <div class="rules-list">
+              1. शांत समय (Silent Hours) रात 10:00 बजे से सुबह 06:00 बजे तक रहेगा, इस दौरान किसी भी प्रकार का शोरगुल या हुड़दंग प्रतिबंधित रहेगा।<br/>
+              2. फ्लैट के अंदर किसी भी अनधिकृत बाहरी मेहमान या रात में ठहरने वाले आगंतुक की जानकारी सुरक्षा गेट तथा गार्ड रजिस्टर में दर्ज कराना अनिवार्य है।<br/>
+              3. किसी भी प्रकार की असामाजिक, अवैध या अनैतिक गतिविधियों के पाए जाने पर RWA को बिना किसी पूर्व सूचना के 24 घंटे के भीतर फ्लैट खाली कराने का पूर्ण अधिकार होगा।<br/>
+              4. मकान मालिक (Owner) किरायेदार के किसी भी प्रकार के दुर्व्यवहार या अनुशासनहीनता की स्थिति में समिति के समक्ष उत्तरदायी रहेंगे।
+            </div>
+            <table class="footer-table">
+              <tr>
+                <td><div class="sig-line"></div><div>किरायेदार के हस्ताक्षर</div></td>
+                <td><div class="sig-line"></div><div>मकान मालिक के हस्ताक्षर</div></td>
+              </tr>
+            </table>
+          </div>
+          <script>window.onload = function() { window.print(); };</script>
+        </body>
+        </html>
+      `;
+    } else if (sub.form_type === 'universal_resident') {
+      let familyRowsHtml = '';
+      const safeFamilyList = d.univFamilyMembersList || [];
+      if (safeFamilyList.length > 0) {
+        safeFamilyList.forEach((member, index) => {
+          familyRowsHtml += `
+            <tr>
+              <td style="border: 1px solid #111; padding: 6px; text-align: center; font-size: 10px;">${index + 1}</td>
+              <td style="border: 1px solid #111; padding: 6px; font-weight: bold; font-size: 10.5px;">${member.name || ''}</td>
+              <td style="border: 1px solid #111; padding: 6px; font-size: 10px;">${member.phone || ''}</td>
+              <td style="border: 1px solid #111; padding: 6px; text-align: center; font-size: 10px;">${member.gender || ''}</td>
+            </tr>
+          `;
+        });
+      } else {
+        familyRowsHtml = `<tr><td colspan="4" style="border: 1px solid #111; padding: 12px; text-align: center; color: #555; font-style: italic; font-size: 10px;">कोई पारिवारिक सदस्य पंजीकृत नहीं है</td></tr>`;
+      }
+
+      let vehicleRowsHtml = '';
+      const safeVehiclesList = d.univVehiclesList || [];
+      if (safeVehiclesList.length > 0) {
+        safeVehiclesList.forEach((vehicle, index) => {
+          vehicleRowsHtml += `
+            <tr>
+              <td style="border: 1px solid #111; padding: 6px; text-align: center; font-size: 10px;">${index + 1}</td>
+              <td style="border: 1px solid #111; padding: 6px; font-weight: bold; font-size: 10px;">${vehicle.type || ''}</td>
+              <td style="border: 1px solid #111; padding: 6px; font-family: monospace; font-size: 10.5px;">${(vehicle.number || '').toUpperCase()}</td>
+              <td style="border: 1px solid #111; padding: 6px; text-align: center; font-size: 10px;">${vehicle.sticker ? 'हाँ (Yes)' : 'नहीं (No)'}</td>
+            </tr>
+          `;
+        });
+      } else {
+        vehicleRowsHtml = `<tr><td colspan="4" style="border: 1px solid #111; padding: 12px; text-align: center; color: #555; font-style: italic; font-size: 10px;">कोई वाहन पंजीकृत नहीं है</td></tr>`;
+      }
+
+      htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Universal Resident Form - Maa Kaushalya Apartment</title>
+          <meta charset="utf-8" />
+          <style>
+            @page { size: A4; margin: 15mm; }
+            body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #000; background-color: #fff; margin: 0; padding: 0; font-size: 10px; line-height: 1.3; }
+            .container { width: 100%; max-width: 800px; margin: 0 auto; }
+            .header-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; border-bottom: 2px double #000; }
+            .header-logo-cell { width: 60px; text-align: center; vertical-align: middle; }
+            .header-text-cell { text-align: center; padding-right: 60px; }
+            .rwa-title-hi { font-size: 18px; font-weight: 900; margin: 0; }
+            .rwa-title-en { font-size: 11px; font-weight: bold; margin: 2px 0 0 0; letter-spacing: 1px; }
+            .rwa-address { font-size: 8.5px; color: #555; }
+            .form-title-container { text-align: center; margin: 5px 0 10px 0; }
+            .form-title-hi { font-size: 12px; font-weight: bold; background-color: #eee; padding: 3px 10px; border: 1px solid #222; display: inline-block; }
+            .photo-box { width: 100px; height: 120px; border: 1.5px dashed #333; text-align: center; vertical-align: middle; font-size: 8.5px; color: #555; }
+            .section-heading { font-size: 9.5px; font-weight: bold; background-color: #f2f2f2; padding: 3px 8px; border: 1px solid #111; margin-top: 8px; margin-bottom: 4px; }
+            .data-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+            .data-table th, .data-table td { border: 1px solid #111; padding: 4px 6px; text-align: left; }
+            .data-table th { background-color: #fafafa; font-weight: bold; width: 25%; font-size: 9px; }
+            .data-table td { width: 25%; }
+            .signatures-table { width: 100%; margin-top: 25px; border-collapse: collapse; }
+            .signatures-table td { width: 50%; text-align: center; vertical-align: bottom; }
+            .sig-line { width: 180px; border-bottom: 1px solid #000; margin: 0 auto 5px auto; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <table class="header-table">
+              <tr>
+                <td class="header-logo-cell"><span style="font-size: 28px;">🏢</span></td>
+                <td class="header-text-cell">
+                  <h1 class="rwa-title-hi">माँ कौशल्या अपार्टमेंट (RWA) रायपुर</h1>
+                  <h2 class="rwa-title-en">MAA KAUSHALYA APARTMENT WELSERVATION</h2>
+                  <p class="rwa-address">सेक्टर 1, कौशल्या माता विहार, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015</p>
+                </td>
+              </tr>
+            </table>
+            <div class="form-title-container">
+              <div class="form-title-hi">सार्वभौमिक निवासी पंजीकरण प्रपत्र (Universal Form)</div>
+            </div>
+            <table style="width: 100%; margin-bottom: 5px;">
+              <tr>
+                <td>
+                  <table style="font-size: 9px; line-height: 1.5;">
+                    <tr><td style="font-weight: bold; width: 120px;">सबमिशन संदर्भ:</td><td>${authCode}</td></tr>
+                    <tr><td style="font-weight: bold;">दिनांक (Date):</td><td>${dateStr}</td></tr>
+                  </table>
+                </td>
+                <td style="width: 100px; text-align: right;">
+                  <div class="photo-box">
+                    ${d.univProfilePic ? `<img style="width:100%;height:100%;object-fit:cover;" src="${d.univProfilePic}" alt="Resident Photo" />` : `<div style="padding-top: 40px; font-weight: bold;">फोटो चस्पा करें</div>`}
+                  </div>
+                </td>
+              </tr>
+            </table>
+
+            <div class="section-heading">1. निवासी व्यक्तिगत विवरण (Resident Details)</div>
+            <table class="data-table">
+              <tr><th>नाम (Name)</th><td>${d.univName || 'N/A'}</td><th>ईमेल (Email)</th><td>${d.univEmail || 'N/A'}</td></tr>
+              <tr><th>मोबाइल (Phone)</th><td>${d.univPhone || 'N/A'}</td><th>आधार (Aadhaar No.)</th><td>${d.univAadhaar || 'N/A'}</td></tr>
+              <tr><th>फ्लैट नं. (Flat No.)</th><td>${d.univFlatNo || 'N/A'}</td><th>प्रवेश तिथि (Move-in)</th><td>${d.univMoveInDate || 'N/A'}</td></tr>
+              <tr><th>पालतू जानवर (Pet Info)</th><td colspan="3">${d.univHasPet ? 'हाँ (Yes) - ' + (d.univPetDetails || '') : 'नहीं (No)'}</td></tr>
+            </table>
+
+            <div class="section-heading">2. फ्लैट कब्ज़ा विवरण (Occupancy & Lease Details)</div>
+            <table class="data-table">
+              <tr><th>कब्ज़ा स्थिति (Status)</th><td>${d.univOccupancyStatus === 'Self-Occupied' ? 'स्व-कब्जा (Owner)' : 'किराये पर (Renter)'}</td><th>किरायेदार श्रेणी</th><td>${d.univOccupancyStatus === 'Rented' ? (d.univTenantCategory || 'Family') : 'N/A'}</td></tr>
+              ${d.univOccupancyStatus === 'Rented' ? `
+                ${d.univTenantCategory === 'Bachelor' ? `
+                <tr style="background-color: #fff1f2;">
+                  <td colspan="4" style="color: #be123c; font-weight: bold; font-size: 9px; padding: 6px; border: 1px solid #be123c;">
+                    ⚠️ आरडब्ल्यूए चेतावनी (RWA Security Warning): अविवाहित किरायेदार (Bachelor Tenant) श्रेणी के पंजीकरण के लिए RWA नियमों के अनुसार संयुक्त सुरक्षा घोषणा-पत्र (Bachelor Undertaking - Form 7) का विधिवत हस्ताक्षर कर संलग्न होना अनिवार्य है।
+                  </td>
+                </tr>
+                ` : ''}
+                <tr><th>मकान मालिक नाम</th><td>${d.univOwnerName || 'N/A'}</td><th>मालिक का फोन</th><td>${d.univOwnerPhone || 'N/A'}</td></tr>
+                <tr><th>अनुबंध अवधि</th><td>${d.univLeaseDuration || 'N/A'}</td><th>एग्रीमेंट जमा?</th><td>${d.univTenantAgreement ? 'हाँ' : 'नहीं'}</td></tr>
+                <tr><th>पुलिस सत्यापन?</th><td>${d.univPoliceVerification ? 'हाँ' : 'नहीं'}</td><th>-</th><td>-</td></tr>
+              ` : `
+                <tr><td colspan="4" style="text-align: center; color: #555; font-style: italic;">फ्लैट स्वामी स्वयं रह रहे हैं (Self-Occupied)</td></tr>
+              `}
+            </table>
+
+            <div class="section-heading">3. आपातकालीन संपर्क (Emergency Contact)</div>
+            <table class="data-table">
+              <tr><th>संपर्क व्यक्ति नाम</th><td>${d.univEmergencyName || 'N/A'}</td><th>मोबाइल नम्बर</th><td>${d.univEmergencyPhone || 'N/A'}</td></tr>
+            </table>
+
+            <div class="section-heading">4. परिवार के सदस्यों का विवरण (Family Members)</div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 10%; text-align: center;">क्र.</th>
+                  <th style="width: 45%;">नाम (Name)</th>
+                  <th style="width: 25%;">फ़ोन (Phone)</th>
+                  <th style="width: 20%; text-align: center;">जेंडर (Gender)</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${familyRowsHtml}
+              </tbody>
+            </table>
+
+            <div class="section-heading">5. पंजीकृत वाहनों का विवरण (Registered Vehicles)</div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 10%; text-align: center;">क्र.</th>
+                  <th style="width: 30%;">वाहन प्रकार (Type)</th>
+                  <th style="width: 40%;">वाहन नंबर (Vehicle Number)</th>
+                  <th style="width: 20%; text-align: center;">स्टीकर जारी?</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${vehicleRowsHtml}
+              </tbody>
+            </table>
+
+            <table class="signatures-table">
+              <tr>
+                <td><div class="sig-line"></div><div>निवासी के हस्ताक्षर</div></td>
+                <td><div class="sig-line"></div><div>RWA प्रशासनिक डेस्क</div></td>
+              </tr>
+            </table>
+          </div>
+          <script>window.onload = function() { window.print(); };</script>
+        </body>
+        </html>
+      `;
+    }
 
     printWindow.document.write(htmlContent);
     printWindow.document.close();
@@ -1890,7 +2923,12 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
       </div>
 
       {/* Document cards grid */}
-      {filteredDocs.length > 0 ? (
+      {loading ? (
+        <div className="glass-panel p-12 rounded-3xl border border-white/5 text-center w-full">
+          <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-xs text-slate-400">दस्तावेज़ लोड हो रहे हैं...</p>
+        </div>
+      ) : filteredDocs.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {filteredDocs.map((doc) => {
             const isDownloaded = downloadSuccess === doc.id;
@@ -2939,38 +3977,58 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
                     <button 
                       type="button" 
                       onClick={() => handlePrintTenantVerificationForm(true)} 
-                      className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-xl font-bold uppercase transition-all shadow-premium flex items-center gap-1"
+                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold uppercase transition-all flex items-center gap-1"
                     >
                       🖨️ खाली प्रपत्र प्रिंट (Print Blank)
                     </button>
                     <button 
-                      type="button" 
-                      onClick={() => handlePrintTenantVerificationForm(false)} 
+                      type="submit" 
                       className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-xl font-bold uppercase transition-all shadow-premium flex items-center gap-1"
                     >
-                      🖨️ विवरण भरकर प्रिंट (Print Pre-filled)
+                      💾 सबमिट करें और प्रिंट निकालें (Submit & Print)
                     </button>
+                  </>
+                ) : activeFormDoc.id === 3 ? (
+                  <>
                     <button 
                       type="submit" 
-                      className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-bold uppercase transition-all shadow-premium"
+                      className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-xl font-bold uppercase transition-all shadow-premium flex items-center gap-1"
                     >
-                      📥 डेटा डाउनलोड (.txt)
+                      💾 सबमिट करें और प्रिंट निकालें (Submit & Print)
+                    </button>
+                  </>
+                ) : activeFormDoc.id === 4 ? (
+                  <>
+                    <button 
+                      type="submit" 
+                      className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-xl font-bold uppercase transition-all shadow-premium flex items-center gap-1"
+                    >
+                      💾 सबमिट करें और प्रिंट निकालें (Submit & Print)
+                    </button>
+                  </>
+                ) : activeFormDoc.id === 7 ? (
+                  <>
+                    <button 
+                      type="submit" 
+                      className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-xl font-bold uppercase transition-all shadow-premium flex items-center gap-1"
+                    >
+                      💾 सबमिट करें और प्रिंट निकालें (Submit & Print)
                     </button>
                   </>
                 ) : activeFormDoc.isUniversalForm ? (
                   <>
                     <button 
                       type="button" 
-                      onClick={() => handlePrintUniversalForm(false)} 
-                      className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-xl font-bold uppercase transition-all shadow-premium flex items-center gap-1"
+                      onClick={() => handlePrintUniversalForm(true)} 
+                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold uppercase transition-all flex items-center gap-1"
                     >
-                      🖨️ विवरण भरकर प्रिंट करें (Print Pre-filled)
+                      🖨️ खाली प्रपत्र प्रिंट (Print Blank)
                     </button>
                     <button 
                       type="submit" 
-                      className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-bold uppercase transition-all shadow-premium"
+                      className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-xl font-bold uppercase transition-all shadow-premium flex items-center gap-1"
                     >
-                      📥 डेटा फाइल डाउनलोड (.txt)
+                      💾 सबमिट करें और प्रिंट निकालें (Submit & Print)
                     </button>
                   </>
                 ) : (
@@ -3098,6 +4156,24 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
             </div>
 
             <form onSubmit={handleAddDocSubmit} className="flex flex-col gap-3.5 text-xs">
+              {/* File Uploader Input */}
+              <div className="flex flex-col gap-1 border border-dashed border-white/10 p-3.5 rounded-2xl bg-slate-950/40 hover:border-brand-500/30 transition-all relative">
+                <label className="font-bold text-slate-400 uppercase text-[10px] flex items-center gap-1.5 cursor-pointer">
+                  📁 दस्तावेज़ फ़ाइल चुनें (Choose File) *
+                </label>
+                <input 
+                  type="file" 
+                  accept=".pdf,.docx,.xlsx"
+                  onChange={handleFileChange}
+                  className="mt-1 bg-transparent text-slate-300 text-xs w-full focus:outline-none file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-extrabold file:uppercase file:bg-brand-600/20 file:text-brand-400 hover:file:bg-brand-600/35 cursor-pointer file:cursor-pointer"
+                />
+                {selectedFile && (
+                  <p className="text-[9px] text-emerald-400 mt-1 font-bold">
+                    ✓ चयनित फ़ाइल: {selectedFile.name} ({newDocSize})
+                  </p>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div className="flex flex-col gap-1">
                   <label className="font-bold text-slate-400 uppercase text-[10px]">दस्तावेज़ का नाम (Hindi Title) *</label>
@@ -3208,6 +4284,112 @@ ${univVehiclesList.length > 0 ? univVehiclesList.map((v, i) => `  ${i+1}. प्
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* ─── RESIDENT SUBMISSIONS TRACKER ─── */}
+      {user?.role !== 'Admin' && (
+        <div className="glass-panel p-6 rounded-3xl border border-white/5 bg-slate-900/20 flex flex-col gap-4 mt-6">
+          <div className="flex items-center gap-2 border-b border-white/5 pb-3">
+            <FileSignature size={18} className="text-amber-400" />
+            <div>
+              <h2 className="text-sm font-black text-white">मेरे प्रपत्र आवेदन (My Form Submissions)</h2>
+              <p className="text-[10px] text-slate-400">आपके द्वारा जमा किए गए ऑनलाइन प्रपत्रों की वास्तविक समय स्थिति</p>
+            </div>
+          </div>
+
+          {loadingSubmissions ? (
+            <div className="text-center py-6">
+              <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+              <p className="text-[10px] text-slate-400">आवेदन लोड हो रहे हैं...</p>
+            </div>
+          ) : submissionsList.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-[11px] text-left border-collapse text-slate-300">
+                <thead>
+                  <tr className="border-b border-white/5 text-[9px] uppercase font-bold text-slate-400">
+                    <th className="py-2.5 px-3">आवेदन प्रकार (Form Type)</th>
+                    <th className="py-2.5 px-3">फ्लैट नंबर</th>
+                    <th className="py-2.5 px-3">दिनांक (Date)</th>
+                    <th className="py-2.5 px-3 text-center">स्थिति (Status)</th>
+                    <th className="py-2.5 px-3 text-right">कार्रवाई (Action)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {submissionsList.map((sub) => {
+                    let typeLabel = "Universal Form";
+                    if (sub.form_type === 'tenant_verification') typeLabel = "किरायेदार सत्यापन (Tenant Verification)";
+                    else if (sub.form_type === 'noc') typeLabel = "NOC अनापत्ति प्रमाण पत्र";
+                    else if (sub.form_type === 'parking_sticker') typeLabel = "पार्किंग स्टिकर (Parking Sticker)";
+                    else if (sub.form_type === 'bachelor_undertaking') typeLabel = "बैचलर घोषणा (Undertaking)";
+
+                    let statusClass = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                    let statusLabel = "प्रतीक्षारत (Pending)";
+                    if (sub.status === 'approved') {
+                      statusClass = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                      statusLabel = "स्वीकृत (Approved)";
+                    } else if (sub.status === 'rejected') {
+                      statusClass = "bg-rose-500/10 text-rose-400 border-rose-500/20";
+                      statusLabel = "अस्वीकृत (Rejected)";
+                    }
+
+                    return (
+                      <tr key={sub.id} className="hover:bg-white/[0.02] transition-colors">
+                        <td className="py-3 px-3 font-bold text-white">{typeLabel}</td>
+                        <td className="py-3 px-3">{sub.flat_no}</td>
+                        <td className="py-3 px-3">{new Date(sub.created_at).toLocaleDateString('hi-IN')}</td>
+                        <td className="py-3 px-3 text-center">
+                          <span className={`px-2 py-0.5 rounded-full border text-[9px] font-bold ${statusClass}`}>
+                            {statusLabel}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-right">
+                          <div className="flex justify-end gap-1.5">
+                            <button
+                              onClick={() => printSubmission(sub)}
+                              className="px-2.5 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-lg text-[9px] transition-colors font-bold uppercase"
+                              title="प्रपत्र प्रिंट करें या PDF सहेजें"
+                            >
+                              🖨️ प्रिंट
+                            </button>
+                            <button
+                              onClick={() => {
+                                const report = `========================================================================
+             माँ कौशल्या अपार्टमेंट (Maa Kaushalya Apartment RWA)
+                       ऑनलाइन जमा फॉर्म का विवरण (SUBMISSION RECEIPT)
+========================================================================
+• सबमिशन आईडी: SUB-0${sub.id}
+• फॉर्म प्रकार: ${typeLabel}
+• फ्लैट नंबर: ${sub.flat_no}
+• आवेदक का नाम: ${sub.user_name}
+• दिनांक: ${new Date(sub.created_at).toLocaleString('hi-IN')}
+• वर्तमान स्थिति: ${sub.status.toUpperCase()}
+------------------------------------------------------------------------
+विवरण (Submission Fields):
+${JSON.stringify(sub.submission_data, null, 2)}
+------------------------------------------------------------------------
+(C) 2026 माँ कौशल्या अपार्टमेंट वेलफेयर एसोसिएशन, रायपुर।
+========================================================================`;
+                                triggerTextDownload(report, `submission_receipt_${sub.id}.txt`);
+                              }}
+                              className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/5 rounded-lg text-[9px] transition-colors font-bold uppercase"
+                              title="डेटा रसीद डाउनलोड करें"
+                            >
+                              📥 रसीद
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center py-6 border border-dashed border-white/5 rounded-2xl bg-slate-950/20">
+              <p className="text-[10px] text-slate-500">आपने अभी तक कोई डिजिटल फॉर्म जमा नहीं किया है।</p>
+            </div>
+          )}
         </div>
       )}
 

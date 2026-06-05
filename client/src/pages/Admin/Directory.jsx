@@ -595,6 +595,7 @@ export const Directory = () => {
         vehicles: serializedVehicles,
         moveInDate: editUser.move_in_date || null,
         leaseDuration: (editUser.role === 'Resident' && editUser.occupancy_status === 'Rented') ? editUser.lease_duration : null,
+        leaseExpiryDate: (editUser.role === 'Resident' && editUser.occupancy_status === 'Rented') ? editUser.lease_expiry_date : null,
         leaseAgreementSubmitted: editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' ? editUser.lease_agreement_submitted : false,
         policeVerificationStatus: editUser.role === 'Resident' && editUser.occupancy_status === 'Rented' ? editUser.police_verification_status : 'pending',
         emergencyContactName: editUser.emergency_contact_name || null,
@@ -675,8 +676,33 @@ export const Directory = () => {
     }
   };
 
+  const handleCheckoutUser = async (userId) => {
+    if (!window.confirm("क्या आप वाकई इस निवासी को चेक-आउट करना चाहते हैं? इससे उनका फ्लैट नंबर खाली हो जाएगा। (Are you sure you want to checkout this resident?)")) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/users/checkout/${userId}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSuccess("निवासी को सफलतापूर्वक चेक-आउट कर दिया गया है!");
+        fetchDirectory();
+        setTimeout(() => setSuccess(''), 2000);
+      } else {
+        throw new Error(data.message || 'चेक-आउट विफल');
+      }
+    } catch (err) {
+      console.error("Error checking out member:", err);
+      alert('चेक-आउट विफल: ' + err.message);
+    }
+  };
+
   // Toggle dynamic expanded accordion rows
   const toggleRowExpanded = (userId) => {
+    if (typeof userId === 'string' && userId.startsWith('vacant-')) return;
     const newExpanded = new Set(expandedRows);
     if (newExpanded.has(userId)) {
       newExpanded.delete(userId);
@@ -717,35 +743,64 @@ export const Directory = () => {
   };
 
   // Real-time directory filtering based on Query + Tab selections
-  const filteredUsers = usersList.filter(user => {
-    const q = searchQuery.toLowerCase();
-    const matchesSearch = (
-      (user.name || '').toLowerCase().includes(q) ||
-      (user.email || '').toLowerCase().includes(q) ||
-      (user.flat_no || '').toLowerCase().includes(q) ||
-      (user.role || '').toLowerCase().includes(q)
-    );
+  const occupiedFlatsSet = new Set(
+    usersList
+      .filter(u => u.role === 'Resident' && u.is_approved !== false && (u.occupancy_status === 'Self-Occupied' || u.occupancy_status === 'Rented') && u.flat_no)
+      .map(u => u.flat_no)
+  );
 
-    // If 'Pending' filter is active, only show unapproved users
-    if (activeRoleFilter === 'Pending') {
-      return matchesSearch && user.is_approved === false;
+  let filteredUsers = [];
+  if (activeOccupancyFilter === 'Vacant') {
+    const vacantFlats = SOCIETY_FLATS.filter(f => !occupiedFlatsSet.has(f));
+    filteredUsers = vacantFlats.map(flatNo => ({
+      id: `vacant-${flatNo}`,
+      flat_no: flatNo,
+      name: 'रिक्त फ्लैट (Vacant Flat)',
+      email: '—',
+      phone: '—',
+      role: 'Resident',
+      occupancy_status: 'Vacant',
+      is_approved: true,
+      is_vacant_flat: true
+    }));
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filteredUsers = filteredUsers.filter(u => u.flat_no.toLowerCase().includes(q));
     }
+  } else {
+    filteredUsers = usersList.filter(user => {
+      const q = searchQuery.toLowerCase();
+      const matchesSearch = (
+        (user.name || '').toLowerCase().includes(q) ||
+        (user.email || '').toLowerCase().includes(q) ||
+        (user.flat_no || '').toLowerCase().includes(q) ||
+        (user.role || '').toLowerCase().includes(q)
+      );
 
-    const matchesApproved = user.is_approved !== false;
-    const matchesRole = activeRoleFilter === 'All' || user.role === activeRoleFilter;
+      // If 'Pending' filter is active, only show unapproved users
+      if (activeRoleFilter === 'Pending') {
+        return matchesSearch && user.is_approved === false;
+      }
 
-    const matchesOccupancy = activeOccupancyFilter === 'All' || 
-      (user.role === 'Resident' && user.occupancy_status === activeOccupancyFilter);
+      const matchesApproved = user.is_approved !== false;
+      const matchesRole = activeRoleFilter === 'All' || user.role === activeRoleFilter;
 
-    return matchesSearch && matchesApproved && matchesRole && matchesOccupancy;
-  });
+      const matchesOccupancy = activeOccupancyFilter === 'All' || 
+        (user.role === 'Resident' && user.occupancy_status === activeOccupancyFilter);
+
+      return matchesSearch && matchesApproved && matchesRole && matchesOccupancy;
+    });
+  }
 
   // Calculate live statistics based on full directory database (before search filters)
   const statsTotal = usersList.length;
-  const statsOwners = usersList.filter(u => u.role === 'Resident' && u.occupancy_status === 'Self-Occupied').length;
-  const statsTenants = usersList.filter(u => u.role === 'Resident' && u.occupancy_status === 'Rented').length;
-  const statsVacant = usersList.filter(u => u.role === 'Resident' && u.occupancy_status === 'Vacant').length;
-  const statsStaff = usersList.filter(u => u.role !== 'Resident').length;
+  const statsOwners = usersList.filter(u => u.role === 'Resident' && u.is_approved !== false && u.occupancy_status === 'Self-Occupied').length;
+  const statsTenants = usersList.filter(u => u.role === 'Resident' && u.is_approved !== false && u.occupancy_status === 'Rented').length;
+  
+  // Jo flat kisiki occupancy me nahi hai, wo vacant hai (512 - occupied)
+  const occupiedFlatsCount = occupiedFlatsSet.size;
+  const statsVacant = SOCIETY_FLATS.length - occupiedFlatsCount;
 
   // Sorting Handler
   const requestSort = (columnName) => {
@@ -759,16 +814,27 @@ export const Directory = () => {
   };
 
   const sortedUsers = [...filteredUsers].sort((a, b) => {
+    // Custom sort triggers
+    if (sortColumn === 'flat') {
+      const flatA = a.flat_no || '';
+      const flatB = b.flat_no || '';
+      
+      // Push empty/null values to the bottom regardless of sort direction
+      if (!flatA && flatB) return 1;
+      if (flatA && !flatB) return -1;
+      if (!flatA && !flatB) return 0;
+      
+      return sortDirection === 'asc'
+        ? flatA.localeCompare(flatB, 'hi-IN', { numeric: true })
+        : flatB.localeCompare(flatA, 'hi-IN', { numeric: true });
+    }
+
     let valA = a[sortColumn] || '';
     let valB = b[sortColumn] || '';
 
-    // Custom sort triggers
     if (sortColumn === 'name') {
       valA = a.name || '';
       valB = b.name || '';
-    } else if (sortColumn === 'flat') {
-      valA = a.flat_no || '';
-      valB = b.flat_no || '';
     } else if (sortColumn === 'role') {
       valA = a.role || '';
       valB = b.role || '';
@@ -866,7 +932,18 @@ export const Directory = () => {
       {/* RWA Overview Statistics Panel */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-fadeIn">
         {/* Stat 1: Total Directory */}
-        <div className="glass-panel p-4 rounded-2xl border border-white/5 bg-slate-950/40 relative overflow-hidden group hover:border-violet-500/35 transition-all flex flex-col justify-between min-h-[90px]">
+        <div 
+          onClick={() => {
+            setActiveRoleFilter('All');
+            setActiveOccupancyFilter('All');
+            setCurrentPage(1);
+          }}
+          className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${
+            activeRoleFilter === 'All' && activeOccupancyFilter === 'All'
+              ? 'border-violet-500/60 bg-violet-900/20 shadow-premium glow-violet-sm'
+              : 'border-white/5 bg-slate-950/40 hover:border-violet-500/35'
+          }`}
+        >
           <div className="absolute top-0 right-0 w-24 h-24 bg-violet-600/5 rounded-full blur-2xl group-hover:bg-violet-600/10 transition-all"></div>
           <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">कुल सदस्य (Total)</span>
           <div className="flex items-end justify-between mt-2">
@@ -878,7 +955,18 @@ export const Directory = () => {
         </div>
 
         {/* Stat 2: Self Occupied (Owners) */}
-        <div className="glass-panel p-4 rounded-2xl border border-white/5 bg-slate-950/40 relative overflow-hidden group hover:border-emerald-500/35 transition-all flex flex-col justify-between min-h-[90px]">
+        <div 
+          onClick={() => {
+            setActiveRoleFilter('Resident');
+            setActiveOccupancyFilter('Self-Occupied');
+            setCurrentPage(1);
+          }}
+          className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${
+            activeRoleFilter === 'Resident' && activeOccupancyFilter === 'Self-Occupied'
+              ? 'border-emerald-500/60 bg-emerald-900/20 shadow-premium glow-emerald-sm'
+              : 'border-white/5 bg-slate-950/40 hover:border-emerald-500/35'
+          }`}
+        >
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-600/5 rounded-full blur-2xl group-hover:bg-emerald-600/10 transition-all"></div>
           <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">स्व-कब्जा (Self-Occupied)</span>
           <div className="flex items-end justify-between mt-2">
@@ -890,7 +978,18 @@ export const Directory = () => {
         </div>
 
         {/* Stat 3: Rented Flats (Tenants) */}
-        <div className="glass-panel p-4 rounded-2xl border border-white/5 bg-slate-950/40 relative overflow-hidden group hover:border-sky-500/35 transition-all flex flex-col justify-between min-h-[90px]">
+        <div 
+          onClick={() => {
+            setActiveRoleFilter('Resident');
+            setActiveOccupancyFilter('Rented');
+            setCurrentPage(1);
+          }}
+          className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${
+            activeRoleFilter === 'Resident' && activeOccupancyFilter === 'Rented'
+              ? 'border-sky-500/60 bg-sky-900/20 shadow-premium glow-sky-sm'
+              : 'border-white/5 bg-slate-950/40 hover:border-sky-500/35'
+          }`}
+        >
           <div className="absolute top-0 right-0 w-24 h-24 bg-sky-600/5 rounded-full blur-2xl group-hover:bg-sky-600/10 transition-all"></div>
           <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">किरायेदार (Rented Flats)</span>
           <div className="flex items-end justify-between mt-2">
@@ -901,14 +1000,25 @@ export const Directory = () => {
           </div>
         </div>
 
-        {/* Stat 4: Committee / Security / Vacant */}
-        <div className="glass-panel p-4 rounded-2xl border border-white/5 bg-slate-950/40 relative overflow-hidden group hover:border-amber-500/35 transition-all flex flex-col justify-between min-h-[90px]">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-600/5 rounded-full blur-2xl group-hover:bg-amber-600/10 transition-all"></div>
-          <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">स्टाफ व रिक्त (Staff / Vacant)</span>
+        {/* Stat 4: Vacant Flats Only */}
+        <div 
+          onClick={() => {
+            setActiveRoleFilter('Resident');
+            setActiveOccupancyFilter('Vacant');
+            setCurrentPage(1);
+          }}
+          className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${
+            activeRoleFilter === 'Resident' && activeOccupancyFilter === 'Vacant'
+              ? 'border-slate-400/60 bg-slate-800/30 shadow-premium'
+              : 'border-white/5 bg-slate-950/40 hover:border-slate-500/35'
+          }`}
+        >
+          <div className="absolute top-0 right-0 w-24 h-24 bg-slate-600/5 rounded-full blur-2xl group-hover:bg-slate-600/10 transition-all"></div>
+          <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">रिक्त फ्लैट (Vacant Flats)</span>
           <div className="flex items-end justify-between mt-2">
-            <span className="text-2xl font-black text-amber-400">{statsStaff + statsVacant}</span>
-            <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/20 font-bold uppercase">
-              Support
+            <span className="text-2xl font-black text-slate-300">{statsVacant}</span>
+            <span className="text-[10px] px-2 py-0.5 rounded bg-slate-500/15 text-slate-400 border border-slate-500/20 font-bold uppercase">
+              Vacant
             </span>
           </div>
         </div>
@@ -1098,7 +1208,6 @@ export const Directory = () => {
                     >
                       <option value="Self-Occupied">स्व-कब्जा (Self-Occupied)</option>
                       <option value="Rented">किराये पर (Rented)</option>
-                      <option value="Vacant">खाली (Vacant)</option>
                     </select>
                   </div>
 
@@ -1619,15 +1728,84 @@ export const Directory = () => {
         viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {sortedUsers.map((item) => {
+              const isVacant = item.is_vacant_flat;
+              
               // Parse vehicle list
               let vehicleList = [];
-              try {
-                if (item.vehicles) {
-                  vehicleList = typeof item.vehicles === 'string'
-                    ? JSON.parse(item.vehicles)
-                    : item.vehicles;
-                }
-              } catch (e) {}
+              if (!isVacant) {
+                try {
+                  if (item.vehicles) {
+                    vehicleList = typeof item.vehicles === 'string'
+                      ? JSON.parse(item.vehicles)
+                      : item.vehicles;
+                  }
+                } catch (e) {}
+              }
+
+              if (isVacant) {
+                return (
+                  <div
+                    key={item.id}
+                    className="glass-panel p-5 rounded-3xl border border-slate-500/20 bg-slate-950/40 flex flex-col justify-between hover:border-slate-400/35 transition-all duration-300 hover:-translate-y-0.5 animate-fadeIn"
+                  >
+                    <div className="flex flex-col gap-3">
+                      <div className="flex justify-between items-start gap-4">
+                        <div className="flex items-center gap-3">
+                          {/* Home/Building avatar for vacant */}
+                          <div className="w-10 h-10 rounded-full border border-white/10 bg-slate-950 flex items-center justify-center overflow-hidden shrink-0 shadow-premium text-slate-500">
+                            <Building size={16} />
+                          </div>
+                          
+                          <div className="flex flex-col gap-1 text-left">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[10px] font-black px-2 py-0.5 rounded bg-slate-500/25 text-slate-300 border border-slate-500/35 uppercase tracking-wider shrink-0 shadow-sm animate-pulse-subtle">
+                                Flat {item.flat_no}
+                              </span>
+                              <h3 className="font-extrabold text-white text-sm tracking-wide">रिक्त फ्लैट (Vacant Flat)</h3>
+                            </div>
+                            <span className="self-start text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider bg-slate-500/15 text-slate-400 border border-slate-500/20">
+                              खाली (Vacant)
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider bg-slate-500/15 text-slate-400 border border-slate-500/20">
+                          निवासी (Resident)
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col gap-1.5 border-t border-white/5 pt-3 text-[10px] text-slate-400 text-left">
+                        <div className="flex items-center gap-2">
+                          <Building size={14} className="text-slate-500 shrink-0" />
+                          <span>आवंटित फ्लैट: <span className="font-bold text-slate-200">{item.flat_no}</span></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Mail size={14} className="text-slate-500 shrink-0" />
+                          <span>—</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone size={14} className="text-slate-500 shrink-0" />
+                          <span>—</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-4 pt-3 border-t border-white/5">
+                      <button 
+                        onClick={() => {
+                          setRole('Resident');
+                          setFlatNo(item.flat_no);
+                          setOccupancyStatus('Self-Occupied');
+                          setShowAddForm(true);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="w-full py-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex justify-center items-center gap-1.5"
+                      >
+                        <UserPlus size={12} /> सदस्य जोड़ें
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
 
               return (
                 <div
@@ -1649,7 +1827,12 @@ export const Directory = () => {
                         </div>
                         
                         <div className="flex flex-col gap-1 text-left">
-                          <h3 className="font-extrabold text-white text-sm tracking-wide">{item.name}</h3>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[10px] font-black px-2 py-0.5 rounded bg-brand-500/25 text-brand-300 border border-brand-500/30 uppercase tracking-wider shrink-0 shadow-sm animate-pulse-subtle">
+                              {item.flat_no ? `Flat ${item.flat_no}` : 'N/A'}
+                            </span>
+                            <h3 className="font-extrabold text-white text-sm tracking-wide">{item.name}</h3>
+                          </div>
                           {item.role === 'Resident' && (
                             <div className="flex flex-wrap gap-1 mt-0.5">
                               <span className={`self-start text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider ${item.occupancy_status === 'Rented' ? 'bg-sky-500/15 text-sky-400 border border-sky-500/20' :
@@ -1735,6 +1918,11 @@ export const Directory = () => {
                         <button onClick={() => startEditing(item)} className="flex-1 py-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex justify-center items-center gap-1.5">
                           <Edit size={12} /> संपादित करें (Edit)
                         </button>
+                        {item.role === 'Resident' && item.is_approved && (
+                          <button onClick={() => handleCheckoutUser(item.id)} className="flex-1 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex justify-center items-center gap-1.5" title="चेक-आउट (Vacate Flat)">
+                            <Building size={12} /> खाली करें
+                          </button>
+                        )}
                         <button onClick={() => setDeleteUserId(item.id)} className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-xl transition-all">
                           <Trash2 size={14} />
                         </button>
@@ -1821,10 +2009,82 @@ export const Directory = () => {
                       }
                     } catch (e) {}
 
+                    if (item.is_vacant_flat) {
+                      return (
+                        <tr key={item.id} className="hover:bg-white/[0.02] transition-colors border-b border-white/[0.02] group animate-fadeIn">
+                          {/* Column 1: Flat No (Primary Focus) + Avatar + Label */}
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-3">
+                              {/* Dummy placeholder for expander to align columns */}
+                              <div className="w-5 h-5"></div>
+
+                              {/* Prominent High-Visibility Flat No Badge (Vacant Theme) */}
+                              <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-slate-500/20 text-slate-300 border border-slate-500/35 uppercase tracking-wider shadow-sm select-all shrink-0 animate-pulse-subtle">
+                                Flat {item.flat_no}
+                              </span>
+
+                              {/* Avatar */}
+                              <div className="w-10 h-10 rounded-full border border-white/10 bg-slate-900 flex items-center justify-center overflow-hidden shrink-0 shadow-premium text-slate-500">
+                                <Building size={16} />
+                              </div>
+
+                              <div className="flex flex-col gap-0.5 text-left">
+                                <span className="font-extrabold text-white text-xs block tracking-wide">
+                                  रिक्त फ्लैट (Vacant Flat)
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Column 2: Contact Details */}
+                          <td className="px-4 py-4 text-xs text-slate-500">
+                            —
+                          </td>
+
+                          {/* Column 3: Role & Occupancy Badge */}
+                          <td className="px-4 py-4">
+                            <div className="flex flex-col gap-1 text-left">
+                              <span className="self-start text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider bg-slate-500/15 text-slate-400 border border-slate-500/20">
+                                खाली (Vacant)
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Column 4: Family & Vehicles Count */}
+                          <td className="px-4 py-4 text-xs text-slate-500">
+                            —
+                          </td>
+
+                          {/* Column 5: Privacy-Masked Aadhaar Number & Move-in Date */}
+                          <td className="px-4 py-4 text-xs text-slate-500">
+                            —
+                          </td>
+
+                          {/* Column 6: Action Buttons */}
+                          <td className="px-4 py-4 text-center">
+                            <div className="flex items-center justify-center">
+                              <button 
+                                onClick={() => {
+                                  setRole('Resident');
+                                  setFlatNo(item.flat_no);
+                                  setOccupancyStatus('Self-Occupied');
+                                  setShowAddForm(true);
+                                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                                className="px-2.5 py-1 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1"
+                              >
+                                <UserPlus size={11} /> सदस्य जोड़ें
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    }
+
                     return (
                       <React.Fragment key={item.id}>
                         <tr className={`hover:bg-white/[0.02] transition-colors border-b border-white/[0.02] group ${isExpanded ? 'bg-white/[0.01]' : ''}`}>
-                          {/* Column 1: Profile image + Resident Name & Flat Badge */}
+                          {/* Column 1: Flat No (Primary Focus) + Profile image + Resident Name */}
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-3">
                               {/* Toggle Accordion Expand Icon */}
@@ -1834,6 +2094,11 @@ export const Directory = () => {
                               >
                                 {isExpanded ? <ChevronUp size={14} className="text-brand-400" /> : <ChevronDown size={14} />}
                               </button>
+
+                              {/* Prominent High-Visibility Flat No Badge */}
+                              <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-brand-500/20 text-brand-300 border border-brand-500/35 uppercase tracking-wider shadow-sm select-all animate-pulse-subtle shrink-0">
+                                {item.flat_no ? `Flat ${item.flat_no}` : 'N/A'}
+                              </span>
 
                               {/* Profile Avatar */}
                               <div 
@@ -1856,16 +2121,11 @@ export const Directory = () => {
                                 >
                                   {highlightText(item.name, searchQuery)}
                                 </span>
-                                <div className="flex gap-1.5 items-center mt-0.5">
-                                  <span className="text-[9px] font-black text-brand-400 px-1.5 py-0.5 rounded bg-brand-500/10 border border-brand-500/20 uppercase tracking-wider">
-                                    {item.flat_no ? `Flat ${item.flat_no}` : 'N/A'}
+                                {item.role !== 'Resident' && (
+                                  <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 text-slate-400 font-bold uppercase tracking-wider w-fit mt-0.5">
+                                    {getRoleHindi(item.role)}
                                   </span>
-                                  {item.role !== 'Resident' && (
-                                    <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 text-slate-400 font-bold uppercase tracking-wider">
-                                      {getRoleHindi(item.role)}
-                                    </span>
-                                  )}
-                                </div>
+                                )}
                               </div>
                             </div>
                           </td>
@@ -2013,6 +2273,11 @@ export const Directory = () => {
                                   <button onClick={() => startEditing(item)} className="p-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-xl transition-all" title="संपादित करें (Edit)">
                                     <Edit size={12} />
                                   </button>
+                                  {item.role === 'Resident' && item.is_approved && (
+                                    <button onClick={() => handleCheckoutUser(item.id)} className="p-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 rounded-xl transition-all" title="चेक-आउट: फ्लैट खाली करें (Vacate Flat)">
+                                      <Building size={12} />
+                                    </button>
+                                  )}
                                   <button onClick={() => setDeleteUserId(item.id)} className="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-xl transition-all" title="हटाएं (Delete)">
                                     <Trash2 size={12} />
                                   </button>
@@ -2438,16 +2703,44 @@ export const Directory = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="flex flex-col gap-1">
                         <label className="text-[10px] font-bold uppercase text-slate-400 text-left">कब्जा स्थिति (Occupancy Status)</label>
-                        <select value={editUser.occupancy_status || 'Self-Occupied'} onChange={(e) => setEditUser({ ...editUser, occupancy_status: e.target.value })} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-3 text-xs text-slate-200 focus:border-brand-500 outline-none">
+                        <select
+                          value={editUser.occupancy_status || 'Self-Occupied'}
+                          onChange={(e) => {
+                            const newStatus = e.target.value;
+                            setEditUser({ ...editUser, occupancy_status: newStatus });
+                          }}
+                          className="bg-slate-950 border border-white/10 rounded-xl px-3 py-3 text-xs text-slate-200 focus:border-brand-500 outline-none"
+                        >
                           <option value="Self-Occupied">स्व-कब्जा (Self-Occupied)</option>
                           <option value="Rented">किराये पर (Rented)</option>
                           <option value="Vacant">खाली (Vacant)</option>
                         </select>
+                        {editUser.occupancy_status === 'Vacant' && (
+                          <div className="mt-1 px-3 py-2 bg-amber-500/10 border border-amber-500/30 rounded-xl text-[10px] text-amber-400 flex items-start gap-1.5">
+                            <span className="shrink-0 mt-0.5">⚠️</span>
+                            <span>सेव करने पर फ्लैट नंबर, मालिक विवरण और पट्टा जानकारी स्वचालित हट जाएगी। (Flat number and lease details will be cleared automatically)</span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex flex-col gap-1">
                         <label className="text-[10px] font-bold uppercase text-slate-400 text-left">पट्टा अवधि (Lease Period)</label>
                         <input type="text" placeholder="उदा: 11 months" disabled={editUser.occupancy_status !== 'Rented'} value={editUser.lease_duration || ''} onChange={(e) => setEditUser({ ...editUser, lease_duration: e.target.value })} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:border-brand-500 outline-none disabled:opacity-40" />
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-bold uppercase text-slate-400 text-left">पट्टा समाप्ति तिथि (Lease Expiry)</label>
+                        <div className="relative">
+                          <input
+                            type="date"
+                            disabled={editUser.occupancy_status !== 'Rented'}
+                            value={editUser.lease_expiry_date ? editUser.lease_expiry_date.substring(0, 10) : ''}
+                            onChange={(e) => setEditUser({ ...editUser, lease_expiry_date: e.target.value })}
+                            onClick={(e) => { try { e.target.showPicker(); } catch (err) {} }}
+                            className="bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-200 focus:border-brand-500 outline-none w-full cursor-pointer [color-scheme:dark] disabled:opacity-40"
+                          />
+                          <Calendar size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                        </div>
                       </div>
                     </div>
 
@@ -2941,6 +3234,15 @@ export const Directory = () => {
                       <div className="flex flex-col">
                         <span className="text-[9px] font-bold text-slate-500 uppercase">पट्टा अवधि (Lease)</span>
                         <span className="text-slate-300 font-semibold">{selectedUser.lease_duration || 'N/A'}</span>
+                      </div>
+                    )}
+                    {selectedUser.occupancy_status === 'Rented' && selectedUser.lease_expiry_date && (
+                      <div className="flex flex-col col-span-2">
+                        <span className="text-[9px] font-bold text-slate-500 uppercase">पट्टा समाप्ति तिथि (Lease Expiry)</span>
+                        <span className={`font-semibold text-sm ${new Date(selectedUser.lease_expiry_date) < new Date() ? 'text-rose-400' : 'text-emerald-400'}`}>
+                          {new Date(selectedUser.lease_expiry_date).toLocaleDateString('hi-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          {new Date(selectedUser.lease_expiry_date) < new Date() && ' ⚠️ समाप्त'}
+                        </span>
                       </div>
                     )}
                   </div>

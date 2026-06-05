@@ -81,6 +81,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       case 'Admin':
         return [
           { to: '/admin', label: 'प्रशासन डेस्क (Admin)', icon: LayoutDashboard },
+          { to: '/admin/submissions', label: 'ऑनलाइन आवेदन (Forms)', icon: FolderSync },
           { to: '/directory', label: 'निवासी निर्देशिका (Directory)', icon: Users },
           { to: '/visitor-logs', label: 'आगंतुक ऑडिट (Visitor Logs)', icon: FolderSync },
           { to: '/finance', label: 'वित्तीय बहीखाता (Finance)', icon: DollarSign },
@@ -96,6 +97,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       case 'Committee':
         return [
           { to: '/admin', label: 'प्रशासन डेस्क (Admin)', icon: LayoutDashboard },
+          { to: '/admin/submissions', label: 'ऑनलाइन आवेदन (Forms)', icon: FolderSync },
           { to: '/directory', label: 'निवासी निर्देशिका (Directory)', icon: Users },
           { to: '/visitor-logs', label: 'आगंतुक ऑडिट (Visitor Logs)', icon: FolderSync },
           { to: '/finance', label: 'वित्तीय बहीखाता (Finance)', icon: DollarSign },

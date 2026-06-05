@@ -30,6 +30,7 @@ import { VisitorLogs } from './pages/Admin/VisitorLogs';
 import { Finance } from './pages/Admin/Finance';
 import { DatabaseInspector } from './pages/Admin/DatabaseInspector';
 import { Reports } from './pages/Admin/Reports';
+import { AdminSubmissions } from './pages/Admin/AdminSubmissions';
 
 const AnimatedOutlet = () => {
   const location = useLocation();
@@ -135,6 +136,14 @@ const AppLayout = () => {
               element={
                 <ProtectedRoute allowedRoles={['Admin', 'Committee']}>
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/submissions"
+              element={
+                <ProtectedRoute allowedRoles={['Admin', 'Committee']}>
+                  <AdminSubmissions />
                 </ProtectedRoute>
               }
             />

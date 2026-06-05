@@ -28,6 +28,7 @@ import helplineRoutes from './routes/helplineRoutes.js';
 import galleryRoutes from './routes/galleryRoutes.js';
 import settingRoutes from './routes/settingRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import documentRoutes from './routes/documentRoutes.js';
 
 // Import Middlewares
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
@@ -111,6 +112,7 @@ app.use('/api/helplines', helplineRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/settings', settingRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/documents', documentRoutes);
 
 // Serve frontend static assets in production
 if (process.env.NODE_ENV === 'production') {

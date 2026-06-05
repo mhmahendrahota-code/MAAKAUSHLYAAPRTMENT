@@ -18,7 +18,12 @@ export const getDashboardStats = async (req, res, next) => {
     let featureFlags = [];
 
     if (isFallback()) {
-      residentsCount = mockDb.users.filter(u => u.role === 'Resident').length;
+      // Sirf active + non-vacant residents count karo
+      residentsCount = mockDb.users.filter(u =>
+        u.role === 'Resident' &&
+        u.is_approved !== false &&
+        u.occupancy_status !== 'Vacant'
+      ).length;
       openTicketsCount = mockDb.tickets.filter(t => t.status !== 'resolved').length;
       activeVisitorsCount = mockDb.visitor_logs.filter(v => !v.check_out).length;
       totalFundsCollected = mockDb.bills.filter(b => b.status === 'paid').reduce((s, b) => s + parseFloat(b.amount || 0), 0);
@@ -53,7 +58,7 @@ export const getDashboardStats = async (req, res, next) => {
         bachelorsRes,
         featuresRes
       ] = await Promise.all([
-        safeQuery("SELECT COUNT(*)::INTEGER FROM users WHERE role = 'Resident'", { count: 0 }),
+        safeQuery("SELECT COUNT(*)::INTEGER FROM users WHERE role = 'Resident' AND is_approved = true AND occupancy_status != 'Vacant'", { count: 0 }),
         safeQuery("SELECT COUNT(*)::INTEGER FROM tickets WHERE status != 'resolved'", { count: 0 }),
         safeQuery("SELECT COUNT(*)::INTEGER FROM visitor_logs WHERE check_out IS NULL", { count: 0 }),
         safeQuery("SELECT COALESCE(SUM(amount), 0.00)::DECIMAL FROM bills WHERE status = 'paid'", { coalesce: 0 }),

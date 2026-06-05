@@ -54,6 +54,38 @@ describe('Authentication Flow', () => {
     expect(res.statusCode).toBe(429);
   });
 
+  test('Register resident in an already occupied flat should fail', async () => {
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({
+        name: 'Duplicate Resident',
+        email: 'duplicate@maakaushalya.com',
+        password: 'password123',
+        role: 'Resident',
+        flatNo: 'C-104',
+        phone: '9876543210'
+      });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toContain('आरडब्ल्यूए रिकॉर्ड में पहले से ही एक सक्रिय निवासी पंजीकृत है');
+  });
+
+  test('Register Tenant in flat with active Self-Occupied Owner should fail', async () => {
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({
+        name: 'New Tenant',
+        email: 'tenant_b304@maakaushalya.com',
+        password: 'password123',
+        role: 'Resident',
+        flatNo: 'B-304',
+        phone: '9876543212',
+        occupancyStatus: 'Rented',
+        ownerName: 'Sufi Illias Chisti'
+      });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toContain('सक्रिय स्व-अधिकृत मालिक');
+  });
+
   afterAll(async () => {
     const pool = getDb();
     if (pool) {

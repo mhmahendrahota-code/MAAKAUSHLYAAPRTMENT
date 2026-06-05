@@ -89,7 +89,12 @@ export const Finance = () => {
       } else {
         setExpenses([]);
       }
-      const filteredResidents = dirData.data.filter(u => u.role === 'Resident');
+      // Vacant aur inactive residents ko bill dropdown se exclude karo
+      const filteredResidents = dirData.data.filter(u =>
+        u.role === 'Resident' &&
+        u.is_approved !== false &&
+        u.occupancy_status !== 'Vacant'
+      );
       setResidents(filteredResidents);
       if (filteredResidents.length > 0) {
         setResidentId(filteredResidents[0].id);
@@ -833,7 +838,7 @@ export const Finance = () => {
             {/* Header */}
             <div className="text-center border-b border-white/10 pb-4 print:border-black/20">
               <h2 className="text-lg font-black text-white uppercase tracking-wider print:text-black">मां कौशल्या अपार्टमेंट RWA</h2>
-              <p className="text-[9px] text-slate-400 print:text-slate-600 uppercase mt-0.5">कौशल्या माता विहार, रायपुर, छत्तीसगढ़</p>
+              <p className="text-[9px] text-slate-400 print:text-slate-600 uppercase mt-0.5">सेक्टर 1, कौशल्या माता विहार, पचपेड़ी नाका, रायपुर, छत्तीसगढ़ - 492015</p>
               <p className="text-[10px] font-bold text-brand-400 mt-2 print:text-black">रखरखाव शुल्क भुगतान रसीद (Maintenance Receipt)</p>
             </div>
 

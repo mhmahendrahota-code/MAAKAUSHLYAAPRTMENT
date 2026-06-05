@@ -561,7 +561,106 @@ export const mockDb = createMockDbProxy({
     { feature_key: "developer", feature_name: "डेवलपर विवरण (Developer)", is_active: true }
   ],
   society_expenses: [],
-  audit_logs: []
+  audit_logs: [],
+  documents: [
+    {
+      id: 1,
+      title: "सोसायटी उप-नियम (Society Bye-Laws)",
+      english_title: "Society Constitution & Bye-Laws",
+      description: "सोसायटी के सुचारू संचालन के लिए आरडब्ल्यूए (Resident Welfare Association) के आधिकारिक नियम और निवासियों के कर्तव्य व अधिकार पत्र।",
+      category: "Rules",
+      file_type: "PDF",
+      file_size: "1.2 MB",
+      file_name: "makaushalya_society_bye_laws",
+      file_content: "U09DSUVUWSBCWUUgTEFXUyBDT05URU5UIEdFTkVSQVRFRA==",
+      is_interactive: false
+    },
+    {
+      id: 2,
+      title: "किरायेदार पुलिस सत्यापन फॉर्म",
+      english_title: "Tenant Police Verification Form",
+      description: "स्थानीय रायपुर पुलिस थाने में किरायेदार सत्यापन आवेदन हेतु आवश्यक आधिकारिक कानूनी दिशानिर्देश एवं प्रपत्र फॉर्म।",
+      category: "Forms",
+      file_type: "PDF",
+      file_size: "240 KB",
+      file_name: "tenant_verification_form_raipur",
+      file_content: "",
+      is_interactive: true
+    },
+    {
+      id: 3,
+      title: "अनापत्ति प्रमाण पत्र (NOC) आवेदन पत्र",
+      english_title: "NOC Renovation & Sale Request Form",
+      description: "फ्लैट के आंतरिक निर्माण/नवीनीकरण (Renovation), बैंक लोन या फ्लैट बिक्री के लिए एनओसी आवेदन प्रस्तुत करने का प्रारूप।",
+      category: "Forms",
+      file_type: "DOCX",
+      file_size: "150 KB",
+      file_name: "rwa_noc_application_form",
+      file_content: "",
+      is_interactive: true
+    },
+    {
+      id: 4,
+      title: "वाहन पार्किंग स्टिकर फॉर्म",
+      english_title: "RWA Vehicle Parking Sticker Request",
+      description: "सोसायटी परिसर के भीतर नए निवासियों के चार पहिया एवं दो पहिया वाहनों के आधिकारिक गेट पास पार्किंग स्टिकर हेतु फॉर्म।",
+      category: "Forms",
+      file_type: "PDF",
+      file_size: "180 KB",
+      file_name: "vehicle_parking_sticker_form",
+      file_content: "",
+      is_interactive: true
+    },
+    {
+      id: 7,
+      title: "बैचलर किरायेदार सहमति एवं घोषणा-पत्र",
+      english_title: "Bachelor Tenant Undertaking Agreement",
+      description: "बैचलर/सहोदर किरायेदारों के लिए आरडब्ल्यूए सुरक्षा नियमों के अनुपालन, अभिभावक सहमति और मकान मालिक की संयुक्त जिम्मेदारी का आधिकारिक घोषणा-पत्र।",
+      category: "Forms",
+      file_type: "PDF",
+      file_size: "190 KB",
+      file_name: "bachelor_tenant_undertaking",
+      file_content: "",
+      is_interactive: true
+    },
+    {
+      id: 5,
+      title: "मासिक वित्तीय ऑडिट रिपोर्ट - अप्रैल 2026",
+      english_title: "RWA Treasury Balance Sheets - April 2026",
+      description: "रेसिडेंट वेलफेयर एसोसिएशन रायपुर द्वारा जारी किया गया मासिक आय, व्यय और एकत्रित रखरखाव निधि (Reserves) का विस्तृत लेखा विवरण।",
+      category: "Audits",
+      file_type: "PDF",
+      file_size: "850 KB",
+      file_name: "society_financial_audit_april_2026",
+      file_content: "QVVESVQgUkVQT1JUIEZPUiBBUFJJTCAyMDI2",
+      is_interactive: false
+    },
+    {
+      id: 6,
+      title: "आपातकालीन सुरक्षा एवं आपात नंबर गाइड",
+      english_title: "RWA Emergency & Safety Action Plan",
+      description: "आग, प्राकृतिक आपदा या आपातकालीन चिकित्सा के दौरान बरती जाने वाली सावधानियां और रायपुर स्थानीय प्रशासन के आवश्यक फोन नंबर्स।",
+      category: "Safety",
+      file_type: "PDF",
+      file_size: "400 KB",
+      file_name: "emergency_safety_action_guide",
+      file_content: "RU1FUkdFTkNZIFNBRkVUWSBHVUlERSBDT05URU5U",
+      is_interactive: false
+    },
+    {
+      id: 8,
+      title: "सार्वभौमिक निवासी विवरण प्रपत्र (Universal Form)",
+      english_title: "Universal Resident Registration Sheets",
+      description: "नये निवासियों से हार्ड कॉपी (Hard Copy) में जानकारी प्राप्त करने या प्रिंट कर भौतिक विवरण सहेजने हेतु आरडब्ल्यूए का सार्वभौमिक विवरण प्रपत्र।",
+      category: "Forms",
+      file_type: "PDF",
+      file_size: "320 KB",
+      file_name: "universal_resident_registration_form",
+      file_content: "",
+      is_interactive: true
+    }
+  ],
+  form_submissions: []
 });
 
 // Persistence Helpers for Mock Fallback Database
@@ -586,6 +685,7 @@ export const loadMockDb = () => {
       parseDates(parsed);
       if (!parsed.society_expenses) parsed.society_expenses = [];
       if (!parsed.audit_logs) parsed.audit_logs = [];
+      if (!parsed.documents) parsed.documents = [];
       Object.assign(mockDb, parsed);
       console.log("📂 Persistent JSON Fallback Database loaded successfully.");
     } else {
@@ -609,7 +709,7 @@ const initializeSchema = async () => {
   try {
     if (process.env.FORCE_DB_RESET === 'true') {
       console.log("⚠️ FORCE_DB_RESET is enabled. Dropping all existing tables for clean sync...");
-      await dbPool.query("DROP TABLE IF EXISTS gallery_events, helplines, committee_members, visitor_logs, tickets, bills, notices, users CASCADE;");
+      await dbPool.query("DROP TABLE IF EXISTS form_submissions, documents, gallery_events, helplines, committee_members, visitor_logs, tickets, bills, notices, users CASCADE;");
     }
 
     if (fs.existsSync(SCHEMA_PATH)) {
@@ -648,6 +748,7 @@ const initializeSchema = async () => {
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS family_member_names TEXT",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS vehicles TEXT",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS move_in_date DATE",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS lease_expiry_date DATE",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS lease_duration VARCHAR(50)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS lease_agreement_submitted BOOLEAN DEFAULT FALSE",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS emergency_contact_name VARCHAR(100)",
@@ -683,6 +784,24 @@ const initializeSchema = async () => {
         console.warn("⚠️ Non-blocking gallery columns migration check warning:", galleryColErr.message);
       }
 
+      // Ensure form_submissions table exists
+      try {
+        await dbPool.query(`
+          CREATE TABLE IF NOT EXISTS form_submissions (
+              id SERIAL PRIMARY KEY,
+              user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+              form_type VARCHAR(50) NOT NULL,
+              flat_no VARCHAR(20) NOT NULL,
+              submission_data JSONB NOT NULL,
+              status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+              created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+        console.log("🛡️ Ensured PostgreSQL form_submissions table exists.");
+      } catch (fsErr) {
+        console.warn("⚠️ Non-blocking form_submissions table sync warning:", fsErr.message);
+      }
+
       // Ensure feature_flags table is seeded in PostgreSQL
       try {
         for (const flag of mockDb.feature_flags) {
@@ -705,9 +824,9 @@ const initializeSchema = async () => {
         // --- Seed Users ---
         for (const user of mockDb.users) {
           await dbPool.query(
-            `INSERT INTO users (id, name, email, password_hash, role, gender, flat_no, phone, occupancy_status, tenant_type, owner_name, owner_phone, aadhaar_number, family_members, family_member_names, vehicles, move_in_date, lease_duration, lease_agreement_submitted, emergency_contact_name, emergency_contact_phone, profile_picture, has_pet, pet_details, is_legacy_bachelor, exemption_ref, police_verification_status, police_verification_date, noc_document_ref, bachelor_notes, is_approved)
-             VALUES ($1::INTEGER, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::VARCHAR, $10::VARCHAR, $11::VARCHAR, $12::VARCHAR, $13::VARCHAR, $14::INTEGER, $15::TEXT, $16::TEXT, $17::DATE, $18::VARCHAR, $19::BOOLEAN, $20::VARCHAR, $21::VARCHAR, $22::TEXT, $23::BOOLEAN, $24::VARCHAR, $25::BOOLEAN, $26::VARCHAR, $27::VARCHAR, $28::DATE, $29::VARCHAR, $30::TEXT, $31::BOOLEAN) ON CONFLICT (email) DO NOTHING`,
-            [user.id, user.name, user.email, user.password_hash, user.role, user.gender || 'Male', user.flat_no, user.phone, user.occupancy_status || 'Self-Occupied', user.tenant_type || 'Family', user.owner_name, user.owner_phone, user.aadhaar_number, user.family_members, user.family_member_names, user.vehicles, user.move_in_date, user.lease_duration, user.lease_agreement_submitted || false, user.emergency_contact_name, user.emergency_contact_phone, user.profile_picture, user.has_pet || false, user.pet_details, user.is_legacy_bachelor || false, user.exemption_ref, user.police_verification_status || 'pending', user.police_verification_date || null, user.noc_document_ref || null, user.bachelor_notes || null, true]
+            `INSERT INTO users (id, name, email, password_hash, role, gender, flat_no, phone, occupancy_status, tenant_type, owner_name, owner_phone, aadhaar_number, family_members, family_member_names, vehicles, move_in_date, lease_expiry_date, lease_duration, lease_agreement_submitted, emergency_contact_name, emergency_contact_phone, profile_picture, has_pet, pet_details, is_legacy_bachelor, exemption_ref, police_verification_status, police_verification_date, noc_document_ref, bachelor_notes, is_approved)
+             VALUES ($1::INTEGER, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::VARCHAR, $10::VARCHAR, $11::VARCHAR, $12::VARCHAR, $13::VARCHAR, $14::INTEGER, $15::TEXT, $16::TEXT, $17::DATE, $18::DATE, $19::VARCHAR, $20::BOOLEAN, $21::VARCHAR, $22::VARCHAR, $23::TEXT, $24::BOOLEAN, $25::VARCHAR, $26::BOOLEAN, $27::VARCHAR, $28::VARCHAR, $29::DATE, $30::VARCHAR, $31::TEXT, $32::BOOLEAN) ON CONFLICT (email) DO NOTHING`,
+            [user.id, user.name, user.email, user.password_hash, user.role, user.gender || 'Male', user.flat_no, user.phone, user.occupancy_status || 'Self-Occupied', user.tenant_type || 'Family', user.owner_name, user.owner_phone, user.aadhaar_number, user.family_members, user.family_member_names, user.vehicles, user.move_in_date, user.lease_expiry_date || null, user.lease_duration, user.lease_agreement_submitted || false, user.emergency_contact_name, user.emergency_contact_phone, user.profile_picture, user.has_pet || false, user.pet_details, user.is_legacy_bachelor || false, user.exemption_ref, user.police_verification_status || 'pending', user.police_verification_date || null, user.noc_document_ref || null, user.bachelor_notes || null, true]
           );
         }
         // Reset users sequence to max id
@@ -792,6 +911,21 @@ const initializeSchema = async () => {
         console.log("  ✅ Gallery events seeded.");
 
         console.log("🌱 All seed data populated successfully!");
+      }
+
+      // Ensure documents are seeded if documents table is empty (regardless of residents presence)
+      const docCountRes = await dbPool.query("SELECT COUNT(*) FROM documents");
+      if (parseInt(docCountRes.rows[0].count) === 0) {
+        console.log("🌱 Documents table is empty, seeding default templates...");
+        for (const doc of mockDb.documents) {
+          await dbPool.query(
+            `INSERT INTO documents (id, title, english_title, description, category, file_type, file_size, file_name, file_content, is_interactive)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) ON CONFLICT (id) DO NOTHING`,
+            [doc.id, doc.title, doc.english_title, doc.description, doc.category, doc.file_type, doc.file_size, doc.file_name, doc.file_content || '', doc.is_interactive || false]
+          );
+        }
+        await dbPool.query(`SELECT setval('documents_id_seq', (SELECT COALESCE(MAX(id), 1) FROM documents))`);
+        console.log("  ✅ Default documents seeded.");
       }
     }
   } catch (err) {

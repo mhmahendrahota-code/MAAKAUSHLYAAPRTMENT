@@ -7,6 +7,7 @@ import {
   getBachelorAlerts, 
   updateBachelorStatus, 
   approveUser, 
+  checkoutUser,
   updateOwnProfile, 
   getFullDatabaseDump,
   createDatabaseRecord,
@@ -30,6 +31,7 @@ router.put('/update', protect, authorizeRoles('Admin', 'Committee'), updateUser)
 router.put('/update-profile', protect, updateOwnProfile);
 router.delete('/delete/:id', protect, authorizeRoles('Admin', 'Committee'), deleteUser);
 router.put('/approve/:id', protect, authorizeRoles('Admin', 'Committee'), approveUser);
+router.put('/checkout/:id', protect, authorizeRoles('Admin', 'Committee'), checkoutUser);
 
 // Bachelor Tenant Routes
 router.get('/bachelor-alerts', protect, authorizeRoles('Admin', 'Committee'), getBachelorAlerts);

@@ -18,7 +18,15 @@ export const queries = {
     return res.rows[0] || null;
   },
 
-  createUser: async ({ name, email, passwordHash, role, gender, flatNo, phone, occupancyStatus, tenantType, ownerName, ownerPhone, aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration, leaseAgreementSubmitted, emergencyContactName, emergencyContactPhone, profilePicture, hasPet, petDetails, isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes, isApproved }) => {
+  findUsersByFlatNo: async (flatNo) => {
+    if (isFallback()) {
+      return mockDb.users.filter(u => u.flat_no === flatNo);
+    }
+    const res = await query('SELECT * FROM users WHERE flat_no = $1', [flatNo]);
+    return res.rows;
+  },
+
+  createUser: async ({ name, email, passwordHash, role, gender, flatNo, phone, occupancyStatus, tenantType, ownerName, ownerPhone, aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseExpiryDate, leaseDuration, leaseAgreementSubmitted, emergencyContactName, emergencyContactPhone, profilePicture, hasPet, petDetails, isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes, isApproved }) => {
     if (isFallback()) {
       const newUser = {
         id: mockDb.users.length + 1,
@@ -38,6 +46,7 @@ export const queries = {
         family_member_names: familyMemberNames || null,
         vehicles: vehicles || null,
         move_in_date: moveInDate || null,
+        lease_expiry_date: leaseExpiryDate || null,
         lease_duration: leaseDuration || null,
         lease_agreement_submitted: leaseAgreementSubmitted !== undefined ? leaseAgreementSubmitted : false,
         emergency_contact_name: emergencyContactName || null,
@@ -58,9 +67,9 @@ export const queries = {
       return newUser;
     }
     const res = await query(
-      `INSERT INTO users (name, email, password_hash, role, gender, flat_no, phone, occupancy_status, tenant_type, owner_name, owner_phone, aadhaar_number, family_members, family_member_names, vehicles, move_in_date, lease_duration, lease_agreement_submitted, emergency_contact_name, emergency_contact_phone, profile_picture, has_pet, pet_details, is_legacy_bachelor, exemption_ref, police_verification_status, police_verification_date, noc_document_ref, bachelor_notes, is_approved)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30) RETURNING *`,
-      [name, email, passwordHash, role, gender || 'Male', flatNo || null, phone || null, occupancyStatus || 'Self-Occupied', tenantType || 'Family', ownerName || null, ownerPhone || null, aadhaarNumber || null, familyMembers || null, familyMemberNames || null, vehicles || null, moveInDate || null, leaseDuration || null, leaseAgreementSubmitted !== undefined ? leaseAgreementSubmitted : false, emergencyContactName || null, emergencyContactPhone || null, profilePicture || null, hasPet || false, petDetails || null, isLegacyBachelor || false, exemptionRef || null, policeVerificationStatus || 'pending', policeVerificationDate || null, nocDocumentRef || null, bachelorNotes || null, isApproved !== undefined ? isApproved : true]
+      `INSERT INTO users (name, email, password_hash, role, gender, flat_no, phone, occupancy_status, tenant_type, owner_name, owner_phone, aadhaar_number, family_members, family_member_names, vehicles, move_in_date, lease_expiry_date, lease_duration, lease_agreement_submitted, emergency_contact_name, emergency_contact_phone, profile_picture, has_pet, pet_details, is_legacy_bachelor, exemption_ref, police_verification_status, police_verification_date, noc_document_ref, bachelor_notes, is_approved)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31) RETURNING *`,
+      [name, email, passwordHash, role, gender || 'Male', flatNo || null, phone || null, occupancyStatus || 'Self-Occupied', tenantType || 'Family', ownerName || null, ownerPhone || null, aadhaarNumber || null, familyMembers || null, familyMemberNames || null, vehicles || null, moveInDate || null, leaseExpiryDate || null, leaseDuration || null, leaseAgreementSubmitted !== undefined ? leaseAgreementSubmitted : false, emergencyContactName || null, emergencyContactPhone || null, profilePicture || null, hasPet || false, petDetails || null, isLegacyBachelor || false, exemptionRef || null, policeVerificationStatus || 'pending', policeVerificationDate || null, nocDocumentRef || null, bachelorNotes || null, isApproved !== undefined ? isApproved : true]
     );
     return res.rows[0];
   },
@@ -73,7 +82,7 @@ export const queries = {
     return res.rows;
   },
 
-  updateUser: async (id, { name, email, phone, role, gender, flatNo, occupancyStatus, tenantType, ownerName, ownerPhone, aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration, leaseAgreementSubmitted, emergencyContactName, emergencyContactPhone, profilePicture, hasPet, petDetails, isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes, isApproved, passwordHash }) => {
+  updateUser: async (id, { name, email, phone, role, gender, flatNo, occupancyStatus, tenantType, ownerName, ownerPhone, aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseExpiryDate, leaseDuration, leaseAgreementSubmitted, emergencyContactName, emergencyContactPhone, profilePicture, hasPet, petDetails, isLegacyBachelor, exemptionRef, policeVerificationStatus, policeVerificationDate, nocDocumentRef, bachelorNotes, isApproved, passwordHash }) => {
     if (isFallback()) {
       const idx = mockDb.users.findIndex(u => u.id === parseInt(id));
       if (idx !== -1) {
@@ -94,6 +103,7 @@ export const queries = {
           family_member_names: familyMemberNames || null,
           vehicles: vehicles || null,
           move_in_date: moveInDate || null,
+          lease_expiry_date: leaseExpiryDate || null,
           lease_duration: leaseDuration || null,
           lease_agreement_submitted: leaseAgreementSubmitted !== undefined ? leaseAgreementSubmitted : (mockDb.users[idx].lease_agreement_submitted || false),
           emergency_contact_name: emergencyContactName || null,
@@ -122,15 +132,15 @@ export const queries = {
           name = $1, email = $2, phone = $3, role = $4, gender = $5, flat_no = $6, 
           occupancy_status = $7, tenant_type = $8, owner_name = $9, owner_phone = $10, 
           aadhaar_number = $11, family_members = $12, family_member_names = $13, 
-          vehicles = $14, move_in_date = $15, lease_duration = $16, lease_agreement_submitted = $17,
-          emergency_contact_name = $18, emergency_contact_phone = $19, 
-          profile_picture = $20, has_pet = $21, pet_details = $22, 
-          is_legacy_bachelor = $23, exemption_ref = $24,
-          police_verification_status = $25, police_verification_date = $26,
-          noc_document_ref = $27, bachelor_notes = $28, is_approved = $29,
-          password_hash = $30
-        WHERE id = $31 RETURNING *`,
-        [name, email, phone || null, role, gender || 'Male', flatNo || null, occupancyStatus || 'Self-Occupied', tenantType || 'Family', ownerName || null, ownerPhone || null, aadhaarNumber || null, familyMembers || null, familyMemberNames || null, vehicles || null, moveInDate || null, leaseDuration || null, leaseAgreementSubmitted !== undefined ? leaseAgreementSubmitted : false, emergencyContactName || null, emergencyContactPhone || null, profilePicture || null, hasPet || false, petDetails || null, isLegacyBachelor || false, exemptionRef || null, policeVerificationStatus || 'pending', policeVerificationDate || null, nocDocumentRef || null, bachelorNotes || null, isApproved !== undefined ? isApproved : true, passwordHash, id]
+          vehicles = $14, move_in_date = $15, lease_expiry_date = $16, lease_duration = $17, lease_agreement_submitted = $18,
+          emergency_contact_name = $19, emergency_contact_phone = $20, 
+          profile_picture = $21, has_pet = $22, pet_details = $23, 
+          is_legacy_bachelor = $24, exemption_ref = $25,
+          police_verification_status = $26, police_verification_date = $27,
+          noc_document_ref = $28, bachelor_notes = $29, is_approved = $30,
+          password_hash = $31
+        WHERE id = $32 RETURNING *`,
+        [name, email, phone || null, role, gender || 'Male', flatNo || null, occupancyStatus || 'Self-Occupied', tenantType || 'Family', ownerName || null, ownerPhone || null, aadhaarNumber || null, familyMembers || null, familyMemberNames || null, vehicles || null, moveInDate || null, leaseExpiryDate || null, leaseDuration || null, leaseAgreementSubmitted !== undefined ? leaseAgreementSubmitted : false, emergencyContactName || null, emergencyContactPhone || null, profilePicture || null, hasPet || false, petDetails || null, isLegacyBachelor || false, exemptionRef || null, policeVerificationStatus || 'pending', policeVerificationDate || null, nocDocumentRef || null, bachelorNotes || null, isApproved !== undefined ? isApproved : true, passwordHash, id]
       );
       return res.rows[0] || null;
     } else {
@@ -139,14 +149,14 @@ export const queries = {
           name = $1, email = $2, phone = $3, role = $4, gender = $5, flat_no = $6, 
           occupancy_status = $7, tenant_type = $8, owner_name = $9, owner_phone = $10, 
           aadhaar_number = $11, family_members = $12, family_member_names = $13, 
-          vehicles = $14, move_in_date = $15, lease_duration = $16, lease_agreement_submitted = $17,
-          emergency_contact_name = $18, emergency_contact_phone = $19, 
-          profile_picture = $20, has_pet = $21, pet_details = $22, 
-          is_legacy_bachelor = $23, exemption_ref = $24,
-          police_verification_status = $25, police_verification_date = $26,
-          noc_document_ref = $27, bachelor_notes = $28, is_approved = $29
-        WHERE id = $30 RETURNING *`,
-        [name, email, phone || null, role, gender || 'Male', flatNo || null, occupancyStatus || 'Self-Occupied', tenantType || 'Family', ownerName || null, ownerPhone || null, aadhaarNumber || null, familyMembers || null, familyMemberNames || null, vehicles || null, moveInDate || null, leaseDuration || null, leaseAgreementSubmitted !== undefined ? leaseAgreementSubmitted : false, emergencyContactName || null, emergencyContactPhone || null, profilePicture || null, hasPet || false, petDetails || null, isLegacyBachelor || false, exemptionRef || null, policeVerificationStatus || 'pending', policeVerificationDate || null, nocDocumentRef || null, bachelorNotes || null, isApproved !== undefined ? isApproved : true, id]
+          vehicles = $14, move_in_date = $15, lease_expiry_date = $16, lease_duration = $17, lease_agreement_submitted = $18,
+          emergency_contact_name = $19, emergency_contact_phone = $20, 
+          profile_picture = $21, has_pet = $22, pet_details = $23, 
+          is_legacy_bachelor = $24, exemption_ref = $25,
+          police_verification_status = $26, police_verification_date = $27,
+          noc_document_ref = $28, bachelor_notes = $29, is_approved = $30
+        WHERE id = $31 RETURNING *`,
+        [name, email, phone || null, role, gender || 'Male', flatNo || null, occupancyStatus || 'Self-Occupied', tenantType || 'Family', ownerName || null, ownerPhone || null, aadhaarNumber || null, familyMembers || null, familyMemberNames || null, vehicles || null, moveInDate || null, leaseExpiryDate || null, leaseDuration || null, leaseAgreementSubmitted !== undefined ? leaseAgreementSubmitted : false, emergencyContactName || null, emergencyContactPhone || null, profilePicture || null, hasPet || false, petDetails || null, isLegacyBachelor || false, exemptionRef || null, policeVerificationStatus || 'pending', policeVerificationDate || null, nocDocumentRef || null, bachelorNotes || null, isApproved !== undefined ? isApproved : true, id]
       );
       return res.rows[0] || null;
     }
@@ -176,6 +186,27 @@ export const queries = {
       return null;
     }
     const res = await query('UPDATE users SET is_approved = true WHERE id = $1 RETURNING *', [id]);
+    return res.rows[0] || null;
+  },
+
+  checkoutUser: async (id) => {
+    if (isFallback()) {
+      const idx = mockDb.users.findIndex(u => u.id === parseInt(id));
+      if (idx !== -1) {
+        mockDb.users[idx].is_approved = false;
+        mockDb.users[idx].flat_no = null;
+        mockDb.users[idx].occupancy_status = 'Vacant';
+        saveMockDb();
+        return mockDb.users[idx];
+      }
+      return null;
+    }
+    const res = await query(
+      `UPDATE users 
+       SET is_approved = false, flat_no = null, occupancy_status = 'Vacant' 
+       WHERE id = $1 RETURNING *`,
+      [id]
+    );
     return res.rows[0] || null;
   },
 
@@ -854,5 +885,163 @@ export const queries = {
       [adminId || null, actionType, targetTable, String(recordId), oldValue || null, newValue || null]
     );
     return res.rows[0];
+  },
+
+  // --- DOCUMENTS ---
+  getDocuments: async () => {
+    if (isFallback()) {
+      return [...mockDb.documents].sort((a, b) => b.id - a.id);
+    }
+    const res = await query('SELECT * FROM documents ORDER BY id DESC');
+    return res.rows;
+  },
+
+  createDocument: async ({ title, englishTitle, description, category, fileType, fileSize, fileName, fileContent, isInteractive }) => {
+    if (isFallback()) {
+      const newDoc = {
+        id: mockDb.documents.length > 0 ? Math.max(...mockDb.documents.map(d => d.id)) + 1 : 1,
+        title,
+        english_title: englishTitle,
+        description,
+        category,
+        file_type: fileType,
+        file_size: fileSize,
+        file_name: fileName,
+        file_content: fileContent || '',
+        is_interactive: isInteractive !== undefined ? isInteractive : false,
+        created_at: new Date()
+      };
+      mockDb.documents.push(newDoc);
+      saveMockDb();
+      return newDoc;
+    }
+    const res = await query(
+      `INSERT INTO documents (title, english_title, description, category, file_type, file_size, file_name, file_content, is_interactive)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [title, englishTitle, description, category, fileType, fileSize, fileName, fileContent || '', isInteractive || false]
+    );
+    return res.rows[0];
+  },
+
+  deleteDocument: async (id) => {
+    if (isFallback()) {
+      const idx = mockDb.documents.findIndex(d => d.id === parseInt(id));
+      if (idx !== -1) {
+        const deleted = mockDb.documents[idx];
+        mockDb.documents.splice(idx, 1);
+        saveMockDb();
+        return deleted;
+      }
+      return null;
+    }
+    const res = await query('DELETE FROM documents WHERE id = $1 RETURNING *', [id]);
+    return res.rows[0] || null;
+  },
+
+  // --- FORM SUBMISSIONS ---
+  createFormSubmission: async ({ userId, formType, flatNo, submissionData }) => {
+    if (isFallback()) {
+      const newSubmission = {
+        id: mockDb.form_submissions.length > 0 ? Math.max(...mockDb.form_submissions.map(s => s.id)) + 1 : 1,
+        user_id: parseInt(userId),
+        form_type: formType,
+        flat_no: flatNo,
+        submission_data: submissionData,
+        status: 'pending',
+        created_at: new Date()
+      };
+      mockDb.form_submissions.push(newSubmission);
+      saveMockDb();
+      const user = mockDb.users.find(u => u.id === parseInt(userId));
+      return {
+        ...newSubmission,
+        user_name: user ? user.name : 'Unknown Resident',
+        user_email: user ? user.email : ''
+      };
+    }
+    const res = await query(
+      `INSERT INTO form_submissions (user_id, form_type, flat_no, submission_data)
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [userId, formType, flatNo, JSON.stringify(submissionData)]
+    );
+    const subId = res.rows[0].id;
+    const details = await query(
+      `SELECT fs.*, u.name as user_name, u.email as user_email 
+       FROM form_submissions fs
+       JOIN users u ON fs.user_id = u.id
+       WHERE fs.id = $1`,
+      [subId]
+    );
+    return details.rows[0];
+  },
+
+  getFormSubmissions: async (userId = null) => {
+    if (isFallback()) {
+      let list = mockDb.form_submissions;
+      if (userId) {
+        list = list.filter(s => s.user_id === parseInt(userId));
+      }
+      return list.map(s => {
+        const user = mockDb.users.find(u => u.id === s.user_id);
+        return {
+          ...s,
+          user_name: user ? user.name : 'Unknown Resident',
+          user_email: user ? user.email : ''
+        };
+      }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    }
+    
+    if (userId) {
+      const res = await query(
+        `SELECT fs.*, u.name as user_name, u.email as user_email 
+         FROM form_submissions fs
+         JOIN users u ON fs.user_id = u.id
+         WHERE fs.user_id = $1
+         ORDER BY fs.created_at DESC`,
+        [userId]
+      );
+      return res.rows;
+    } else {
+      const res = await query(
+        `SELECT fs.*, u.name as user_name, u.email as user_email 
+         FROM form_submissions fs
+         JOIN users u ON fs.user_id = u.id
+         ORDER BY fs.created_at DESC`
+      );
+      return res.rows;
+    }
+  },
+
+  updateFormSubmissionStatus: async (id, status) => {
+    if (isFallback()) {
+      const idx = mockDb.form_submissions.findIndex(s => s.id === parseInt(id));
+      if (idx !== -1) {
+        mockDb.form_submissions[idx].status = status;
+        saveMockDb();
+        const user = mockDb.users.find(u => u.id === mockDb.form_submissions[idx].user_id);
+        return {
+          ...mockDb.form_submissions[idx],
+          user_name: user ? user.name : 'Unknown Resident',
+          user_email: user ? user.email : ''
+        };
+      }
+      return null;
+    }
+    const res = await query(
+      `UPDATE form_submissions 
+       SET status = $1 
+       WHERE id = $2 RETURNING *`,
+      [status, id]
+    );
+    if (res.rows.length === 0) return null;
+    
+    const details = await query(
+      `SELECT fs.*, u.name as user_name, u.email as user_email 
+       FROM form_submissions fs
+       JOIN users u ON fs.user_id = u.id
+       WHERE fs.id = $1`,
+      [id]
+    );
+    return details.rows[0] || null;
   }
 };

@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
     family_member_names TEXT,
     vehicles TEXT,
     move_in_date DATE,
+    lease_expiry_date DATE,
     lease_duration VARCHAR(50),
     lease_agreement_submitted BOOLEAN DEFAULT FALSE,
     emergency_contact_name VARCHAR(100),
@@ -150,6 +151,33 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     new_value TEXT,
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 12. Society Documents Table (Backend persistence for files)
+CREATE TABLE IF NOT EXISTS documents (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(150) NOT NULL,
+    english_title VARCHAR(150) NOT NULL,
+    description TEXT,
+    category VARCHAR(50) NOT NULL,
+    file_type VARCHAR(20) NOT NULL,
+    file_size VARCHAR(20) NOT NULL,
+    file_name VARCHAR(250) NOT NULL,
+    file_content TEXT, -- Base64 encoded file content
+    is_interactive BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 13. Society Form Submissions Table (Records of interactive form submissions)
+CREATE TABLE IF NOT EXISTS form_submissions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    form_type VARCHAR(50) NOT NULL, -- 'tenant_verification', 'noc', 'parking_sticker', 'bachelor_undertaking', 'universal_resident'
+    flat_no VARCHAR(20) NOT NULL,
+    submission_data JSONB NOT NULL, -- Flexible JSON data storing all form fields
+    status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 
 -- =============================================
 -- SEED DATA - Complete Mock Data for All Tables

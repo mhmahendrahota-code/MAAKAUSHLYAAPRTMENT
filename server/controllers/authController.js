@@ -2,6 +2,41 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { queries } from '../models/queries.js';
 
+const validateVehicleLimits = (vehicles) => {
+  if (!vehicles) return;
+  let parsed = vehicles;
+  if (typeof vehicles === 'string') {
+    try {
+      parsed = JSON.parse(vehicles);
+    } catch (e) {
+      return;
+    }
+  }
+  if (!Array.isArray(parsed)) return;
+
+  if (parsed.length > 3) {
+    throw new Error('एक फ्लैट में अधिकतम 3 वाहनों की अनुमति है। (Maximum of 3 vehicles allowed per flat)');
+  }
+
+  let cars = 0;
+  let bikes = 0;
+  for (const v of parsed) {
+    const type = (v.type || '').toLowerCase();
+    if (type === 'car' || type === 'four-wheeler' || type === 'four wheeler') {
+      cars++;
+    } else if (type === 'bike' || type === 'two-wheeler' || type === 'two wheeler' || type === 'motorcycle' || type === 'scooter') {
+      bikes++;
+    }
+  }
+
+  if (cars > 1) {
+    throw new Error('पार्किंग सीमा पार: प्रति फ्लैट अधिकतम 1 कार की अनुमति है। (Maximum of 1 Car allowed per flat)');
+  }
+  if (bikes > 2) {
+    throw new Error('पार्किंग सीमा पार: प्रति फ्लैट अधिकतम 2 बाइक की अनुमति है। (Maximum of 2 Bikes allowed per flat)');
+  }
+};
+
 // Helper to sign JWT Tokens
 const generateToken = (id) => {
   return jwt.sign(
@@ -17,8 +52,8 @@ const generateToken = (id) => {
 export const registerUser = async (req, res, next) => {
   try {
     const { 
-      name, email, password, role, gender, flatNo, phone, occupancyStatus, ownerName, ownerPhone,
-      aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseDuration, leaseAgreementSubmitted, emergencyContactName, emergencyContactPhone, profilePicture,
+      name, email, password, role, gender, flatNo, phone, occupancyStatus, tenantType, ownerName, ownerPhone,
+      aadhaarNumber, familyMembers, familyMemberNames, vehicles, moveInDate, leaseExpiryDate, leaseDuration, leaseAgreementSubmitted, emergencyContactName, emergencyContactPhone, profilePicture,
       hasPet, petDetails, isLegacyBachelor, exemptionRef
     } = req.body;
 
@@ -40,6 +75,50 @@ export const registerUser = async (req, res, next) => {
       throw new Error('User already exists with this email address');
     }
 
+    // Validate vehicle limits
+    if (vehicles) {
+      try {
+        validateVehicleLimits(vehicles);
+      } catch (err) {
+        res.status(400);
+        throw err;
+      }
+    }
+
+    // Check if flat is already registered by an approved resident
+    if (role === 'Resident' && flatNo) {
+      const residentsInFlat = await queries.findUsersByFlatNo(flatNo);
+      const approvedResidents = residentsInFlat.filter(u => u.is_approved && u.role === 'Resident');
+
+      const incomingIsTenant = occupancyStatus === 'Rented' && !!(ownerName && ownerName.trim());
+      const incomingIsSelfOccupied = (occupancyStatus || 'Self-Occupied') === 'Self-Occupied';
+      
+      // Classify existing approved residents
+      const existingTenants = approvedResidents.filter(u => u.occupancy_status === 'Rented' && !!(u.owner_name && u.owner_name.trim()));
+      const existingOwners = approvedResidents.filter(u => u.occupancy_status === 'Self-Occupied' || u.occupancy_status === 'Vacant' || (u.occupancy_status === 'Rented' && !(u.owner_name && u.owner_name.trim())));
+      const existingSelfOccupiedOwner = existingOwners.find(u => u.occupancy_status === 'Self-Occupied');
+
+      if (incomingIsTenant) {
+        if (existingTenants.length > 0) {
+          res.status(400);
+          throw new Error(`फ्लैट संख्या ${flatNo} पर पहले से ही एक सक्रिय किरायेदार (Tenant) पंजीकृत है। (आरडब्ल्यूए रिकॉर्ड में पहले से ही एक सक्रिय निवासी पंजीकृत है)`);
+        }
+        if (existingSelfOccupiedOwner) {
+          res.status(400);
+          throw new Error(`फ्लैट संख्या ${flatNo} पर पहले से ही एक सक्रिय स्व-अधिकृत मालिक (Self-Occupied Owner) पंजीकृत है। (आरडब्ल्यूए रिकॉर्ड में पहले से ही एक सक्रिय निवासी पंजीकृत है)`);
+        }
+      } else {
+        if (existingOwners.length > 0) {
+          res.status(400);
+          throw new Error(`फ्लैट संख्या ${flatNo} पर पहले से ही एक सक्रिय फ्लैट मालिक (Owner) पंजीकृत है। (आरडब्ल्यूए रिकॉर्ड में पहले से ही एक सक्रिय निवासी पंजीकृत है)`);
+        }
+        if (incomingIsSelfOccupied && existingTenants.length > 0) {
+          res.status(400);
+          throw new Error(`फ्लैट संख्या ${flatNo} पर पहले से ही एक सक्रिय किरायेदार (Tenant) पंजीकृत है, इसलिए आप स्व-अधिकृत (Self-Occupied) के रूप में पंजीकृत नहीं हो सकते। (आरडब्ल्यूए रिकॉर्ड में पहले से ही एक सक्रिय निवासी पंजीकृत है)`);
+        }
+      }
+    }
+
     // Encrypt password using bcrypt
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
@@ -54,6 +133,7 @@ export const registerUser = async (req, res, next) => {
       flatNo,
       phone,
       occupancyStatus,
+      tenantType,
       ownerName,
       ownerPhone,
       aadhaarNumber,
@@ -61,6 +141,7 @@ export const registerUser = async (req, res, next) => {
       familyMemberNames,
       vehicles,
       moveInDate,
+      leaseExpiryDate,
       leaseDuration,
       leaseAgreementSubmitted,
       emergencyContactName,

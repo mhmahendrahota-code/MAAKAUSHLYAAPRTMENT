@@ -24,6 +24,16 @@ export const generateMaintenanceBill = async (req, res, next) => {
       throw new Error('Maintenance bills can only be generated for users with the Resident role');
     }
 
+    // Block bill generation for Vacant or inactive (unapproved) residents
+    if (targetUser.occupancy_status === 'Vacant') {
+      res.status(400);
+      throw new Error(`रिक्त फ्लैट (Vacant) के लिए मेंटेनेंस बिल जनरेट नहीं की जा सकती। (पहले निवासी को फ़्लैट अलॉट करें)`);
+    }
+    if (targetUser.is_approved === false) {
+      res.status(400);
+      throw new Error(`अस्वीकृत / निष्क्रिय निवासी के लिए बिल जनरेट नहीं की जा सकती।`);
+    }
+
     const bill = await queries.createBill({
       residentId,
       amount,
@@ -152,11 +162,16 @@ export const generateBulkMaintenanceBills = async (req, res, next) => {
     }
 
     const allUsers = await queries.getAllUsers();
-    const residents = allUsers.filter(u => u.role === 'Resident');
+    // Vacant aur inactive residents ko exclude karo
+    const residents = allUsers.filter(u =>
+      u.role === 'Resident' &&
+      u.is_approved !== false &&
+      u.occupancy_status !== 'Vacant'
+    );
 
     if (residents.length === 0) {
       res.status(404);
-      throw new Error('No residents found to generate bills for');
+      throw new Error('कोई सक्रिय निवासी (रिक्त फ्लैट अोर निष्क्रिय खातों को छोड़कर) बिल जनरेट करने के लिए नहीं मिला।');
     }
 
     const createdBills = [];
