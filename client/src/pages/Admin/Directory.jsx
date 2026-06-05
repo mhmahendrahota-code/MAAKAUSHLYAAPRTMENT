@@ -887,19 +887,7 @@ export const Directory = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  const getRoleHindi = (role) => {
-    switch (role) {
-      case 'Admin':
-        return 'मुख्य एडमिन (Admin)';
-      case 'Committee':
-        return 'समिति सदस्य (Committee)';
-      case 'Security':
-        return 'सुरक्षा गार्ड (Security)';
-      case 'Resident':
-      default:
-        return 'निवासी (Resident)';
-    }
-  };
+  // Note: getRoleLabel() from i18n.js is imported and used directly
 
   return (
     <div className={`flex-1 p-6 text-left flex flex-col gap-6 mx-auto w-full transition-all duration-300 ${

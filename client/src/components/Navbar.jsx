@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Home, ShieldCheck, LogOut, LogIn, Menu, User, Eye, EyeOff, Lock, Check, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getRoleLabel } from '../utils/i18n';
 
 export const Navbar = ({ onMenuClick }) => {
   const { user, token, logout } = useAuth();
@@ -196,7 +197,7 @@ export const Navbar = ({ onMenuClick }) => {
                   user.role === 'Security' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
                   'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                 }`}>
-                  {user.role === 'Admin' ? 'प्रशासक' : user.role === 'Committee' ? 'समिति सदस्य' : user.role === 'Security' ? 'सुरक्षा गार्ड' : 'निवासी'}
+                  {getRoleLabel(user.role)}
                 </span>
                 {user.flat_no && (
                   <span className="text-[10px] text-slate-400 font-semibold bg-slate-800 px-1.5 py-0.5 rounded border border-white/5">
@@ -212,7 +213,7 @@ export const Navbar = ({ onMenuClick }) => {
               className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-slate-900 border border-white/10 hover:bg-brand-600 hover:border-brand-500 transition-all flex items-center gap-2"
             >
               <ShieldCheck size={14} />
-              पोर्टल डेस्क
+              मेरा पोर्टल
             </Link>
 
             {/* Change Credentials Trigger */}

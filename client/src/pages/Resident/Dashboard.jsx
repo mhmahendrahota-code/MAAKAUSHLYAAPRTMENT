@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { CreditCard, Megaphone, FileText, ChevronRight, User, Compass, HelpCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatDate } from '../../utils/formatters';
 
 export const Dashboard = () => {
   const { user, token } = useAuth();
@@ -166,7 +167,7 @@ export const Dashboard = () => {
             </div>
           </div>
           <div className="mt-6 flex items-center justify-between border-t border-white/5 pt-4">
-             <span className="text-xs text-slate-400 font-semibold">Resident Welfare Association सूचनाओं से अपडेट रहें</span>
+             <span className="text-xs text-slate-400 font-semibold">RWA सूचनाओं से अपडेट रहें</span>
             <Link to="/notices" className="text-xs text-brand-400 hover:text-brand-300 font-bold flex items-center gap-0.5 uppercase tracking-wider">
               सूचना पटल <ChevronRight size={14} />
             </Link>
@@ -199,7 +200,7 @@ export const Dashboard = () => {
               </p>
               <div className="flex justify-between text-[10px] text-slate-500 border-t border-white/5 pt-3">
                 <span>द्वारा: <span className="font-bold text-slate-300">{recentNotice.creator_name}</span></span>
-                <span>दिनांक: <span className="font-bold text-slate-300">{new Date(recentNotice.created_at).toLocaleDateString()}</span></span>
+                <span>दिनांक: <span className="font-bold text-slate-300">{formatDate(recentNotice.created_at)}</span></span>
               </div>
             </div>
           ) : (
