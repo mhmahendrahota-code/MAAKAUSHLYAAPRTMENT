@@ -7,6 +7,10 @@ import {
   Calendar 
 } from 'lucide-react';
 import { SOCIETY_FLATS } from '../../utils/flats';
+import { userMatchesSearch } from '../../utils/searchUtils';
+import { getRoleLabel, getOccupancyLabel, getRoleColor, getOccupancyColor, mapApiError } from '../../utils/i18n';
+import { formatDate, formatDateShort, formatCurrency, compareFlatNumbers } from '../../utils/formatters';
+
 
 export const Directory = () => {
   const { token, register } = useAuth();
@@ -774,11 +778,7 @@ export const Directory = () => {
     });
 
     if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      filteredUsers = filteredUsers.filter(u => 
-        u.flat_no.toLowerCase().includes(q) || 
-        (u.name || '').toLowerCase().includes(q)
-      );
+      filteredUsers = filteredUsers.filter(u => userMatchesSearch(u, searchQuery));
     }
   } else if (activeOccupancyFilter === 'Vacant') {
     const vacantFlats = SOCIETY_FLATS.filter(f => !occupiedFlatsSet.has(f));
@@ -795,18 +795,11 @@ export const Directory = () => {
     }));
 
     if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      filteredUsers = filteredUsers.filter(u => u.flat_no.toLowerCase().includes(q));
+      filteredUsers = filteredUsers.filter(u => userMatchesSearch(u, searchQuery));
     }
   } else {
     filteredUsers = usersList.filter(user => {
-      const q = searchQuery.toLowerCase();
-      const matchesSearch = (
-        (user.name || '').toLowerCase().includes(q) ||
-        (user.email || '').toLowerCase().includes(q) ||
-        (user.flat_no || '').toLowerCase().includes(q) ||
-        (user.role || '').toLowerCase().includes(q)
-      );
+      const matchesSearch = userMatchesSearch(user, searchQuery);
 
       // If 'Pending' filter is active, only show unapproved users
       if (activeRoleFilter === 'Pending') {
