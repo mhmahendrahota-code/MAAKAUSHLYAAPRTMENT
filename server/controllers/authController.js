@@ -123,6 +123,10 @@ export const registerUser = async (req, res, next) => {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
+    // Business Rule: Non-Resident roles (Admin, Committee, Security) का कोई flat number नहीं होता
+    const resolvedFlatNo = role === 'Resident' ? flatNo : null;
+    const resolvedOccupancyStatus = role === 'Resident' ? occupancyStatus : 'Self-Occupied';
+
     // Write user to database/store
     const user = await queries.createUser({
       name,
@@ -130,9 +134,9 @@ export const registerUser = async (req, res, next) => {
       passwordHash,
       role,
       gender: gender || 'Male',
-      flatNo,
+      flatNo: resolvedFlatNo,
       phone,
-      occupancyStatus,
+      occupancyStatus: resolvedOccupancyStatus,
       tenantType,
       ownerName,
       ownerPhone,

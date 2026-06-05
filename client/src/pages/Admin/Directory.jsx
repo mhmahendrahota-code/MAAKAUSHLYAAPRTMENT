@@ -886,10 +886,11 @@ export const Directory = () => {
   });
 
   // Client-Side Pagination calculations
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const effectiveItemsPerPage = itemsPerPage === 'All' ? sortedUsers.length : parseInt(itemsPerPage, 10);
+  const indexOfLastItem = currentPage * effectiveItemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - effectiveItemsPerPage;
   const currentItems = sortedUsers.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedUsers.length / effectiveItemsPerPage) || 1;
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -967,6 +968,8 @@ export const Directory = () => {
             setActiveRoleFilter('Resident');
             setActiveOccupancyFilter('All_Flats');
             setCurrentPage(1);
+            setSortColumn('flat');
+            setSortDirection('asc');
           }}
           className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${
             activeRoleFilter === 'Resident' && activeOccupancyFilter === 'All_Flats'
@@ -1013,6 +1016,8 @@ export const Directory = () => {
             setActiveRoleFilter('Resident');
             setActiveOccupancyFilter('Self-Occupied');
             setCurrentPage(1);
+            setSortColumn('flat');
+            setSortDirection('asc');
           }}
           className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${
             activeRoleFilter === 'Resident' && activeOccupancyFilter === 'Self-Occupied'
@@ -1036,6 +1041,8 @@ export const Directory = () => {
             setActiveRoleFilter('Resident');
             setActiveOccupancyFilter('Rented');
             setCurrentPage(1);
+            setSortColumn('flat');
+            setSortDirection('asc');
           }}
           className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${
             activeRoleFilter === 'Resident' && activeOccupancyFilter === 'Rented'
@@ -1059,6 +1066,8 @@ export const Directory = () => {
             setActiveRoleFilter('Resident');
             setActiveOccupancyFilter('Vacant');
             setCurrentPage(1);
+            setSortColumn('flat');
+            setSortDirection('asc');
           }}
           className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${
             activeRoleFilter === 'Resident' && activeOccupancyFilter === 'Vacant'
@@ -1151,18 +1160,24 @@ export const Directory = () => {
 
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-bold uppercase text-slate-400">फ्लैट नंबर (Flat No.)</label>
-                <select
-                  disabled={role !== 'Resident'}
-                  required={role === 'Resident'}
-                  value={flatNo}
-                  onChange={(e) => setFlatNo(e.target.value)}
-                  className="bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:border-brand-500 focus:outline-none transition-colors disabled:opacity-40"
-                >
-                  <option value="">फ्लैट नंबर चुनें</option>
-                  {SOCIETY_FLATS.map(flat => (
-                    <option key={flat} value={flat}>{flat}</option>
-                  ))}
-                </select>
+                {role !== 'Resident' ? (
+                  <div className="bg-slate-900 border border-white/5 rounded-xl px-4 py-2.5 text-xs text-slate-500 flex items-center gap-2">
+                    <span>❌</span>
+                    <span className="italic">लागू नहीं — Admin/Committee/Security का कोई फ्लैट नंबर नहीं होता</span>
+                  </div>
+                ) : (
+                  <select
+                    required={role === 'Resident'}
+                    value={flatNo}
+                    onChange={(e) => setFlatNo(e.target.value)}
+                    className="bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:border-brand-500 focus:outline-none transition-colors"
+                  >
+                    <option value="">फ्लैट नंबर चुनें</option>
+                    {SOCIETY_FLATS.map(flat => (
+                      <option key={flat} value={flat}>{flat}</option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
 
@@ -1710,6 +1725,26 @@ export const Directory = () => {
               <span>Interactive Table</span>
             </button>
           </div>
+
+          {/* Dynamic Page Length Selector */}
+          <div className="glass-panel p-1.5 rounded-2xl border border-white/5 flex items-center gap-2 shrink-0 bg-slate-950/40 px-3 py-2 text-xs font-bold text-slate-400">
+            <span>दिखाएं (Show):</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                const val = e.target.value;
+                setItemsPerPage(val === 'All' ? 'All' : parseInt(val, 10));
+                setCurrentPage(1);
+              }}
+              className="bg-slate-900 border border-white/10 rounded px-2 py-1 text-slate-200 focus:border-brand-500 outline-none text-[11px] cursor-pointer"
+            >
+              <option value={8}>8</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+              <option value="All">सभी (All)</option>
+            </select>
+          </div>
         </div>
         {/* Tabbed Pills for Roles & Occupancy filtering */}
         <div className="glass-panel p-4 rounded-2xl border border-white/5 flex flex-col gap-3.5 text-xs text-left bg-slate-950/20">
@@ -1758,6 +1793,10 @@ export const Directory = () => {
                   onClick={() => {
                     setActiveOccupancyFilter(tab.id);
                     setCurrentPage(1);
+                    if (tab.id === 'All_Flats' || tab.id === 'Vacant' || tab.id === 'Self-Occupied' || tab.id === 'Rented') {
+                      setSortColumn('flat');
+                      setSortDirection('asc');
+                    }
                   }}
                   className={`px-3 py-1.5 rounded-xl font-bold transition-all border text-[11px] ${
                     activeOccupancyFilter === tab.id
@@ -1779,9 +1818,10 @@ export const Directory = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
         </div>
       ) : sortedUsers.length > 0 ? (
-        viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {sortedUsers.map((item) => {
+        <div className="flex flex-col gap-4 w-full">
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {currentItems.map((item) => {
               const isVacant = item.is_vacant_flat;
               
               // Parse vehicle list
@@ -2486,52 +2526,53 @@ export const Directory = () => {
                 </tbody>
               </table>
             </div>
-
-            {/* Scale-Friendly Fluid Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
-                <span className="text-xs text-slate-400 font-semibold">
-                  Page <span className="text-slate-200 font-extrabold">{currentPage}</span> of <span className="text-slate-200 font-extrabold">{totalPages}</span>
-                </span>
-                
-                <div className="flex items-center gap-1">
-                  {/* Previous button */}
-                  <button
-                    onClick={() => paginate(Math.max(currentPage - 1, 1))}
-                    disabled={currentPage === 1}
-                    className="px-3 py-1.5 bg-white/5 border border-white/5 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-all disabled:opacity-30 disabled:pointer-events-none"
-                  >
-                    ◀ Prev
-                  </button>
-
-                  {/* Page number buttons */}
-                  {Array.from({ length: totalPages }, (_, idx) => idx + 1).map(num => (
-                    <button
-                      key={num}
-                      onClick={() => paginate(num)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all ${
-                        currentPage === num
-                          ? 'bg-brand-600 text-white shadow-premium'
-                          : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
-                      }`}
-                    >
-                      {num}
-                    </button>
-                  ))}
-
-                  {/* Next button */}
-                  <button
-                    onClick={() => paginate(Math.min(currentPage + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-1.5 bg-white/5 border border-white/5 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-all disabled:opacity-30 disabled:pointer-events-none"
-                  >
-                    Next ▶
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
-        )
+        )}
+
+        {/* Scale-Friendly Fluid Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
+            <span className="text-xs text-slate-400 font-semibold">
+              Page <span className="text-slate-200 font-extrabold">{currentPage}</span> of <span className="text-slate-200 font-extrabold">{totalPages}</span>
+            </span>
+            
+            <div className="flex items-center gap-1">
+              {/* Previous button */}
+              <button
+                onClick={() => paginate(Math.max(currentPage - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 bg-white/5 border border-white/5 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-all disabled:opacity-30 disabled:pointer-events-none"
+              >
+                ◀ Prev
+              </button>
+
+              {/* Page number buttons */}
+              {Array.from({ length: totalPages }, (_, idx) => idx + 1).map(num => (
+                <button
+                  key={num}
+                  onClick={() => paginate(num)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all ${
+                    currentPage === num
+                      ? 'bg-brand-600 text-white shadow-premium'
+                      : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  {num}
+                </button>
+              ))}
+
+              {/* Next button */}
+              <button
+                onClick={() => paginate(Math.min(currentPage + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1.5 bg-white/5 border border-white/5 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-all disabled:opacity-30 disabled:pointer-events-none"
+              >
+                Next ▶
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
       ) : (
         <div className="glass-panel p-12 rounded-3xl border border-white/5 text-center">
           <Users size={36} className="text-slate-600 mx-auto mb-3" />
@@ -2723,7 +2764,21 @@ export const Directory = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold uppercase text-slate-400 text-left">भूमिका (Role)</label>
-                    <select value={editUser.role} onChange={(e) => setEditUser({ ...editUser, role: e.target.value })} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-3 text-xs text-slate-200 focus:border-brand-500 outline-none">
+                    <select
+                      value={editUser.role}
+                      onChange={(e) => {
+                        const newRole = e.target.value;
+                        // Non-Resident roles ka koi flat number nahi hota
+                        const clearFlat = newRole !== 'Resident';
+                        setEditUser({
+                          ...editUser,
+                          role: newRole,
+                          flat_no: clearFlat ? '' : editUser.flat_no,
+                          occupancy_status: clearFlat ? 'Self-Occupied' : editUser.occupancy_status
+                        });
+                      }}
+                      className="bg-slate-950 border border-white/10 rounded-xl px-3 py-3 text-xs text-slate-200 focus:border-brand-500 outline-none"
+                    >
                       <option value="Resident">निवासी (Resident)</option>
                       <option value="Committee">समिति सदस्य (Committee Member)</option>
                       <option value="Admin">मुख्य एडमिन (Admin)</option>
@@ -2732,10 +2787,17 @@ export const Directory = () => {
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold uppercase text-slate-400 text-left">आवंटित फ्लैट (Flat No.)</label>
-                    <select disabled={editUser.role !== 'Resident'} required={editUser.role === 'Resident'} value={editUser.flat_no || ''} onChange={(e) => setEditUser({ ...editUser, flat_no: e.target.value })} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-3 text-xs text-slate-200 focus:border-brand-500 outline-none disabled:opacity-40">
-                      <option value="">कोई नहीं</option>
-                      {SOCIETY_FLATS.map(f => <option key={f} value={f}>{f}</option>)}
-                    </select>
+                    {editUser.role !== 'Resident' ? (
+                      <div className="bg-slate-950 border border-white/5 rounded-xl px-3 py-2.5 text-xs text-slate-500 flex items-center gap-2">
+                        <span>❌</span>
+                        <span className="italic">लागू नहीं (व्यवस्थापक/समिति/सुरक्षा कर्मचारी का कोई फ्लैट नंबर नहीं होता)</span>
+                      </div>
+                    ) : (
+                      <select disabled={editUser.role !== 'Resident'} required={editUser.role === 'Resident'} value={editUser.flat_no || ''} onChange={(e) => setEditUser({ ...editUser, flat_no: e.target.value })} className="bg-slate-950 border border-white/10 rounded-xl px-3 py-3 text-xs text-slate-200 focus:border-brand-500 outline-none disabled:opacity-40">
+                        <option value="">कोई नहीं</option>
+                        {SOCIETY_FLATS.map(f => <option key={f} value={f}>{f}</option>)}
+                      </select>
+                    )}
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold uppercase text-slate-400 text-left">प्रवेश तिथि (Move-in Date)</label>

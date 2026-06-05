@@ -99,12 +99,13 @@ export const updateUser = async (req, res, next) => {
       passwordHash = await bcrypt.hash(password, salt);
     }
 
-    // Business Rule: यदि status Vacant है तो flat_no null होना चाहिए
-    const resolvedFlatNo = occupancyStatus === 'Vacant' ? null : flatNo;
-    const resolvedOwnerName = occupancyStatus === 'Vacant' ? null : ownerName;
-    const resolvedOwnerPhone = occupancyStatus === 'Vacant' ? null : ownerPhone;
-    const resolvedLeaseDuration = occupancyStatus === 'Vacant' ? null : leaseDuration;
-    const resolvedLeaseExpiryDate = occupancyStatus === 'Vacant' ? null : leaseExpiryDate;
+    // Business Rule: यदि status Vacant है या role non-Resident है तो flat_no null होना चाहिए
+    const isNonResident = role === 'Admin' || role === 'Committee' || role === 'Security';
+    const resolvedFlatNo = (isNonResident || occupancyStatus === 'Vacant') ? null : flatNo;
+    const resolvedOwnerName = (isNonResident || occupancyStatus === 'Vacant') ? null : ownerName;
+    const resolvedOwnerPhone = (isNonResident || occupancyStatus === 'Vacant') ? null : ownerPhone;
+    const resolvedLeaseDuration = (isNonResident || occupancyStatus === 'Vacant') ? null : leaseDuration;
+    const resolvedLeaseExpiryDate = (isNonResident || occupancyStatus === 'Vacant') ? null : leaseExpiryDate;
 
     const updatedUser = await queries.updateUser(userId, {
       name, email, phone, role, gender,
