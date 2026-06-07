@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { 
-  Users, Search, PlusCircle, UserPlus, Check, Phone, Mail, Building, 
-  Upload, Download, Edit, Trash2, Eye, EyeOff, X, LayoutGrid, Table, 
+import {
+  Users, Search, PlusCircle, UserPlus, Check, Phone, Mail, Building,
+  Upload, Download, Edit, Trash2, Eye, EyeOff, X, LayoutGrid, Table,
   Copy, ChevronDown, ChevronUp, AlertCircle, Info, Sparkles, ShieldCheck,
-  Calendar 
+  Calendar
 } from 'lucide-react';
 import { SOCIETY_FLATS } from '../../utils/flats';
 import { userMatchesSearch } from '../../utils/searchUtils';
@@ -57,7 +57,7 @@ export const Directory = () => {
   const [emergencyContactName, setEmergencyContactName] = useState('');
   const [emergencyContactPhone, setEmergencyContactPhone] = useState('');
   const [profilePicture, setProfilePicture] = useState('');
-  
+
   // Practical Pet States
   const [hasPet, setHasPet] = useState(false);
   const [petDetails, setPetDetails] = useState('');
@@ -129,24 +129,32 @@ export const Directory = () => {
     });
   };
 
+  const [fetchError, setFetchError] = useState('');
+
   const fetchDirectory = async () => {
     setLoading(true);
+    setFetchError('');
     try {
+      const currentToken = localStorage.getItem('auth_token') || token;
       const res = await fetch('/api/users/directory', {
         credentials: 'include',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': `Bearer ${currentToken}` }
       });
       if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
+        if (res.status === 429) {
+          throw new Error('बहुत अधिक अनुरोध (Too Many Requests) - कृपया 1-2 मिनट बाद दोबारा कोशिश करें।');
+        }
+        throw new Error(`सर्वर त्रुटि (HTTP ${res.status}) - कृपया पुनः प्रयास करें।`);
       }
       const data = await res.json();
       if (data.success) {
         setUsersList(data.data);
       } else {
-        throw new Error(data.message || 'Failed to fetch directory');
+        throw new Error(data.message || 'डायरेक्टरी लोड विफल');
       }
     } catch (err) {
       console.error("Failed to fetch directory:", err);
+      setFetchError(err.message || 'डायरेक्टरी लोड करने में विफल। कृपया पुनः प्रयास करें।');
       setUsersList([]);
     } finally {
       setLoading(false);
@@ -154,33 +162,35 @@ export const Directory = () => {
   };
 
   useEffect(() => {
-    fetchDirectory();
+    if (token) {
+      fetchDirectory();
+    }
   }, [token]);
 
   const handleCSVExport = () => {
     const headers = [
-      "Name", 
-      "Email", 
-      "Role", 
+      "Name",
+      "Email",
+      "Role",
       "Gender",
-      "Flat No", 
-      "Phone", 
-      "Occupancy Status", 
-      "Owner Name", 
-      "Owner Phone", 
-      "Aadhaar Number", 
-      "Family Members", 
-      "Family Member Names", 
-      "Vehicles", 
-      "Move In Date", 
-      "Lease Duration", 
-      "Emergency Contact Name", 
-      "Emergency Contact Phone", 
-      "Profile Picture", 
-      "Has Pet", 
-      "Pet Details", 
-      "Legacy Bachelor", 
-      "Exemption Reference", 
+      "Flat No",
+      "Phone",
+      "Occupancy Status",
+      "Owner Name",
+      "Owner Phone",
+      "Aadhaar Number",
+      "Family Members",
+      "Family Member Names",
+      "Vehicles",
+      "Move In Date",
+      "Lease Duration",
+      "Emergency Contact Name",
+      "Emergency Contact Phone",
+      "Profile Picture",
+      "Has Pet",
+      "Pet Details",
+      "Legacy Bachelor",
+      "Exemption Reference",
       "Created At"
     ];
     const rows = usersList.map(u => [
@@ -219,7 +229,7 @@ export const Directory = () => {
 
     const blob = new Blob(["\ufeff" + csvString], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    
+
     const link = document.createElement("a");
     link.setAttribute("href", url);
     link.setAttribute("download", `makaushalya_society_directory_${Date.now()}.csv`);
@@ -250,7 +260,7 @@ export const Directory = () => {
       const occupancyIdx = headers.indexOf('occupancy status') !== -1 ? headers.indexOf('occupancy status') : headers.indexOf('occupancy_status');
       const ownerNameIdx = headers.indexOf('owner name') !== -1 ? headers.indexOf('owner name') : headers.indexOf('owner_name');
       const ownerPhoneIdx = headers.indexOf('owner phone') !== -1 ? headers.indexOf('owner phone') : headers.indexOf('owner_phone');
-      
+
       // Extended Headers
       const aadhaarIdx = headers.indexOf('aadhaar number') !== -1 ? headers.indexOf('aadhaar number') : headers.indexOf('aadhaar_number');
       const familyMembersIdx = headers.indexOf('family members') !== -1 ? headers.indexOf('family members') : headers.indexOf('family_members');
@@ -306,7 +316,7 @@ export const Directory = () => {
         const rowOccupancy = occupancyIdx !== -1 && row[occupancyIdx] ? row[occupancyIdx] : 'Self-Occupied';
         const rowOwnerName = ownerNameIdx !== -1 && row[ownerNameIdx] ? row[ownerNameIdx] : null;
         const rowOwnerPhone = ownerPhoneIdx !== -1 && row[ownerPhoneIdx] ? row[ownerPhoneIdx] : null;
-        
+
         // Parsing New fields
         const rowAadhaar = aadhaarIdx !== -1 && row[aadhaarIdx] ? row[aadhaarIdx] : null;
         const rowFamilyMembers = familyMembersIdx !== -1 && row[familyMembersIdx] ? parseInt(row[familyMembersIdx]) || 0 : null;
@@ -487,7 +497,7 @@ export const Directory = () => {
           ? JSON.parse(item.family_member_names)
           : item.family_member_names;
       }
-    } catch (e) {}
+    } catch (e) { }
 
     let parsedVehicles = [];
     try {
@@ -496,7 +506,7 @@ export const Directory = () => {
           ? JSON.parse(item.vehicles)
           : item.vehicles;
       }
-    } catch (e) {}
+    } catch (e) { }
 
     setEditUser({
       ...item,
@@ -517,7 +527,7 @@ export const Directory = () => {
     const val = e.target.value;
     const count = parseInt(val) || 0;
     const safeCount = Math.min(count, 15);
-    
+
     setEditUser(prev => {
       const newArr = [...(prev.family_member_names_arr || [])];
       if (safeCount > newArr.length) {
@@ -737,8 +747,8 @@ export const Directory = () => {
     const parts = (text || '').split(regex);
     return (
       <span>
-        {parts.map((part, i) => 
-          regex.test(part) 
+        {parts.map((part, i) =>
+          regex.test(part)
             ? <mark key={i} className="bg-amber-500/35 text-amber-200 px-0.5 rounded font-bold">{part}</mark>
             : <span key={i}>{part}</span>
         )}
@@ -809,7 +819,7 @@ export const Directory = () => {
       const matchesApproved = user.is_approved !== false;
       const matchesRole = activeRoleFilter === 'All' || user.role === activeRoleFilter;
 
-      const matchesOccupancy = activeOccupancyFilter === 'All' || 
+      const matchesOccupancy = activeOccupancyFilter === 'All' ||
         (user.role === 'Resident' && user.occupancy_status === activeOccupancyFilter);
 
       return matchesSearch && matchesApproved && matchesRole && matchesOccupancy;
@@ -820,7 +830,7 @@ export const Directory = () => {
   const statsTotal = usersList.length;
   const statsOwners = usersList.filter(u => u.role === 'Resident' && u.is_approved !== false && u.occupancy_status === 'Self-Occupied').length;
   const statsTenants = usersList.filter(u => u.role === 'Resident' && u.is_approved !== false && u.occupancy_status === 'Rented').length;
-  
+
   // Jo flat kisiki occupancy me nahi hai, wo vacant hai (512 - occupied)
   const occupiedFlatsCount = occupiedFlatsSet.size;
   const statsVacant = SOCIETY_FLATS.length - occupiedFlatsCount;
@@ -841,12 +851,12 @@ export const Directory = () => {
     if (sortColumn === 'flat') {
       const flatA = a.flat_no || '';
       const flatB = b.flat_no || '';
-      
+
       // Push empty/null values to the bottom regardless of sort direction
       if (!flatA && flatB) return 1;
       if (flatA && !flatB) return -1;
       if (!flatA && !flatB) return 0;
-      
+
       return sortDirection === 'asc'
         ? flatA.localeCompare(flatB, 'hi-IN', { numeric: true })
         : flatB.localeCompare(flatA, 'hi-IN', { numeric: true });
@@ -887,12 +897,23 @@ export const Directory = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // Note: getRoleLabel() from i18n.js is imported and used directly
+  const getRoleHindi = (role) => {
+    switch (role) {
+      case 'Admin':
+        return 'मुख्य एडमिन (Admin)';
+      case 'Committee':
+        return 'समिति सदस्य (Committee)';
+      case 'Security':
+        return 'सुरक्षा गार्ड (Security)';
+      case 'Resident':
+      default:
+        return 'निवासी (Resident)';
+    }
+  };
 
   return (
-    <div className={`flex-1 p-6 text-left flex flex-col gap-6 mx-auto w-full transition-all duration-300 ${
-      viewMode === 'table' ? 'max-w-7xl' : 'max-w-4xl'
-    }`}>
+    <div className={`flex-1 p-6 text-left flex flex-col gap-6 mx-auto w-full transition-all duration-300 ${viewMode === 'table' ? 'max-w-7xl' : 'max-w-4xl'
+      }`}>
       {/* Header and Title */}
       <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b border-white/5 pb-4 gap-4">
         <div className="flex items-center gap-3">
@@ -944,7 +965,7 @@ export const Directory = () => {
       {/* RWA Overview Statistics Panel */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 animate-fadeIn">
         {/* Stat 0: Total Flats */}
-        <div 
+        <div
           onClick={() => {
             setActiveRoleFilter('Resident');
             setActiveOccupancyFilter('All_Flats');
@@ -952,11 +973,10 @@ export const Directory = () => {
             setSortColumn('flat');
             setSortDirection('asc');
           }}
-          className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${
-            activeRoleFilter === 'Resident' && activeOccupancyFilter === 'All_Flats'
+          className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${activeRoleFilter === 'Resident' && activeOccupancyFilter === 'All_Flats'
               ? 'border-indigo-500/60 bg-indigo-900/20 shadow-premium glow-indigo-sm'
               : 'border-white/5 bg-slate-950/40 hover:border-indigo-500/35'
-          }`}
+            }`}
         >
           <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-600/5 rounded-full blur-2xl group-hover:bg-indigo-600/10 transition-all"></div>
           <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">कुल फ्लैट (Total Flats)</span>
@@ -969,17 +989,16 @@ export const Directory = () => {
         </div>
 
         {/* Stat 1: Total Directory */}
-        <div 
+        <div
           onClick={() => {
             setActiveRoleFilter('All');
             setActiveOccupancyFilter('All');
             setCurrentPage(1);
           }}
-          className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${
-            activeRoleFilter === 'All' && activeOccupancyFilter === 'All'
+          className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${activeRoleFilter === 'All' && activeOccupancyFilter === 'All'
               ? 'border-violet-500/60 bg-violet-900/20 shadow-premium glow-violet-sm'
               : 'border-white/5 bg-slate-950/40 hover:border-violet-500/35'
-          }`}
+            }`}
         >
           <div className="absolute top-0 right-0 w-24 h-24 bg-violet-600/5 rounded-full blur-2xl group-hover:bg-violet-600/10 transition-all"></div>
           <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">कुल सदस्य (Total)</span>
@@ -992,7 +1011,7 @@ export const Directory = () => {
         </div>
 
         {/* Stat 2: Self Occupied (Owners) */}
-        <div 
+        <div
           onClick={() => {
             setActiveRoleFilter('Resident');
             setActiveOccupancyFilter('Self-Occupied');
@@ -1000,11 +1019,10 @@ export const Directory = () => {
             setSortColumn('flat');
             setSortDirection('asc');
           }}
-          className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${
-            activeRoleFilter === 'Resident' && activeOccupancyFilter === 'Self-Occupied'
+          className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${activeRoleFilter === 'Resident' && activeOccupancyFilter === 'Self-Occupied'
               ? 'border-emerald-500/60 bg-emerald-900/20 shadow-premium glow-emerald-sm'
               : 'border-white/5 bg-slate-950/40 hover:border-emerald-500/35'
-          }`}
+            }`}
         >
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-600/5 rounded-full blur-2xl group-hover:bg-emerald-600/10 transition-all"></div>
           <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">स्व-कब्जा (Self-Occupied)</span>
@@ -1017,7 +1035,7 @@ export const Directory = () => {
         </div>
 
         {/* Stat 3: Rented Flats (Tenants) */}
-        <div 
+        <div
           onClick={() => {
             setActiveRoleFilter('Resident');
             setActiveOccupancyFilter('Rented');
@@ -1025,11 +1043,10 @@ export const Directory = () => {
             setSortColumn('flat');
             setSortDirection('asc');
           }}
-          className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${
-            activeRoleFilter === 'Resident' && activeOccupancyFilter === 'Rented'
+          className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${activeRoleFilter === 'Resident' && activeOccupancyFilter === 'Rented'
               ? 'border-sky-500/60 bg-sky-900/20 shadow-premium glow-sky-sm'
               : 'border-white/5 bg-slate-950/40 hover:border-sky-500/35'
-          }`}
+            }`}
         >
           <div className="absolute top-0 right-0 w-24 h-24 bg-sky-600/5 rounded-full blur-2xl group-hover:bg-sky-600/10 transition-all"></div>
           <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">किरायेदार (Rented Flats)</span>
@@ -1042,7 +1059,7 @@ export const Directory = () => {
         </div>
 
         {/* Stat 4: Vacant Flats Only */}
-        <div 
+        <div
           onClick={() => {
             setActiveRoleFilter('Resident');
             setActiveOccupancyFilter('Vacant');
@@ -1050,11 +1067,10 @@ export const Directory = () => {
             setSortColumn('flat');
             setSortDirection('asc');
           }}
-          className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${
-            activeRoleFilter === 'Resident' && activeOccupancyFilter === 'Vacant'
+          className={`glass-panel p-4 rounded-2xl border transition-all flex flex-col justify-between min-h-[90px] cursor-pointer relative overflow-hidden group hover:scale-[1.01] duration-200 ${activeRoleFilter === 'Resident' && activeOccupancyFilter === 'Vacant'
               ? 'border-slate-400/60 bg-slate-800/30 shadow-premium'
               : 'border-white/5 bg-slate-950/40 hover:border-slate-500/35'
-          }`}
+            }`}
         >
           <div className="absolute top-0 right-0 w-24 h-24 bg-slate-600/5 rounded-full blur-2xl group-hover:bg-slate-600/10 transition-all"></div>
           <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">रिक्त फ्लैट (Vacant Flats)</span>
@@ -1207,9 +1223,9 @@ export const Directory = () => {
                       <span className="text-xl font-bold text-brand-400">👤</span>
                     )}
                     {profilePicture && (
-                      <button 
-                        type="button" 
-                        onClick={() => setProfilePicture('')} 
+                      <button
+                        type="button"
+                        onClick={() => setProfilePicture('')}
                         className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-rose-400 text-xs font-bold transition-all"
                       >
                         हटाएं
@@ -1280,7 +1296,7 @@ export const Directory = () => {
                         type="date"
                         value={moveInDate}
                         onChange={(e) => setMoveInDate(e.target.value)}
-                        onClick={(e) => { try { e.target.showPicker(); } catch (err) {} }}
+                        onClick={(e) => { try { e.target.showPicker(); } catch (err) { } }}
                         className="bg-slate-900 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-200 focus:border-brand-500 focus:outline-none transition-colors w-full cursor-pointer [color-scheme:dark]"
                       />
                       <Calendar size={12} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
@@ -1323,7 +1339,7 @@ export const Directory = () => {
                       <p className="text-[10px] text-slate-400">क्या आपके पास कोई पालतू पशु है?</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                     <div className="flex items-center gap-4 bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 w-fit">
                       <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -1377,7 +1393,7 @@ export const Directory = () => {
                           <p className="text-[10px] text-slate-400">विरासत अविवाहित किरायेदार (Legacy Bachelor)?</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <div className="flex items-center gap-4 bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 w-fit">
                           <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -1584,7 +1600,7 @@ export const Directory = () => {
                             onChange={(e) => handleVehicleChange(idx, 'number', e.target.value)}
                             className="bg-slate-900 border border-white/10 rounded-lg px-2 py-1.5 text-slate-200 placeholder-slate-600 text-[10px] focus:border-emerald-500 focus:outline-none flex-1"
                           />
-                          
+
                           {/* Sticker Issued Switch */}
                           <label className="flex items-center gap-1 cursor-pointer select-none shrink-0 bg-slate-950 px-2 py-1.5 rounded-lg border border-white/5 text-[9px] font-bold text-slate-300 hover:text-white transition-colors">
                             <input
@@ -1666,7 +1682,7 @@ export const Directory = () => {
               className="bg-transparent border-0 text-xs text-slate-200 placeholder-slate-500 focus:outline-none w-full"
             />
             {searchQuery && (
-              <button 
+              <button
                 onClick={() => setSearchQuery('')}
                 className="text-slate-500 hover:text-white text-[10px] font-bold"
               >
@@ -1674,17 +1690,16 @@ export const Directory = () => {
               </button>
             )}
           </div>
-          
+
           {/* View Mode Toggle */}
           <div className="glass-panel p-1.5 rounded-2xl border border-white/5 flex items-center gap-1 shrink-0 bg-slate-950/40">
             <button
               type="button"
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-xl transition-all flex items-center gap-1 text-xs font-bold ${
-                viewMode === 'grid'
+              className={`p-2 rounded-xl transition-all flex items-center gap-1 text-xs font-bold ${viewMode === 'grid'
                   ? 'bg-brand-600 text-white shadow-premium'
                   : 'text-slate-400 hover:text-white'
-              }`}
+                }`}
               title="ग्रिड व्यू (Grid View)"
             >
               <LayoutGrid size={14} />
@@ -1695,11 +1710,10 @@ export const Directory = () => {
               onClick={() => {
                 setViewMode('table');
               }}
-              className={`p-2 rounded-xl transition-all flex items-center gap-1 text-xs font-bold ${
-                viewMode === 'table'
+              className={`p-2 rounded-xl transition-all flex items-center gap-1 text-xs font-bold ${viewMode === 'table'
                   ? 'bg-brand-600 text-white shadow-premium'
                   : 'text-slate-400 hover:text-white'
-              }`}
+                }`}
               title="तालिका व्यू (Table View)"
             >
               <Table size={14} />
@@ -1747,11 +1761,10 @@ export const Directory = () => {
                   if (tab.id !== 'Resident') setActiveOccupancyFilter('All');
                   setCurrentPage(1);
                 }}
-                className={`px-3 py-1.5 rounded-xl font-bold transition-all border text-[11px] ${
-                  activeRoleFilter === tab.id
+                className={`px-3 py-1.5 rounded-xl font-bold transition-all border text-[11px] ${activeRoleFilter === tab.id
                     ? 'bg-brand-600/10 border-brand-500/55 text-brand-300 shadow-sm'
                     : 'bg-white/5 border-transparent text-slate-400 hover:text-white hover:bg-white/10'
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
@@ -1779,11 +1792,10 @@ export const Directory = () => {
                       setSortDirection('asc');
                     }
                   }}
-                  className={`px-3 py-1.5 rounded-xl font-bold transition-all border text-[11px] ${
-                    activeOccupancyFilter === tab.id
+                  className={`px-3 py-1.5 rounded-xl font-bold transition-all border text-[11px] ${activeOccupancyFilter === tab.id
                       ? 'bg-emerald-600/10 border-emerald-500/55 text-emerald-300 shadow-sm'
                       : 'bg-white/5 border-transparent text-slate-400 hover:text-white hover:bg-white/10'
-                  }`}
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -1798,762 +1810,775 @@ export const Directory = () => {
         <div className="flex justify-center items-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
         </div>
+      ) : fetchError ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4 animate-fadeIn">
+          <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+            <AlertCircle size={28} />
+          </div>
+          <div className="text-center">
+            <h3 className="text-white font-bold text-base mb-1">डायरेक्टरी लोड नहीं हो सकी</h3>
+            <p className="text-slate-400 text-sm max-w-md">{fetchError}</p>
+          </div>
+          <button
+            onClick={() => fetchDirectory()}
+            className="px-4 py-2 bg-brand-600/20 hover:bg-brand-600/40 border border-brand-500/30 rounded-xl text-brand-300 font-bold text-sm transition-all"
+          >
+            🔄 पुनः प्रयास करें (Retry)
+          </button>
+        </div>
       ) : sortedUsers.length > 0 ? (
         <div className="flex flex-col gap-4 w-full">
           {viewMode === 'grid' ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {currentItems.map((item) => {
-              const isVacant = item.is_vacant_flat;
-              
-              // Parse vehicle list
-              let vehicleList = [];
-              if (!isVacant) {
-                try {
-                  if (item.vehicles) {
-                    vehicleList = typeof item.vehicles === 'string'
-                      ? JSON.parse(item.vehicles)
-                      : item.vehicles;
-                  }
-                } catch (e) {}
-              }
+                const isVacant = item.is_vacant_flat;
 
-              if (isVacant) {
-                return (
-                  <div
-                    key={item.id}
-                    className="glass-panel p-5 rounded-3xl border border-slate-500/20 bg-slate-950/40 flex flex-col justify-between hover:border-slate-400/35 transition-all duration-300 hover:-translate-y-0.5 animate-fadeIn"
-                  >
-                    <div className="flex flex-col gap-3">
-                      <div className="flex justify-between items-start gap-4">
-                        <div className="flex items-center gap-3">
-                          {/* Home/Building avatar for vacant */}
-                          <div className="w-10 h-10 rounded-full border border-white/10 bg-slate-950 flex items-center justify-center overflow-hidden shrink-0 shadow-premium text-slate-500">
-                            <Building size={16} />
-                          </div>
-                          
-                          <div className="flex flex-col gap-1 text-left">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-[10px] font-black px-2 py-0.5 rounded bg-slate-500/25 text-slate-300 border border-slate-500/35 uppercase tracking-wider shrink-0 shadow-sm animate-pulse-subtle">
-                                Flat {item.flat_no}
-                              </span>
-                              <h3 className="font-extrabold text-white text-sm tracking-wide">रिक्त फ्लैट (Vacant Flat)</h3>
+                // Parse vehicle list
+                let vehicleList = [];
+                if (!isVacant) {
+                  try {
+                    if (item.vehicles) {
+                      vehicleList = typeof item.vehicles === 'string'
+                        ? JSON.parse(item.vehicles)
+                        : item.vehicles;
+                    }
+                  } catch (e) { }
+                }
+
+                if (isVacant) {
+                  return (
+                    <div
+                      key={item.id}
+                      className="glass-panel p-5 rounded-3xl border border-slate-500/20 bg-slate-950/40 flex flex-col justify-between hover:border-slate-400/35 transition-all duration-300 hover:-translate-y-0.5 animate-fadeIn"
+                    >
+                      <div className="flex flex-col gap-3">
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="flex items-center gap-3">
+                            {/* Home/Building avatar for vacant */}
+                            <div className="w-10 h-10 rounded-full border border-white/10 bg-slate-950 flex items-center justify-center overflow-hidden shrink-0 shadow-premium text-slate-500">
+                              <Building size={16} />
                             </div>
-                            <span className="self-start text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider bg-slate-500/15 text-slate-400 border border-slate-500/20">
-                              खाली (Vacant)
-                            </span>
-                          </div>
-                        </div>
-                        <span className="text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider bg-slate-500/15 text-slate-400 border border-slate-500/20">
-                          निवासी (Resident)
-                        </span>
-                      </div>
 
-                      <div className="flex flex-col gap-1.5 border-t border-white/5 pt-3 text-[10px] text-slate-400 text-left">
-                        <div className="flex items-center gap-2">
-                          <Building size={14} className="text-slate-500 shrink-0" />
-                          <span>आवंटित फ्लैट: <span className="font-bold text-slate-200">{item.flat_no}</span></span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Mail size={14} className="text-slate-500 shrink-0" />
-                          <span>—</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Phone size={14} className="text-slate-500 shrink-0" />
-                          <span>—</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 mt-4 pt-3 border-t border-white/5">
-                      <button 
-                        onClick={() => {
-                          setRole('Resident');
-                          setFlatNo(item.flat_no);
-                          setOccupancyStatus('Self-Occupied');
-                          setShowAddForm(true);
-                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }}
-                        className="w-full py-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex justify-center items-center gap-1.5"
-                      >
-                        <UserPlus size={12} /> सदस्य जोड़ें
-                      </button>
-                    </div>
-                  </div>
-                );
-              }
-
-              return (
-                <div
-                  key={item.id}
-                  className="glass-panel p-5 rounded-3xl border border-white/5 flex flex-col justify-between hover:border-brand-500/10 transition-all duration-300 hover:-translate-y-0.5 animate-fadeIn"
-                >
-                  <div className="flex flex-col gap-3">
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="flex items-center gap-3">
-                        {/* Premium Resident Profile Avatar */}
-                        <div className="w-10 h-10 rounded-full border border-white/10 bg-slate-950 flex items-center justify-center overflow-hidden shrink-0 shadow-premium">
-                          {item.profile_picture ? (
-                            <img src={item.profile_picture} alt={item.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-xs font-black text-brand-300 uppercase">
-                              {(item.name || ' ')[0]}
-                            </span>
-                          )}
-                        </div>
-                        
-                        <div className="flex flex-col gap-1 text-left">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-[10px] font-black px-2 py-0.5 rounded bg-brand-500/25 text-brand-300 border border-brand-500/30 uppercase tracking-wider shrink-0 shadow-sm animate-pulse-subtle">
-                              {item.flat_no ? `Flat ${item.flat_no}` : 'N/A'}
-                            </span>
-                            <h3 className="font-extrabold text-white text-sm tracking-wide">{item.name}</h3>
-                          </div>
-                          {item.role === 'Resident' && (
-                            <div className="flex flex-wrap gap-1 mt-0.5">
-                              <span className={`self-start text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider ${item.occupancy_status === 'Rented' ? 'bg-sky-500/15 text-sky-400 border border-sky-500/20' :
-                                item.occupancy_status === 'Vacant' ? 'bg-slate-500/15 text-slate-400 border border-slate-500/20' :
-                                  'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
-                                }`}>
-                                {item.occupancy_status === 'Rented' ? (item.tenant_type === 'Bachelor' ? 'बैचलर (Bachelor)' : 'किराये पर (Rented)') :
-                                  item.occupancy_status === 'Vacant' ? 'खाली (Vacant)' :
-                                    'स्व-कब्जा (Self-Occupied)'}
-                              </span>
-                              {item.occupancy_status === 'Rented' && item.is_legacy_bachelor && (
-                                <span className="self-start text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/20 shadow-sm animate-fadeIn">
-                                  🛡️ विरासत (Legacy Tenant)
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <span className={`text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider ${item.role === 'Admin' ? 'bg-rose-500/15 text-rose-400 border border-rose-500/20' :
-                        item.role === 'Committee' ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/20' :
-                        item.role === 'Security' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20' :
-                          'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
-                        }`}>
-                        {getRoleHindi(item.role)}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col gap-1.5 border-t border-white/5 pt-3 text-[10px] text-slate-400">
-                      <div className="flex items-center gap-2">
-                        <Building size={14} className="text-slate-500 shrink-0" />
-                        <span>आवंटित फ्लैट: <span className="font-bold text-slate-200">{item.flat_no || 'सुरक्षा/समिति (N/A)'}</span></span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Mail size={14} className="text-slate-500 shrink-0" />
-                        <span className="truncate">{item.email}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Phone size={14} className="text-slate-500 shrink-0" />
-                        <span>{item.phone || 'कोई संपर्क नंबर नहीं'}</span>
-                      </div>
-
-                      {item.role === 'Resident' && item.occupancy_status === 'Rented' && (item.owner_name || item.owner_phone || item.is_legacy_bachelor) && (
-                        <div className="mt-2 p-2 rounded-xl bg-sky-950/20 border border-sky-500/10 text-sky-300">
-                          <div className="font-bold uppercase tracking-wider text-[8px] text-sky-400">किरायेदार एवं मालिक जानकारी</div>
-                          <div className="mt-1 flex flex-col gap-0.5 text-[9px]">
-                            {item.is_legacy_bachelor && (
-                              <div className="text-amber-400 font-bold mb-1.5 flex flex-col gap-0.5">
-                                <span>🛡️ विरासत किरायेदार (Legacy Tenant):</span>
-                                <span className="text-white font-mono text-[8px] bg-amber-500/10 border border-amber-500/20 rounded px-1.5 py-0.5 w-fit">
-                                  {item.exemption_ref || 'RWA Undertaking Signed'}
-                                </span>
-                              </div>
-                            )}
-                            {(item.owner_name || item.owner_phone) && (
-                              <>
-                                <div>मालिक का नाम: <span className="font-bold text-white">{item.owner_name || 'N/A'}</span></div>
-                                <div>संपर्क: <span className="font-bold text-white">{item.owner_phone || 'N/A'}</span></div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Admin Actions */}
-                  <div className="flex items-center gap-2 mt-4 pt-3 border-t border-white/5">
-                    {item.is_approved === false ? (
-                      <>
-                        <button onClick={() => handleApproveUser(item.id)} className="flex-1 py-2 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex justify-center items-center gap-1.5 animate-fadeIn">
-                          <Check size={12} /> स्वीकार (Approve)
-                        </button>
-                        <button onClick={() => setDeleteUserId(item.id)} className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-xl transition-all" title="अस्वीकार (Reject)">
-                          <X size={14} />
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button onClick={() => setSelectedUser(item)} className="flex-1 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex justify-center items-center gap-1.5">
-                          <Eye size={12} /> विवरण (View)
-                        </button>
-                        <button onClick={() => startEditing(item)} className="flex-1 py-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex justify-center items-center gap-1.5">
-                          <Edit size={12} /> संपादित करें (Edit)
-                        </button>
-                        {item.role === 'Resident' && item.is_approved && (
-                          <button onClick={() => handleCheckoutUser(item.id)} className="flex-1 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex justify-center items-center gap-1.5" title="चेक-आउट (Vacate Flat)">
-                            <Building size={12} /> खाली करें
-                          </button>
-                        )}
-                        <button onClick={() => setDeleteUserId(item.id)} className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-xl transition-all">
-                          <Trash2 size={14} />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          /* High-Fidelity Interactive Table View with Row Expanders, Clipboard Copy & Pagination */
-          <div className="flex flex-col gap-3.5 w-full animate-fadeIn">
-            {/* Table Scroll/Interactive Helper Tip banner */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-violet-600/10 border border-violet-500/20 px-4 py-2.5 rounded-2xl text-[11px] font-bold text-slate-300 gap-2">
-              <span className="flex items-center gap-1.5 text-violet-300">
-                <Building size={14} className="shrink-0 text-violet-400" />
-                <span>निवासी तालिका: कॉलम सॉर्टिंग और त्वरित विस्तारक (Expandable Table) सक्रिय है।</span>
-              </span>
-              <span className="text-slate-400 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5 text-[9px] uppercase tracking-wider">
-                दिखाए जा रहे हैं {indexOfFirstItem + 1} से {Math.min(indexOfLastItem, sortedUsers.length)} (कुल {sortedUsers.length} सदस्य)
-              </span>
-            </div>
-
-            {/* Custom styled scrollable table */}
-            <div className="overflow-x-auto rounded-3xl border border-white/10 bg-slate-950/60 backdrop-blur-md shadow-2xl">
-              <table className="w-full text-left border-collapse min-w-[900px]">
-                <thead>
-                  <tr className="border-b border-white/10 bg-white/5">
-                    {/* Sortable Column Headers */}
-                    <th 
-                      onClick={() => requestSort('name')}
-                      className="px-4 py-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-300 cursor-pointer hover:bg-white/5 transition-all select-none"
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span>सदस्य / निवासी (Resident)</span>
-                        {sortColumn === 'name' ? (sortDirection === 'asc' ? '▲' : '▼') : <span className="opacity-20 text-[8px]">▲▼</span>}
-                      </div>
-                    </th>
-                    <th 
-                      className="px-4 py-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-300 select-none"
-                    >
-                      <span>संपर्क विवरण (Contact)</span>
-                    </th>
-                    <th 
-                      onClick={() => requestSort('role')}
-                      className="px-4 py-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-300 cursor-pointer hover:bg-white/5 transition-all select-none"
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span>भूमिका व स्थिति (Role & Status)</span>
-                        {sortColumn === 'role' ? (sortDirection === 'asc' ? '▲' : '▼') : <span className="opacity-20 text-[8px]">▲▼</span>}
-                      </div>
-                    </th>
-                    <th 
-                      className="px-4 py-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-300 select-none"
-                    >
-                      <span>परिवार & वाहन (Family/Vehicles)</span>
-                    </th>
-                    <th 
-                      onClick={() => requestSort('moveIn')}
-                      className="px-4 py-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-300 cursor-pointer hover:bg-white/5 transition-all select-none"
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span>पहचान & प्रवेश (ID & Move-in)</span>
-                        {sortColumn === 'moveIn' ? (sortDirection === 'asc' ? '▲' : '▼') : <span className="opacity-20 text-[8px]">▲▼</span>}
-                      </div>
-                    </th>
-                    <th className="px-4 py-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-300 text-center select-none w-[120px]">
-                      <span>कार्रवाई (Actions)</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {currentItems.map((item) => {
-                    const isExpanded = expandedRows.has(item.id);
-                    const isAadhaarRevealed = revealedAadhaars.has(item.id);
-                    
-                    // Parse vehicles count safely
-                    let vehicleList = [];
-                    try {
-                      if (item.vehicles) {
-                        const parsed = typeof item.vehicles === 'string' ? JSON.parse(item.vehicles) : item.vehicles;
-                        if (Array.isArray(parsed)) vehicleList = parsed;
-                      }
-                    } catch (e) {}
-
-                    if (item.is_vacant_flat) {
-                      return (
-                        <tr key={item.id} className="hover:bg-white/[0.02] transition-colors border-b border-white/[0.02] group animate-fadeIn">
-                          {/* Column 1: Flat No (Primary Focus) + Avatar + Label */}
-                          <td className="px-4 py-4">
-                            <div className="flex items-center gap-3">
-                              {/* Dummy placeholder for expander to align columns */}
-                              <div className="w-5 h-5"></div>
-
-                              {/* Prominent High-Visibility Flat No Badge (Vacant Theme) */}
-                              <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-slate-500/20 text-slate-300 border border-slate-500/35 uppercase tracking-wider shadow-sm select-all shrink-0 animate-pulse-subtle">
-                                Flat {item.flat_no}
-                              </span>
-
-                              {/* Avatar */}
-                              <div className="w-10 h-10 rounded-full border border-white/10 bg-slate-900 flex items-center justify-center overflow-hidden shrink-0 shadow-premium text-slate-500">
-                                <Building size={16} />
-                              </div>
-
-                              <div className="flex flex-col gap-0.5 text-left">
-                                <span className="font-extrabold text-white text-xs block tracking-wide">
-                                  रिक्त फ्लैट (Vacant Flat)
-                                </span>
-                              </div>
-                            </div>
-                          </td>
-
-                          {/* Column 2: Contact Details */}
-                          <td className="px-4 py-4 text-xs text-slate-500">
-                            —
-                          </td>
-
-                          {/* Column 3: Role & Occupancy Badge */}
-                          <td className="px-4 py-4">
                             <div className="flex flex-col gap-1 text-left">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-[10px] font-black px-2 py-0.5 rounded bg-slate-500/25 text-slate-300 border border-slate-500/35 uppercase tracking-wider shrink-0 shadow-sm animate-pulse-subtle">
+                                  Flat {item.flat_no}
+                                </span>
+                                <h3 className="font-extrabold text-white text-sm tracking-wide">रिक्त फ्लैट (Vacant Flat)</h3>
+                              </div>
                               <span className="self-start text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider bg-slate-500/15 text-slate-400 border border-slate-500/20">
                                 खाली (Vacant)
                               </span>
                             </div>
-                          </td>
+                          </div>
+                          <span className="text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider bg-slate-500/15 text-slate-400 border border-slate-500/20">
+                            निवासी (Resident)
+                          </span>
+                        </div>
 
-                          {/* Column 4: Family & Vehicles Count */}
-                          <td className="px-4 py-4 text-xs text-slate-500">
-                            —
-                          </td>
+                        <div className="flex flex-col gap-1.5 border-t border-white/5 pt-3 text-[10px] text-slate-400 text-left">
+                          <div className="flex items-center gap-2">
+                            <Building size={14} className="text-slate-500 shrink-0" />
+                            <span>आवंटित फ्लैट: <span className="font-bold text-slate-200">{item.flat_no}</span></span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Mail size={14} className="text-slate-500 shrink-0" />
+                            <span>—</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Phone size={14} className="text-slate-500 shrink-0" />
+                            <span>—</span>
+                          </div>
+                        </div>
+                      </div>
 
-                          {/* Column 5: Privacy-Masked Aadhaar Number & Move-in Date */}
-                          <td className="px-4 py-4 text-xs text-slate-500">
-                            —
-                          </td>
+                      <div className="flex items-center gap-2 mt-4 pt-3 border-t border-white/5">
+                        <button
+                          onClick={() => {
+                            setRole('Resident');
+                            setFlatNo(item.flat_no);
+                            setOccupancyStatus('Self-Occupied');
+                            setShowAddForm(true);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          className="w-full py-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex justify-center items-center gap-1.5"
+                        >
+                          <UserPlus size={12} /> सदस्य जोड़ें
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
 
-                          {/* Column 6: Action Buttons */}
-                          <td className="px-4 py-4 text-center">
-                            <div className="flex items-center justify-center">
-                              <button 
-                                onClick={() => {
-                                  setRole('Resident');
-                                  setFlatNo(item.flat_no);
-                                  setOccupancyStatus('Self-Occupied');
-                                  setShowAddForm(true);
-                                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                                }}
-                                className="px-2.5 py-1 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1"
-                              >
-                                <UserPlus size={11} /> सदस्य जोड़ें
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    }
+                return (
+                  <div
+                    key={item.id}
+                    className="glass-panel p-5 rounded-3xl border border-white/5 flex flex-col justify-between hover:border-brand-500/10 transition-all duration-300 hover:-translate-y-0.5 animate-fadeIn"
+                  >
+                    <div className="flex flex-col gap-3">
+                      <div className="flex justify-between items-start gap-4">
+                        <div className="flex items-center gap-3">
+                          {/* Premium Resident Profile Avatar */}
+                          <div className="w-10 h-10 rounded-full border border-white/10 bg-slate-950 flex items-center justify-center overflow-hidden shrink-0 shadow-premium">
+                            {item.profile_picture ? (
+                              <img src={item.profile_picture} alt={item.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-xs font-black text-brand-300 uppercase">
+                                {(item.name || ' ')[0]}
+                              </span>
+                            )}
+                          </div>
 
-                    return (
-                      <React.Fragment key={item.id}>
-                        <tr className={`hover:bg-white/[0.02] transition-colors border-b border-white/[0.02] group ${isExpanded ? 'bg-white/[0.01]' : ''}`}>
-                          {/* Column 1: Flat No (Primary Focus) + Profile image + Resident Name */}
-                          <td className="px-4 py-4">
-                            <div className="flex items-center gap-3">
-                              {/* Toggle Accordion Expand Icon */}
-                              <button 
-                                onClick={() => toggleRowExpanded(item.id)}
-                                className="p-1 rounded hover:bg-white/10 text-slate-500 hover:text-white transition-colors"
-                              >
-                                {isExpanded ? <ChevronUp size={14} className="text-brand-400" /> : <ChevronDown size={14} />}
-                              </button>
-
-                              {/* Prominent High-Visibility Flat No Badge */}
-                              <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-brand-500/20 text-brand-300 border border-brand-500/35 uppercase tracking-wider shadow-sm select-all animate-pulse-subtle shrink-0">
+                          <div className="flex flex-col gap-1 text-left">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[10px] font-black px-2 py-0.5 rounded bg-brand-500/25 text-brand-300 border border-brand-500/30 uppercase tracking-wider shrink-0 shadow-sm animate-pulse-subtle">
                                 {item.flat_no ? `Flat ${item.flat_no}` : 'N/A'}
                               </span>
-
-                              {/* Profile Avatar */}
-                              <div 
-                                onClick={() => setSelectedUser(item)}
-                                className="w-10 h-10 rounded-full border border-white/10 bg-slate-900 flex items-center justify-center overflow-hidden shrink-0 shadow-premium group-hover:border-brand-500/30 transition-colors cursor-pointer"
-                              >
-                                {item.profile_picture ? (
-                                  <img src={item.profile_picture} alt={item.name} className="w-full h-full object-cover" />
-                                ) : (
-                                  <span className="text-xs font-black text-brand-300 uppercase">
-                                    {(item.name || ' ')[0]}
-                                  </span>
-                                )}
-                              </div>
-
-                              <div className="flex flex-col gap-0.5 text-left">
-                                <span 
-                                  onClick={() => setSelectedUser(item)}
-                                  className="font-extrabold text-white text-xs block tracking-wide hover:text-brand-400 transition-colors cursor-pointer"
-                                >
-                                  {highlightText(item.name, searchQuery)}
-                                </span>
-                                {item.role !== 'Resident' && (
-                                  <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 text-slate-400 font-bold uppercase tracking-wider w-fit mt-0.5">
-                                    {getRoleHindi(item.role)}
-                                  </span>
-                                )}
-                              </div>
+                              <h3 className="font-extrabold text-white text-sm tracking-wide">{item.name}</h3>
                             </div>
-                          </td>
-
-                          {/* Column 2: Contact Details with copy to clipboard buttons */}
-                          <td className="px-4 py-4">
-                            <div className="flex flex-col gap-1 text-left text-xs">
-                              {/* Email row */}
-                              <div className="flex items-center gap-1 group/btn">
-                                <a 
-                                  href={`mailto:${item.email}`}
-                                  className="text-slate-200 font-medium hover:text-brand-400 transition-colors truncate max-w-[150px]"
-                                  title="Send Email"
-                                >
-                                  {highlightText(item.email, searchQuery)}
-                                </a>
-                                <button 
-                                  onClick={() => handleCopyToClipboard(item.email, item.id, 'email')}
-                                  className="opacity-0 group-hover:opacity-100 group-hover/btn:opacity-100 p-0.5 text-slate-500 hover:text-white rounded transition-all"
-                                  title="Copy Email"
-                                >
-                                  {copiedId === `${item.id}-email` ? <Check size={10} className="text-emerald-400 font-bold" /> : <Copy size={10} />}
-                                </button>
-                              </div>
-
-                              {/* Phone row */}
-                              <div className="flex items-center gap-1 group/btn mt-0.5">
-                                <a 
-                                  href={`tel:${item.phone}`}
-                                  className="text-[10px] text-slate-400 font-semibold hover:text-emerald-400 transition-colors"
-                                  title="Call Member"
-                                >
-                                  📞 {item.phone ? highlightText(item.phone, searchQuery) : '-'}
-                                </a>
-                                {item.phone && (
-                                  <button 
-                                    onClick={() => handleCopyToClipboard(item.phone, item.id, 'phone')}
-                                    className="opacity-0 group-hover:opacity-100 group-hover/btn:opacity-100 p-0.5 text-slate-500 hover:text-white rounded transition-all"
-                                    title="Copy Phone"
-                                  >
-                                    {copiedId === `${item.id}-phone` ? <Check size={10} className="text-emerald-400 font-bold" /> : <Copy size={10} />}
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-
-                          {/* Column 3: Role & Occupancy Badge */}
-                          <td className="px-4 py-4">
-                            {item.role === 'Resident' ? (
-                              <div className="flex flex-col gap-1 text-left">
-                                <span className={`self-start text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider ${
-                                  item.occupancy_status === 'Rented' ? 'bg-sky-500/15 text-sky-400 border border-sky-500/20' :
+                            {item.role === 'Resident' && (
+                              <div className="flex flex-wrap gap-1 mt-0.5">
+                                <span className={`self-start text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider ${item.occupancy_status === 'Rented' ? 'bg-sky-500/15 text-sky-400 border border-sky-500/20' :
                                   item.occupancy_status === 'Vacant' ? 'bg-slate-500/15 text-slate-400 border border-slate-500/20' :
-                                  'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
-                                }`}>
-                                  {item.occupancy_status === 'Rented' ? (item.tenant_type === 'Bachelor' ? 'बैचलर (Bachelor)' : 'किरायेदार (Tenant)') :
-                                  item.occupancy_status === 'Vacant' ? 'खाली (Vacant)' :
-                                  'मालिक (Owner)'}
+                                    'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+                                  }`}>
+                                  {item.occupancy_status === 'Rented' ? (item.tenant_type === 'Bachelor' ? 'बैचलर (Bachelor)' : 'किराये पर (Rented)') :
+                                    item.occupancy_status === 'Vacant' ? 'खाली (Vacant)' :
+                                      'स्व-कब्जा (Self-Occupied)'}
                                 </span>
-                                {item.occupancy_status === 'Rented' && (
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    <span className={`text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider ${item.lease_agreement_submitted ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'}`}>
-                                      📜 एग्रीमेंट: {item.lease_agreement_submitted ? 'हाँ' : 'नहीं'}
-                                    </span>
-                                    <span className={`text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider ${item.police_verification_status === 'verified' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'}`}>
-                                      👮 सत्यापन: {item.police_verification_status === 'verified' ? 'हाँ' : 'लंबित'}
-                                    </span>
-                                  </div>
-                                )}
                                 {item.occupancy_status === 'Rented' && item.is_legacy_bachelor && (
-                                  <span className="self-start text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/20 shadow-sm animate-fadeIn" title={`घोषणा-पत्र: ${item.exemption_ref || 'N/A'}`}>
-                                    🛡️ विरासत (Legacy)
-                                  </span>
-                                )}
-                                {item.occupancy_status === 'Rented' && (item.owner_name || item.owner_phone) && (
-                                  <span className="text-[9px] text-sky-400 font-medium cursor-help" title={`मालिक: ${item.owner_name} (${item.owner_phone})`}>
-                                    👤 मालिक: {item.owner_name || 'N/A'}
+                                  <span className="self-start text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/20 shadow-sm animate-fadeIn">
+                                    🛡️ विरासत (Legacy Tenant)
                                   </span>
                                 )}
                               </div>
-                            ) : (
-                              <span className="text-slate-500 text-[10px] italic">कमेटी / स्टाफ</span>
                             )}
-                          </td>
+                          </div>
+                        </div>
+                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider ${item.role === 'Admin' ? 'bg-rose-500/15 text-rose-400 border border-rose-500/20' :
+                          item.role === 'Committee' ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/20' :
+                            item.role === 'Security' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20' :
+                              'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+                          }`}>
+                          {getRoleHindi(item.role)}
+                        </span>
+                      </div>
 
-                          {/* Column 4: Family & Vehicles Count */}
-                          <td className="px-4 py-4 text-xs">
-                            <div 
-                              onClick={() => toggleRowExpanded(item.id)}
-                              className="flex flex-col gap-0.5 text-left text-slate-300 cursor-pointer hover:text-brand-400 transition-all"
-                              title="Click to view detailed Roster details below"
-                            >
-                              <span className="font-semibold text-slate-200">👨‍👩‍👧‍👦 {item.family_members || '0'} सदस्य</span>
-                              <span className="text-[10px] text-slate-400 font-medium">🚗 {vehicleList.length} पंजीकृत वाहन</span>
-                            </div>
-                          </td>
+                      <div className="flex flex-col gap-1.5 border-t border-white/5 pt-3 text-[10px] text-slate-400">
+                        <div className="flex items-center gap-2">
+                          <Building size={14} className="text-slate-500 shrink-0" />
+                          <span>आवंटित फ्लैट: <span className="font-bold text-slate-200">{item.flat_no || 'सुरक्षा/समिति (N/A)'}</span></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Mail size={14} className="text-slate-500 shrink-0" />
+                          <span className="truncate">{item.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone size={14} className="text-slate-500 shrink-0" />
+                          <span>{item.phone || 'कोई संपर्क नंबर नहीं'}</span>
+                        </div>
 
-                          {/* Column 5: Privacy-Masked Aadhaar Number & Move-in Date */}
-                          <td className="px-4 py-4 text-xs text-slate-400">
-                            <div className="flex flex-col gap-0.5 text-left">
-                              {/* Aadhaar with privacy toggle */}
-                              <div className="flex items-center gap-1.5 font-mono text-[10px] text-slate-300">
-                                <span>🆔</span>
-                                <span>
-                                  {item.aadhaar_number 
-                                    ? (isAadhaarRevealed ? item.aadhaar_number : `•••• •••• ${item.aadhaar_number.slice(-4)}`) 
-                                    : '-'}
-                                </span>
-                                {item.aadhaar_number && (
-                                  <button
-                                    onClick={() => toggleAadhaarRevealed(item.id)}
-                                    className="text-slate-500 hover:text-slate-200 transition-colors p-0.5"
-                                    title={isAadhaarRevealed ? "Hide ID" : "Reveal ID"}
-                                  >
-                                    {isAadhaarRevealed ? <EyeOff size={10} /> : <Eye size={10} />}
-                                  </button>
-                                )}
-                              </div>
-                              
-                              {/* Move in date */}
-                              <span className="text-[9px] text-slate-400 mt-1 font-semibold">
-                                📅 प्रवेश: {item.move_in_date ? new Date(item.move_in_date).toLocaleDateString() : '-'}
-                              </span>
-                            </div>
-                          </td>
-
-                          {/* Column 6: Action Buttons */}
-                          <td className="px-4 py-4 text-center">
-                            <div className="flex items-center justify-center gap-1.5">
-                              {item.is_approved === false ? (
+                        {item.role === 'Resident' && item.occupancy_status === 'Rented' && (item.owner_name || item.owner_phone || item.is_legacy_bachelor) && (
+                          <div className="mt-2 p-2 rounded-xl bg-sky-950/20 border border-sky-500/10 text-sky-300">
+                            <div className="font-bold uppercase tracking-wider text-[8px] text-sky-400">किरायेदार एवं मालिक जानकारी</div>
+                            <div className="mt-1 flex flex-col gap-0.5 text-[9px]">
+                              {item.is_legacy_bachelor && (
+                                <div className="text-amber-400 font-bold mb-1.5 flex flex-col gap-0.5">
+                                  <span>🛡️ विरासत किरायेदार (Legacy Tenant):</span>
+                                  <span className="text-white font-mono text-[8px] bg-amber-500/10 border border-amber-500/20 rounded px-1.5 py-0.5 w-fit">
+                                    {item.exemption_ref || 'RWA Undertaking Signed'}
+                                  </span>
+                                </div>
+                              )}
+                              {(item.owner_name || item.owner_phone) && (
                                 <>
-                                  <button onClick={() => handleApproveUser(item.id)} className="p-2 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/20 rounded-xl transition-all" title="अनुमोदन स्वीकार करें (Approve)">
-                                    <Check size={12} />
-                                  </button>
-                                  <button onClick={() => setDeleteUserId(item.id)} className="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-xl transition-all" title="अस्वीकार करें (Reject)">
-                                    <X size={12} />
-                                  </button>
-                                </>
-                              ) : (
-                                <>
-                                  <button onClick={() => setSelectedUser(item)} className="p-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-xl transition-all" title="विवरण देखें (View Details)">
-                                    <Eye size={12} />
-                                  </button>
-                                  <button onClick={() => startEditing(item)} className="p-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-xl transition-all" title="संपादित करें (Edit)">
-                                    <Edit size={12} />
-                                  </button>
-                                  {item.role === 'Resident' && item.is_approved && (
-                                    <button onClick={() => handleCheckoutUser(item.id)} className="p-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 rounded-xl transition-all" title="चेक-आउट: फ्लैट खाली करें (Vacate Flat)">
-                                      <Building size={12} />
-                                    </button>
-                                  )}
-                                  <button onClick={() => setDeleteUserId(item.id)} className="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-xl transition-all" title="हटाएं (Delete)">
-                                    <Trash2 size={12} />
-                                  </button>
+                                  <div>मालिक का नाम: <span className="font-bold text-white">{item.owner_name || 'N/A'}</span></div>
+                                  <div>संपर्क: <span className="font-bold text-white">{item.owner_phone || 'N/A'}</span></div>
                                 </>
                               )}
                             </div>
-                          </td>
-                        </tr>
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
-                        {/* Accordion Expand Row: Renders Family names & vehicles registered */}
-                        {isExpanded && (
-                          <tr className="bg-slate-950/40 animate-fadeIn">
-                            <td colSpan={6} className="px-8 py-4 border-l-2 border-brand-500">
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-left">
-                                {/* Section A: Family members */}
-                                <div className="flex flex-col gap-2">
-                                  <h4 className="text-[10px] font-black text-brand-400 uppercase tracking-widest flex items-center gap-1.5">
-                                    <span>👨‍👩‍👧‍👦</span> परिवार के सदस्य ({item.family_members || 0})
-                                  </h4>
-                                  {item.family_member_names ? (
-                                    <div className="flex flex-col gap-1.5 mt-1">
-                                      {(() => {
-                                        try {
-                                          const names = typeof item.family_member_names === 'string'
-                                            ? JSON.parse(item.family_member_names)
-                                            : item.family_member_names;
-                                          return Array.isArray(names) && names.length > 0 ? (
-                                            names.map((n, i) => (
-                                              <div key={i} className="flex justify-between items-center bg-white/5 border border-white/5 px-2.5 py-1.5 rounded-xl">
-                                                <span className="font-bold text-slate-200">👤 {n.name}</span>
-                                                <span className="text-slate-400 font-mono text-[10px]">{n.phone || '-'}</span>
-                                              </div>
-                                            ))
-                                          ) : <span className="text-slate-500 italic">कोई परिवार सदस्य दर्ज नहीं</span>;
-                                        } catch (e) {
-                                          return <span className="text-slate-400">{item.family_member_names}</span>;
-                                        }
-                                      })()}
-                                    </div>
-                                  ) : (
-                                    <span className="text-slate-500 italic mt-1">कोई परिवार सदस्य दर्ज नहीं</span>
-                                  )}
+                    {/* Admin Actions */}
+                    <div className="flex items-center gap-2 mt-4 pt-3 border-t border-white/5">
+                      {item.is_approved === false ? (
+                        <>
+                          <button onClick={() => handleApproveUser(item.id)} className="flex-1 py-2 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex justify-center items-center gap-1.5 animate-fadeIn">
+                            <Check size={12} /> स्वीकार (Approve)
+                          </button>
+                          <button onClick={() => setDeleteUserId(item.id)} className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-xl transition-all" title="अस्वीकार (Reject)">
+                            <X size={14} />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button onClick={() => setSelectedUser(item)} className="flex-1 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex justify-center items-center gap-1.5">
+                            <Eye size={12} /> विवरण (View)
+                          </button>
+                          <button onClick={() => startEditing(item)} className="flex-1 py-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex justify-center items-center gap-1.5">
+                            <Edit size={12} /> संपादित करें (Edit)
+                          </button>
+                          {item.role === 'Resident' && item.is_approved && (
+                            <button onClick={() => handleCheckoutUser(item.id)} className="flex-1 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex justify-center items-center gap-1.5" title="चेक-आउट (Vacate Flat)">
+                              <Building size={12} /> खाली करें
+                            </button>
+                          )}
+                          <button onClick={() => setDeleteUserId(item.id)} className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-xl transition-all">
+                            <Trash2 size={14} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            /* High-Fidelity Interactive Table View with Row Expanders, Clipboard Copy & Pagination */
+            <div className="flex flex-col gap-3.5 w-full animate-fadeIn">
+              {/* Table Scroll/Interactive Helper Tip banner */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-violet-600/10 border border-violet-500/20 px-4 py-2.5 rounded-2xl text-[11px] font-bold text-slate-300 gap-2">
+                <span className="flex items-center gap-1.5 text-violet-300">
+                  <Building size={14} className="shrink-0 text-violet-400" />
+                  <span>निवासी तालिका: कॉलम सॉर्टिंग और त्वरित विस्तारक (Expandable Table) सक्रिय है।</span>
+                </span>
+                <span className="text-slate-400 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5 text-[9px] uppercase tracking-wider">
+                  दिखाए जा रहे हैं {indexOfFirstItem + 1} से {Math.min(indexOfLastItem, sortedUsers.length)} (कुल {sortedUsers.length} सदस्य)
+                </span>
+              </div>
+
+              {/* Custom styled scrollable table */}
+              <div className="overflow-x-auto rounded-3xl border border-white/10 bg-slate-950/60 backdrop-blur-md shadow-2xl">
+                <table className="w-full text-left border-collapse min-w-[900px]">
+                  <thead>
+                    <tr className="border-b border-white/10 bg-white/5">
+                      {/* Sortable Column Headers */}
+                      <th
+                        onClick={() => requestSort('name')}
+                        className="px-4 py-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-300 cursor-pointer hover:bg-white/5 transition-all select-none"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span>सदस्य / निवासी (Resident)</span>
+                          {sortColumn === 'name' ? (sortDirection === 'asc' ? '▲' : '▼') : <span className="opacity-20 text-[8px]">▲▼</span>}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-300 select-none"
+                      >
+                        <span>संपर्क विवरण (Contact)</span>
+                      </th>
+                      <th
+                        onClick={() => requestSort('role')}
+                        className="px-4 py-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-300 cursor-pointer hover:bg-white/5 transition-all select-none"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span>भूमिका व स्थिति (Role & Status)</span>
+                          {sortColumn === 'role' ? (sortDirection === 'asc' ? '▲' : '▼') : <span className="opacity-20 text-[8px]">▲▼</span>}
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-300 select-none"
+                      >
+                        <span>परिवार & वाहन (Family/Vehicles)</span>
+                      </th>
+                      <th
+                        onClick={() => requestSort('moveIn')}
+                        className="px-4 py-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-300 cursor-pointer hover:bg-white/5 transition-all select-none"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span>पहचान & प्रवेश (ID & Move-in)</span>
+                          {sortColumn === 'moveIn' ? (sortDirection === 'asc' ? '▲' : '▼') : <span className="opacity-20 text-[8px]">▲▼</span>}
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-300 text-center select-none w-[120px]">
+                        <span>कार्रवाई (Actions)</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {currentItems.map((item) => {
+                      const isExpanded = expandedRows.has(item.id);
+                      const isAadhaarRevealed = revealedAadhaars.has(item.id);
+
+                      // Parse vehicles count safely
+                      let vehicleList = [];
+                      try {
+                        if (item.vehicles) {
+                          const parsed = typeof item.vehicles === 'string' ? JSON.parse(item.vehicles) : item.vehicles;
+                          if (Array.isArray(parsed)) vehicleList = parsed;
+                        }
+                      } catch (e) { }
+
+                      if (item.is_vacant_flat) {
+                        return (
+                          <tr key={item.id} className="hover:bg-white/[0.02] transition-colors border-b border-white/[0.02] group animate-fadeIn">
+                            {/* Column 1: Flat No (Primary Focus) + Avatar + Label */}
+                            <td className="px-4 py-4">
+                              <div className="flex items-center gap-3">
+                                {/* Dummy placeholder for expander to align columns */}
+                                <div className="w-5 h-5"></div>
+
+                                {/* Prominent High-Visibility Flat No Badge (Vacant Theme) */}
+                                <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-slate-500/20 text-slate-300 border border-slate-500/35 uppercase tracking-wider shadow-sm select-all shrink-0 animate-pulse-subtle">
+                                  Flat {item.flat_no}
+                                </span>
+
+                                {/* Avatar */}
+                                <div className="w-10 h-10 rounded-full border border-white/10 bg-slate-900 flex items-center justify-center overflow-hidden shrink-0 shadow-premium text-slate-500">
+                                  <Building size={16} />
                                 </div>
 
-                                {/* Section B: Registered Vehicles */}
-                                <div className="flex flex-col gap-2">
-                                  <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
-                                    <span>🚗</span> पंजीकृत वाहन ({vehicleList.length})
-                                  </h4>
-                                  {vehicleList.length > 0 ? (
-                                    <div className="flex flex-col gap-1.5 mt-1">
-                                      {vehicleList.map((v, i) => (
-                                        <div key={i} className="flex flex-col gap-1">
-                                          <span 
-                                            className={`px-2.5 py-1.5 rounded-xl font-extrabold flex items-center justify-between gap-1.5 border ${
-                                              v.type === 'Car' 
-                                                ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300' 
-                                                : 'bg-indigo-500/10 border-indigo-500/25 text-indigo-300'
-                                            }`}
-                                          >
-                                            <span className="flex items-center gap-1">
-                                              <span>{v.type === 'Car' ? '🚗 Car' : '🛵 Bike'}</span>
-                                              <span className="font-mono text-white text-[10px]">{v.number}</span>
-                                            </span>
-                                            
-                                            {/* Sticker Badge Indicator */}
-                                            {v.sticker ? (
-                                              <span className="text-[8px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-md border border-emerald-500/30 uppercase font-black tracking-widest" title="Society Sticker Issued">
-                                                🎫 Sticker Ok
-                                              </span>
-                                            ) : (
-                                              <span className="text-[8px] bg-rose-500/10 text-rose-400 px-1.5 py-0.5 rounded-md border border-rose-500/20 uppercase font-black tracking-widest" title="No Society Sticker Issued">
-                                                ⚠️ No Sticker
-                                              </span>
-                                            )}
-                                          </span>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <span className="text-slate-500 italic mt-1">कोई पंजीकृत वाहन नहीं</span>
-                                  )}
-                                </div>
-
-                                {/* Section C: Emergency Contacts & Lease Info */}
-                                <div className="flex flex-col gap-2">
-                                  <h4 className="text-[10px] font-black text-rose-400 uppercase tracking-widest flex items-center gap-1.5">
-                                    <span>🚨</span> आपातकालीन एवं पट्टा विवरण
-                                  </h4>
-                                  
-                                  <div className="bg-white/5 border border-white/5 p-3 rounded-2xl flex flex-col gap-2 mt-1">
-                                    {/* Emergency contact */}
-                                    <div className="flex flex-col">
-                                      <span className="text-[9px] uppercase text-slate-500 font-bold">आपातकालीन संपर्क (Emergency Contact):</span>
-                                      <span className="font-semibold text-slate-200 mt-0.5">
-                                        {item.emergency_contact_name 
-                                          ? `👤 ${item.emergency_contact_name} (${item.emergency_contact_phone || 'N/A'})` 
-                                          : 'कोई जानकारी नहीं (None)'}
-                                      </span>
-                                    </div>
-                                    
-                                    {/* Lease duration for tenants */}
-                                    {item.occupancy_status === 'Rented' && (
-                                      <div className="flex flex-col border-t border-white/5 pt-2 mt-1 gap-1.5 text-[11px]">
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-[9px] uppercase text-slate-500 font-bold">पट्टा अवधि (Lease Period):</span>
-                                          <span className="font-semibold text-sky-400">📅 {item.lease_duration || '11 months (Default)'}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center border-t border-white/5 pt-1.5">
-                                          <span className="text-[9px] uppercase text-slate-500 font-bold">किराया एग्रीमेंट (Agreement):</span>
-                                          <span className={`font-extrabold uppercase tracking-wide text-[9px] px-2 py-0.5 rounded ${item.lease_agreement_submitted ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'}`}>
-                                            {item.lease_agreement_submitted ? 'जमा है (Yes)' : 'लंबित (No)'}
-                                          </span>
-                                        </div>
-                                        <div className="flex justify-between items-center border-t border-white/5 pt-1.5">
-                                          <span className="text-[9px] uppercase text-slate-500 font-bold">पुलिस सत्यापन (Police Status):</span>
-                                          <span className={`font-extrabold uppercase tracking-wide text-[9px] px-2 py-0.5 rounded ${item.police_verification_status === 'verified' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'}`}>
-                                            {item.police_verification_status === 'verified' ? 'पूर्ण (Verified)' : 'लंबित (Pending)'}
-                                          </span>
-                                        </div>
-                                      </div>
-                                    )}
-
-                                    {item.occupancy_status === 'Rented' && item.is_legacy_bachelor && (
-                                      <div className="flex flex-col border-t border-white/5 pt-2 mt-1 animate-fadeIn">
-                                        <span className="text-[9px] uppercase text-amber-500 font-bold">🛡️ विरासत श्रेणी (Legacy Category):</span>
-                                        <span className="font-bold text-amber-400 mt-0.5 text-[10px] flex flex-col gap-0.5 text-left">
-                                          <span>विरासत अविवाहित किरायेदार (Legacy Bachelor)</span>
-                                          <span className="text-[9px] text-slate-300 font-medium font-mono">संदर्भ: {item.exemption_ref || 'घोषणा-पत्र संलग्न'}</span>
-                                        </span>
-                                      </div>
-                                    )}
-
-                                    {/* Pet owned status badge */}
-                                    <div className="flex flex-col border-t border-white/5 pt-2 mt-1 animate-fadeIn">
-                                      <span className="text-[9px] uppercase text-slate-500 font-bold">पालतू जानवर (Pet Status):</span>
-                                      <span className="font-bold text-slate-200 mt-0.5 text-[11px] flex items-center gap-1">
-                                        {item.has_pet 
-                                          ? <span className="text-violet-400">🐾 {item.pet_details || 'हाँ (Yes)'}</span> 
-                                          : <span className="text-slate-500">🚫 कोई पालतू पशु नहीं (No Pets)</span>}
-                                      </span>
-                                    </div>
-                                  </div>
+                                <div className="flex flex-col gap-0.5 text-left">
+                                  <span className="font-extrabold text-white text-xs block tracking-wide">
+                                    रिक्त फ्लैट (Vacant Flat)
+                                  </span>
                                 </div>
                               </div>
                             </td>
+
+                            {/* Column 2: Contact Details */}
+                            <td className="px-4 py-4 text-xs text-slate-500">
+                              —
+                            </td>
+
+                            {/* Column 3: Role & Occupancy Badge */}
+                            <td className="px-4 py-4">
+                              <div className="flex flex-col gap-1 text-left">
+                                <span className="self-start text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider bg-slate-500/15 text-slate-400 border border-slate-500/20">
+                                  खाली (Vacant)
+                                </span>
+                              </div>
+                            </td>
+
+                            {/* Column 4: Family & Vehicles Count */}
+                            <td className="px-4 py-4 text-xs text-slate-500">
+                              —
+                            </td>
+
+                            {/* Column 5: Privacy-Masked Aadhaar Number & Move-in Date */}
+                            <td className="px-4 py-4 text-xs text-slate-500">
+                              —
+                            </td>
+
+                            {/* Column 6: Action Buttons */}
+                            <td className="px-4 py-4 text-center">
+                              <div className="flex items-center justify-center">
+                                <button
+                                  onClick={() => {
+                                    setRole('Resident');
+                                    setFlatNo(item.flat_no);
+                                    setOccupancyStatus('Self-Occupied');
+                                    setShowAddForm(true);
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                  }}
+                                  className="px-2.5 py-1 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1"
+                                >
+                                  <UserPlus size={11} /> सदस्य जोड़ें
+                                </button>
+                              </div>
+                            </td>
                           </tr>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        );
+                      }
+
+                      return (
+                        <React.Fragment key={item.id}>
+                          <tr className={`hover:bg-white/[0.02] transition-colors border-b border-white/[0.02] group ${isExpanded ? 'bg-white/[0.01]' : ''}`}>
+                            {/* Column 1: Flat No (Primary Focus) + Profile image + Resident Name */}
+                            <td className="px-4 py-4">
+                              <div className="flex items-center gap-3">
+                                {/* Toggle Accordion Expand Icon */}
+                                <button
+                                  onClick={() => toggleRowExpanded(item.id)}
+                                  className="p-1 rounded hover:bg-white/10 text-slate-500 hover:text-white transition-colors"
+                                >
+                                  {isExpanded ? <ChevronUp size={14} className="text-brand-400" /> : <ChevronDown size={14} />}
+                                </button>
+
+                                {/* Prominent High-Visibility Flat No Badge */}
+                                <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-brand-500/20 text-brand-300 border border-brand-500/35 uppercase tracking-wider shadow-sm select-all animate-pulse-subtle shrink-0">
+                                  {item.flat_no ? `Flat ${item.flat_no}` : 'N/A'}
+                                </span>
+
+                                {/* Profile Avatar */}
+                                <div
+                                  onClick={() => setSelectedUser(item)}
+                                  className="w-10 h-10 rounded-full border border-white/10 bg-slate-900 flex items-center justify-center overflow-hidden shrink-0 shadow-premium group-hover:border-brand-500/30 transition-colors cursor-pointer"
+                                >
+                                  {item.profile_picture ? (
+                                    <img src={item.profile_picture} alt={item.name} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <span className="text-xs font-black text-brand-300 uppercase">
+                                      {(item.name || ' ')[0]}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex flex-col gap-0.5 text-left">
+                                  <span
+                                    onClick={() => setSelectedUser(item)}
+                                    className="font-extrabold text-white text-xs block tracking-wide hover:text-brand-400 transition-colors cursor-pointer"
+                                  >
+                                    {highlightText(item.name, searchQuery)}
+                                  </span>
+                                  {item.role !== 'Resident' && (
+                                    <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 text-slate-400 font-bold uppercase tracking-wider w-fit mt-0.5">
+                                      {getRoleHindi(item.role)}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Column 2: Contact Details with copy to clipboard buttons */}
+                            <td className="px-4 py-4">
+                              <div className="flex flex-col gap-1 text-left text-xs">
+                                {/* Email row */}
+                                <div className="flex items-center gap-1 group/btn">
+                                  <a
+                                    href={`mailto:${item.email}`}
+                                    className="text-slate-200 font-medium hover:text-brand-400 transition-colors truncate max-w-[150px]"
+                                    title="Send Email"
+                                  >
+                                    {highlightText(item.email, searchQuery)}
+                                  </a>
+                                  <button
+                                    onClick={() => handleCopyToClipboard(item.email, item.id, 'email')}
+                                    className="opacity-0 group-hover:opacity-100 group-hover/btn:opacity-100 p-0.5 text-slate-500 hover:text-white rounded transition-all"
+                                    title="Copy Email"
+                                  >
+                                    {copiedId === `${item.id}-email` ? <Check size={10} className="text-emerald-400 font-bold" /> : <Copy size={10} />}
+                                  </button>
+                                </div>
+
+                                {/* Phone row */}
+                                <div className="flex items-center gap-1 group/btn mt-0.5">
+                                  <a
+                                    href={`tel:${item.phone}`}
+                                    className="text-[10px] text-slate-400 font-semibold hover:text-emerald-400 transition-colors"
+                                    title="Call Member"
+                                  >
+                                    📞 {item.phone ? highlightText(item.phone, searchQuery) : '-'}
+                                  </a>
+                                  {item.phone && (
+                                    <button
+                                      onClick={() => handleCopyToClipboard(item.phone, item.id, 'phone')}
+                                      className="opacity-0 group-hover:opacity-100 group-hover/btn:opacity-100 p-0.5 text-slate-500 hover:text-white rounded transition-all"
+                                      title="Copy Phone"
+                                    >
+                                      {copiedId === `${item.id}-phone` ? <Check size={10} className="text-emerald-400 font-bold" /> : <Copy size={10} />}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Column 3: Role & Occupancy Badge */}
+                            <td className="px-4 py-4">
+                              {item.role === 'Resident' ? (
+                                <div className="flex flex-col gap-1 text-left">
+                                  <span className={`self-start text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider ${item.occupancy_status === 'Rented' ? 'bg-sky-500/15 text-sky-400 border border-sky-500/20' :
+                                      item.occupancy_status === 'Vacant' ? 'bg-slate-500/15 text-slate-400 border border-slate-500/20' :
+                                        'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+                                    }`}>
+                                    {item.occupancy_status === 'Rented' ? (item.tenant_type === 'Bachelor' ? 'बैचलर (Bachelor)' : 'किरायेदार (Tenant)') :
+                                      item.occupancy_status === 'Vacant' ? 'खाली (Vacant)' :
+                                        'मालिक (Owner)'}
+                                  </span>
+                                  {item.occupancy_status === 'Rented' && (
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                      <span className={`text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider ${item.lease_agreement_submitted ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'}`}>
+                                        📜 एग्रीमेंट: {item.lease_agreement_submitted ? 'हाँ' : 'नहीं'}
+                                      </span>
+                                      <span className={`text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider ${item.police_verification_status === 'verified' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'}`}>
+                                        👮 सत्यापन: {item.police_verification_status === 'verified' ? 'हाँ' : 'लंबित'}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {item.occupancy_status === 'Rented' && item.is_legacy_bachelor && (
+                                    <span className="self-start text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/20 shadow-sm animate-fadeIn" title={`घोषणा-पत्र: ${item.exemption_ref || 'N/A'}`}>
+                                      🛡️ विरासत (Legacy)
+                                    </span>
+                                  )}
+                                  {item.occupancy_status === 'Rented' && (item.owner_name || item.owner_phone) && (
+                                    <span className="text-[9px] text-sky-400 font-medium cursor-help" title={`मालिक: ${item.owner_name} (${item.owner_phone})`}>
+                                      👤 मालिक: {item.owner_name || 'N/A'}
+                                    </span>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-slate-500 text-[10px] italic">कमेटी / स्टाफ</span>
+                              )}
+                            </td>
+
+                            {/* Column 4: Family & Vehicles Count */}
+                            <td className="px-4 py-4 text-xs">
+                              <div
+                                onClick={() => toggleRowExpanded(item.id)}
+                                className="flex flex-col gap-0.5 text-left text-slate-300 cursor-pointer hover:text-brand-400 transition-all"
+                                title="Click to view detailed Roster details below"
+                              >
+                                <span className="font-semibold text-slate-200">👨‍👩‍👧‍👦 {item.family_members || '0'} सदस्य</span>
+                                <span className="text-[10px] text-slate-400 font-medium">🚗 {vehicleList.length} पंजीकृत वाहन</span>
+                              </div>
+                            </td>
+
+                            {/* Column 5: Privacy-Masked Aadhaar Number & Move-in Date */}
+                            <td className="px-4 py-4 text-xs text-slate-400">
+                              <div className="flex flex-col gap-0.5 text-left">
+                                {/* Aadhaar with privacy toggle */}
+                                <div className="flex items-center gap-1.5 font-mono text-[10px] text-slate-300">
+                                  <span>🆔</span>
+                                  <span>
+                                    {item.aadhaar_number
+                                      ? (isAadhaarRevealed ? item.aadhaar_number : `•••• •••• ${item.aadhaar_number.slice(-4)}`)
+                                      : '-'}
+                                  </span>
+                                  {item.aadhaar_number && (
+                                    <button
+                                      onClick={() => toggleAadhaarRevealed(item.id)}
+                                      className="text-slate-500 hover:text-slate-200 transition-colors p-0.5"
+                                      title={isAadhaarRevealed ? "Hide ID" : "Reveal ID"}
+                                    >
+                                      {isAadhaarRevealed ? <EyeOff size={10} /> : <Eye size={10} />}
+                                    </button>
+                                  )}
+                                </div>
+
+                                {/* Move in date */}
+                                <span className="text-[9px] text-slate-400 mt-1 font-semibold">
+                                  📅 प्रवेश: {item.move_in_date ? new Date(item.move_in_date).toLocaleDateString() : '-'}
+                                </span>
+                              </div>
+                            </td>
+
+                            {/* Column 6: Action Buttons */}
+                            <td className="px-4 py-4 text-center">
+                              <div className="flex items-center justify-center gap-1.5">
+                                {item.is_approved === false ? (
+                                  <>
+                                    <button onClick={() => handleApproveUser(item.id)} className="p-2 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/20 rounded-xl transition-all" title="अनुमोदन स्वीकार करें (Approve)">
+                                      <Check size={12} />
+                                    </button>
+                                    <button onClick={() => setDeleteUserId(item.id)} className="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-xl transition-all" title="अस्वीकार करें (Reject)">
+                                      <X size={12} />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <button onClick={() => setSelectedUser(item)} className="p-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-xl transition-all" title="विवरण देखें (View Details)">
+                                      <Eye size={12} />
+                                    </button>
+                                    <button onClick={() => startEditing(item)} className="p-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-xl transition-all" title="संपादित करें (Edit)">
+                                      <Edit size={12} />
+                                    </button>
+                                    {item.role === 'Resident' && item.is_approved && (
+                                      <button onClick={() => handleCheckoutUser(item.id)} className="p-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 rounded-xl transition-all" title="चेक-आउट: फ्लैट खाली करें (Vacate Flat)">
+                                        <Building size={12} />
+                                      </button>
+                                    )}
+                                    <button onClick={() => setDeleteUserId(item.id)} className="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-xl transition-all" title="हटाएं (Delete)">
+                                      <Trash2 size={12} />
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+
+                          {/* Accordion Expand Row: Renders Family names & vehicles registered */}
+                          {isExpanded && (
+                            <tr className="bg-slate-950/40 animate-fadeIn">
+                              <td colSpan={6} className="px-8 py-4 border-l-2 border-brand-500">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-left">
+                                  {/* Section A: Family members */}
+                                  <div className="flex flex-col gap-2">
+                                    <h4 className="text-[10px] font-black text-brand-400 uppercase tracking-widest flex items-center gap-1.5">
+                                      <span>👨‍👩‍👧‍👦</span> परिवार के सदस्य ({item.family_members || 0})
+                                    </h4>
+                                    {item.family_member_names ? (
+                                      <div className="flex flex-col gap-1.5 mt-1">
+                                        {(() => {
+                                          try {
+                                            const names = typeof item.family_member_names === 'string'
+                                              ? JSON.parse(item.family_member_names)
+                                              : item.family_member_names;
+                                            return Array.isArray(names) && names.length > 0 ? (
+                                              names.map((n, i) => (
+                                                <div key={i} className="flex justify-between items-center bg-white/5 border border-white/5 px-2.5 py-1.5 rounded-xl">
+                                                  <span className="font-bold text-slate-200">👤 {n.name}</span>
+                                                  <span className="text-slate-400 font-mono text-[10px]">{n.phone || '-'}</span>
+                                                </div>
+                                              ))
+                                            ) : <span className="text-slate-500 italic">कोई परिवार सदस्य दर्ज नहीं</span>;
+                                          } catch (e) {
+                                            return <span className="text-slate-400">{item.family_member_names}</span>;
+                                          }
+                                        })()}
+                                      </div>
+                                    ) : (
+                                      <span className="text-slate-500 italic mt-1">कोई परिवार सदस्य दर्ज नहीं</span>
+                                    )}
+                                  </div>
+
+                                  {/* Section B: Registered Vehicles */}
+                                  <div className="flex flex-col gap-2">
+                                    <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
+                                      <span>🚗</span> पंजीकृत वाहन ({vehicleList.length})
+                                    </h4>
+                                    {vehicleList.length > 0 ? (
+                                      <div className="flex flex-col gap-1.5 mt-1">
+                                        {vehicleList.map((v, i) => (
+                                          <div key={i} className="flex flex-col gap-1">
+                                            <span
+                                              className={`px-2.5 py-1.5 rounded-xl font-extrabold flex items-center justify-between gap-1.5 border ${v.type === 'Car'
+                                                  ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300'
+                                                  : 'bg-indigo-500/10 border-indigo-500/25 text-indigo-300'
+                                                }`}
+                                            >
+                                              <span className="flex items-center gap-1">
+                                                <span>{v.type === 'Car' ? '🚗 Car' : '🛵 Bike'}</span>
+                                                <span className="font-mono text-white text-[10px]">{v.number}</span>
+                                              </span>
+
+                                              {/* Sticker Badge Indicator */}
+                                              {v.sticker ? (
+                                                <span className="text-[8px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-md border border-emerald-500/30 uppercase font-black tracking-widest" title="Society Sticker Issued">
+                                                  🎫 Sticker Ok
+                                                </span>
+                                              ) : (
+                                                <span className="text-[8px] bg-rose-500/10 text-rose-400 px-1.5 py-0.5 rounded-md border border-rose-500/20 uppercase font-black tracking-widest" title="No Society Sticker Issued">
+                                                  ⚠️ No Sticker
+                                                </span>
+                                              )}
+                                            </span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <span className="text-slate-500 italic mt-1">कोई पंजीकृत वाहन नहीं</span>
+                                    )}
+                                  </div>
+
+                                  {/* Section C: Emergency Contacts & Lease Info */}
+                                  <div className="flex flex-col gap-2">
+                                    <h4 className="text-[10px] font-black text-rose-400 uppercase tracking-widest flex items-center gap-1.5">
+                                      <span>🚨</span> आपातकालीन एवं पट्टा विवरण
+                                    </h4>
+
+                                    <div className="bg-white/5 border border-white/5 p-3 rounded-2xl flex flex-col gap-2 mt-1">
+                                      {/* Emergency contact */}
+                                      <div className="flex flex-col">
+                                        <span className="text-[9px] uppercase text-slate-500 font-bold">आपातकालीन संपर्क (Emergency Contact):</span>
+                                        <span className="font-semibold text-slate-200 mt-0.5">
+                                          {item.emergency_contact_name
+                                            ? `👤 ${item.emergency_contact_name} (${item.emergency_contact_phone || 'N/A'})`
+                                            : 'कोई जानकारी नहीं (None)'}
+                                        </span>
+                                      </div>
+
+                                      {/* Lease duration for tenants */}
+                                      {item.occupancy_status === 'Rented' && (
+                                        <div className="flex flex-col border-t border-white/5 pt-2 mt-1 gap-1.5 text-[11px]">
+                                          <div className="flex justify-between items-center">
+                                            <span className="text-[9px] uppercase text-slate-500 font-bold">पट्टा अवधि (Lease Period):</span>
+                                            <span className="font-semibold text-sky-400">📅 {item.lease_duration || '11 months (Default)'}</span>
+                                          </div>
+                                          <div className="flex justify-between items-center border-t border-white/5 pt-1.5">
+                                            <span className="text-[9px] uppercase text-slate-500 font-bold">किराया एग्रीमेंट (Agreement):</span>
+                                            <span className={`font-extrabold uppercase tracking-wide text-[9px] px-2 py-0.5 rounded ${item.lease_agreement_submitted ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'}`}>
+                                              {item.lease_agreement_submitted ? 'जमा है (Yes)' : 'लंबित (No)'}
+                                            </span>
+                                          </div>
+                                          <div className="flex justify-between items-center border-t border-white/5 pt-1.5">
+                                            <span className="text-[9px] uppercase text-slate-500 font-bold">पुलिस सत्यापन (Police Status):</span>
+                                            <span className={`font-extrabold uppercase tracking-wide text-[9px] px-2 py-0.5 rounded ${item.police_verification_status === 'verified' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'}`}>
+                                              {item.police_verification_status === 'verified' ? 'पूर्ण (Verified)' : 'लंबित (Pending)'}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {item.occupancy_status === 'Rented' && item.is_legacy_bachelor && (
+                                        <div className="flex flex-col border-t border-white/5 pt-2 mt-1 animate-fadeIn">
+                                          <span className="text-[9px] uppercase text-amber-500 font-bold">🛡️ विरासत श्रेणी (Legacy Category):</span>
+                                          <span className="font-bold text-amber-400 mt-0.5 text-[10px] flex flex-col gap-0.5 text-left">
+                                            <span>विरासत अविवाहित किरायेदार (Legacy Bachelor)</span>
+                                            <span className="text-[9px] text-slate-300 font-medium font-mono">संदर्भ: {item.exemption_ref || 'घोषणा-पत्र संलग्न'}</span>
+                                          </span>
+                                        </div>
+                                      )}
+
+                                      {/* Pet owned status badge */}
+                                      <div className="flex flex-col border-t border-white/5 pt-2 mt-1 animate-fadeIn">
+                                        <span className="text-[9px] uppercase text-slate-500 font-bold">पालतू जानवर (Pet Status):</span>
+                                        <span className="font-bold text-slate-200 mt-0.5 text-[11px] flex items-center gap-1">
+                                          {item.has_pet
+                                            ? <span className="text-violet-400">🐾 {item.pet_details || 'हाँ (Yes)'}</span>
+                                            : <span className="text-slate-500">🚫 कोई पालतू पशु नहीं (No Pets)</span>}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Scale-Friendly Fluid Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
-            <span className="text-xs text-slate-400 font-semibold">
-              Page <span className="text-slate-200 font-extrabold">{currentPage}</span> of <span className="text-slate-200 font-extrabold">{totalPages}</span>
-            </span>
-            
-            <div className="flex items-center gap-1">
-              {/* Previous button */}
-              <button
-                onClick={() => paginate(Math.max(currentPage - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1.5 bg-white/5 border border-white/5 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-all disabled:opacity-30 disabled:pointer-events-none"
-              >
-                ◀ Prev
-              </button>
+          {/* Scale-Friendly Fluid Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-2">
+              <span className="text-xs text-slate-400 font-semibold">
+                Page <span className="text-slate-200 font-extrabold">{currentPage}</span> of <span className="text-slate-200 font-extrabold">{totalPages}</span>
+              </span>
 
-              {/* Page number buttons */}
-              {Array.from({ length: totalPages }, (_, idx) => idx + 1).map(num => (
+              <div className="flex items-center gap-1">
+                {/* Previous button */}
                 <button
-                  key={num}
-                  onClick={() => paginate(num)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all ${
-                    currentPage === num
-                      ? 'bg-brand-600 text-white shadow-premium'
-                      : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
-                  }`}
+                  onClick={() => paginate(Math.max(currentPage - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 bg-white/5 border border-white/5 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-all disabled:opacity-30 disabled:pointer-events-none"
                 >
-                  {num}
+                  ◀ Prev
                 </button>
-              ))}
 
-              {/* Next button */}
-              <button
-                onClick={() => paginate(Math.min(currentPage + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1.5 bg-white/5 border border-white/5 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-all disabled:opacity-30 disabled:pointer-events-none"
-              >
-                Next ▶
-              </button>
+                {/* Page number buttons */}
+                {Array.from({ length: totalPages }, (_, idx) => idx + 1).map(num => (
+                  <button
+                    key={num}
+                    onClick={() => paginate(num)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all ${currentPage === num
+                        ? 'bg-brand-600 text-white shadow-premium'
+                        : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
+                      }`}
+                  >
+                    {num}
+                  </button>
+                ))}
+
+                {/* Next button */}
+                <button
+                  onClick={() => paginate(Math.min(currentPage + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 bg-white/5 border border-white/5 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-all disabled:opacity-30 disabled:pointer-events-none"
+                >
+                  Next ▶
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
       ) : (
         <div className="glass-panel p-12 rounded-3xl border border-white/5 text-center">
           <Users size={36} className="text-slate-600 mx-auto mb-3" />
@@ -2569,11 +2594,11 @@ export const Directory = () => {
             <button onClick={() => setEditUser(null)} className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors">
               <X size={20} />
             </button>
-            
+
             <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-white/5 pb-3 flex items-center gap-1.5">
               <span>📝</span> सदस्य का विवरण संपादित करें (Edit Member Portal)
             </h3>
-            
+
             <form onSubmit={handleEditSubmit} className="flex flex-col gap-5">
               {/* SECTION 1: Profile picture */}
               <div className="flex items-center gap-3.5 bg-slate-950/40 border border-white/5 rounded-2xl p-3">
@@ -2584,9 +2609,9 @@ export const Directory = () => {
                     <span className="text-xl font-bold text-brand-400">👤</span>
                   )}
                   {editUser.profile_picture && (
-                    <button 
-                      type="button" 
-                      onClick={() => setEditUser({ ...editUser, profile_picture: '' })} 
+                    <button
+                      type="button"
+                      onClick={() => setEditUser({ ...editUser, profile_picture: '' })}
                       className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-rose-400 text-[10px] font-bold transition-all"
                     >
                       हटाएं
@@ -2623,7 +2648,7 @@ export const Directory = () => {
               {/* SECTION 2: Basic Contact Fields */}
               <div className="flex flex-col gap-3">
                 <p className="text-[10px] font-extrabold uppercase text-slate-500 tracking-wider text-left">👤 बुनियादी जानकारी (Basic Info)</p>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold uppercase text-slate-400 text-left">पूरा नाम (Full Name)</label>
@@ -2657,17 +2682,17 @@ export const Directory = () => {
                 {/* Admin Password Override Upgraded */}
                 <div className="flex flex-col gap-3 mt-1 border-t border-white/5 pt-3 text-left w-full">
                   <p className="text-[10px] font-extrabold uppercase text-slate-500 tracking-wider">🔒 पासवर्ड प्रबंधन (Resident Password Management)</p>
-                  
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-bold uppercase text-slate-400">लॉगिन पासवर्ड बदलें (New Password)</label>
                       <div className="relative">
-                        <input 
-                          type={showAdminEditPassword ? "text" : "password"} 
-                          placeholder="बदलाव न करने के लिए खाली छोड़ें" 
-                          value={editUser.password || ''} 
-                          onChange={(e) => setEditUser({ ...editUser, password: e.target.value })} 
-                          className="bg-slate-950 border border-white/10 rounded-xl pl-3 pr-20 py-2.5 text-xs text-slate-200 focus:border-brand-500 outline-none w-full" 
+                        <input
+                          type={showAdminEditPassword ? "text" : "password"}
+                          placeholder="बदलाव न करने के लिए खाली छोड़ें"
+                          value={editUser.password || ''}
+                          onChange={(e) => setEditUser({ ...editUser, password: e.target.value })}
+                          className="bg-slate-950 border border-white/10 rounded-xl pl-3 pr-20 py-2.5 text-xs text-slate-200 focus:border-brand-500 outline-none w-full"
                         />
                         <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                           <button
@@ -2678,7 +2703,7 @@ export const Directory = () => {
                           >
                             {showAdminEditPassword ? <EyeOff size={13} /> : <Eye size={13} />}
                           </button>
-                          
+
                           <button
                             type="button"
                             onClick={() => {
@@ -2741,7 +2766,7 @@ export const Directory = () => {
               {/* SECTION 3: Flat & Occupancy Details */}
               <div className="flex flex-col gap-3 border-t border-white/5 pt-4">
                 <p className="text-[10px] font-extrabold uppercase text-slate-500 tracking-wider text-left">🏢 फ्लैट व कब्जा स्थिति (Flat & Occupancy Details)</p>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold uppercase text-slate-400 text-left">भूमिका (Role)</label>
@@ -2783,12 +2808,12 @@ export const Directory = () => {
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold uppercase text-slate-400 text-left">प्रवेश तिथि (Move-in Date)</label>
                     <div className="relative">
-                      <input 
-                        type="date" 
-                        value={editUser.move_in_date ? editUser.move_in_date.substring(0, 10) : ''} 
-                        onChange={(e) => setEditUser({ ...editUser, move_in_date: e.target.value })} 
-                        onClick={(e) => { try { e.target.showPicker(); } catch (err) {} }}
-                        className="bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-200 focus:border-brand-500 outline-none w-full cursor-pointer [color-scheme:dark]" 
+                      <input
+                        type="date"
+                        value={editUser.move_in_date ? editUser.move_in_date.substring(0, 10) : ''}
+                        onChange={(e) => setEditUser({ ...editUser, move_in_date: e.target.value })}
+                        onClick={(e) => { try { e.target.showPicker(); } catch (err) { } }}
+                        className="bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-200 focus:border-brand-500 outline-none w-full cursor-pointer [color-scheme:dark]"
                       />
                       <Calendar size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
                     </div>
@@ -2833,7 +2858,7 @@ export const Directory = () => {
                             disabled={editUser.occupancy_status !== 'Rented'}
                             value={editUser.lease_expiry_date ? editUser.lease_expiry_date.substring(0, 10) : ''}
                             onChange={(e) => setEditUser({ ...editUser, lease_expiry_date: e.target.value })}
-                            onClick={(e) => { try { e.target.showPicker(); } catch (err) {} }}
+                            onClick={(e) => { try { e.target.showPicker(); } catch (err) { } }}
                             className="bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-200 focus:border-brand-500 outline-none w-full cursor-pointer [color-scheme:dark] disabled:opacity-40"
                           />
                           <Calendar size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
@@ -2850,7 +2875,7 @@ export const Directory = () => {
                           <p className="text-[9px] text-slate-400">क्या परिवार के पास कोई पालतू पशु है?</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <div className="flex items-center gap-4 bg-slate-950 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-slate-200 w-fit">
                           <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -2913,7 +2938,7 @@ export const Directory = () => {
                               <p className="text-[10px] text-slate-400">विरासत अविवाहित किरायेदार (Legacy Bachelor)?</p>
                             </div>
                           </div>
-                          
+
                           <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                             <div className="flex items-center gap-4 bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 w-fit">
                               <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -3027,7 +3052,7 @@ export const Directory = () => {
               {/* SECTION 4: Emergency Contacts */}
               <div className="flex flex-col gap-3 border-t border-white/5 pt-4">
                 <p className="text-[10px] font-extrabold uppercase text-slate-500 tracking-wider text-left">🚨 आपातकालीन संपर्क (Emergency Contacts)</p>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold uppercase text-slate-400 text-left">संपर्क व्यक्ति का नाम (Emergency Name)</label>
@@ -3047,16 +3072,16 @@ export const Directory = () => {
                   <div className="flex flex-col gap-3 border-t border-white/5 pt-4">
                     <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                       <p className="text-[10px] font-extrabold uppercase text-slate-500 tracking-wider text-left">👨‍👩‍👧‍👦 परिवार के सदस्य विवरण (Family Details)</p>
-                      
+
                       <div className="flex items-center gap-2">
                         <label className="text-[10px] font-bold uppercase text-slate-400">कुल सदस्य आकार:</label>
-                        <input 
-                          type="number" 
-                          min="0" 
-                          max="15" 
-                          value={editUser.family_members || ''} 
-                          onChange={handleEditFamilyMembersChange} 
-                          className="bg-slate-950 border border-white/10 rounded-lg px-2 py-1 text-xs text-brand-300 font-bold outline-none w-16 text-center focus:border-brand-500" 
+                        <input
+                          type="number"
+                          min="0"
+                          max="15"
+                          value={editUser.family_members || ''}
+                          onChange={handleEditFamilyMembersChange}
+                          className="bg-slate-950 border border-white/10 rounded-lg px-2 py-1 text-xs text-brand-300 font-bold outline-none w-16 text-center focus:border-brand-500"
                         />
                       </div>
                     </div>
@@ -3152,7 +3177,7 @@ export const Directory = () => {
                                 ✕
                               </button>
                             </div>
-                            
+
                             {/* Sticker Issued Checkbox */}
                             <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-white/5 text-[9px] font-bold text-slate-300 hover:text-white transition-colors w-fit self-end">
                               <input
@@ -3175,15 +3200,15 @@ export const Directory = () => {
 
               {/* Action Buttons */}
               <div className="flex gap-2 justify-end mt-4 pt-3 border-t border-white/5">
-                <button 
+                <button
                   type="button"
-                  onClick={() => setEditUser(null)} 
+                  onClick={() => setEditUser(null)}
                   className="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-white/5 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition-all uppercase"
                 >
                   रद्द करें
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="px-5 py-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold uppercase shadow-premium transition-all"
                 >
                   सहेजें (Save Changes)
@@ -3266,13 +3291,13 @@ export const Directory = () => {
                   <h4 className="text-[10px] font-extrabold text-sky-400 uppercase tracking-wider mb-2">फ्लैट किरायेदार व सत्यापन विवरण (Tenant Verification Status)</h4>
                   <div className="grid grid-cols-2 gap-2 text-xs text-slate-300">
                     <span className="flex items-center gap-1.5">
-                      📜 एग्रीमेंट: 
+                      📜 एग्रीमेंट:
                       <span className={`font-extrabold uppercase tracking-wide text-[8px] px-1.5 py-0.5 rounded ${selectedUser.lease_agreement_submitted ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'}`}>
                         {selectedUser.lease_agreement_submitted ? 'जमा है (Yes)' : 'लंबित (No)'}
                       </span>
                     </span>
                     <span className="flex items-center gap-1.5">
-                      👮 पुलिस सत्यापन: 
+                      👮 पुलिस सत्यापन:
                       <span className={`font-extrabold uppercase tracking-wide text-[8px] px-1.5 py-0.5 rounded ${selectedUser.police_verification_status === 'verified' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'}`}>
                         {selectedUser.police_verification_status === 'verified' ? 'पूर्ण (Verified)' : 'लंबित (Pending)'}
                       </span>
@@ -3348,8 +3373,8 @@ export const Directory = () => {
                   <div className="flex flex-col gap-1 border-t border-white/5 pt-2">
                     <span className="text-[9px] font-bold text-slate-500 uppercase">पालतू जानवर (Pet Status)</span>
                     <span className="text-slate-300 font-bold text-xs mt-0.5 flex items-center gap-1">
-                      {selectedUser.has_pet 
-                        ? <span className="text-violet-400">🐾 {selectedUser.pet_details || 'हाँ (Yes)'}</span> 
+                      {selectedUser.has_pet
+                        ? <span className="text-violet-400">🐾 {selectedUser.pet_details || 'हाँ (Yes)'}</span>
                         : <span className="text-slate-500">🚫 कोई पालतू पशु नहीं (No Pets)</span>}
                     </span>
                   </div>
@@ -3403,7 +3428,7 @@ export const Directory = () => {
                                   <span className="flex items-center gap-1">
                                     🚗 {v.type === 'Car' ? 'Four-Wheeler' : 'Two-Wheeler'}: <span className="text-white font-mono">{v.number}</span>
                                   </span>
-                                  
+
                                   {v.sticker ? (
                                     <span className="text-[8px] bg-emerald-500/20 text-emerald-400 px-1 py-0.5 rounded border border-emerald-500/30 uppercase font-black">
                                       🎫 Sticker Ok

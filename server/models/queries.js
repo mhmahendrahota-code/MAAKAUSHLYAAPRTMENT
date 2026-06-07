@@ -78,7 +78,7 @@ export const queries = {
     if (isFallback()) {
       return mockDb.users;
     }
-    const res = await query('SELECT id, name, email, role, gender, flat_no, phone, occupancy_status, tenant_type, owner_name, owner_phone, aadhaar_number, family_members, family_member_names, vehicles, move_in_date, lease_duration, lease_agreement_submitted, emergency_contact_name, emergency_contact_phone, profile_picture, has_pet, pet_details, is_legacy_bachelor, exemption_ref, police_verification_status, police_verification_date, noc_document_ref, bachelor_notes, is_approved, created_at FROM users ORDER BY id ASC');
+    const res = await query('SELECT id, name, email, role, gender, flat_no, phone, occupancy_status, tenant_type, owner_name, owner_phone, aadhaar_number, family_members, family_member_names, vehicles, move_in_date, lease_expiry_date, lease_duration, lease_agreement_submitted, emergency_contact_name, emergency_contact_phone, profile_picture, has_pet, pet_details, is_legacy_bachelor, exemption_ref, police_verification_status, police_verification_date, noc_document_ref, bachelor_notes, is_approved, created_at FROM users ORDER BY id ASC');
     return res.rows;
   },
 

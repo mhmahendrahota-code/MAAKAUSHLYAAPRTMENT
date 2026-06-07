@@ -67,10 +67,10 @@ app.use((req, res, next) => {
   }
   return csurf({ cookie: true })(req, res, next);
 });
-// Global rate limiter: 100 requests per 15 minutes, applied strictly to API endpoints to preserve static assets request thresholds
+// Global rate limiter: 300 requests per 15 minutes, applied strictly to API endpoints to preserve static assets request thresholds
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 300,
   standardHeaders: true,
   legacyHeaders: false,
 });
