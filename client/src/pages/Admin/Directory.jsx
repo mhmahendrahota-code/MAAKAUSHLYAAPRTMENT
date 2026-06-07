@@ -193,31 +193,81 @@ export const Directory = () => {
       "Exemption Reference",
       "Created At"
     ];
-    const rows = usersList.map(u => [
-      u.name || '',
-      u.email || '',
-      u.role || '',
-      u.gender || '',
-      u.flat_no || '',
-      u.phone || '',
-      u.occupancy_status || 'Self-Occupied',
-      u.owner_name || '',
-      u.owner_phone || '',
-      u.aadhaar_number || '',
-      u.family_members !== undefined && u.family_members !== null ? u.family_members.toString() : '0',
-      u.family_member_names || '',
-      u.vehicles || '',
-      u.move_in_date || '',
-      u.lease_duration || '',
-      u.emergency_contact_name || '',
-      u.emergency_contact_phone || '',
-      u.profile_picture || '',
-      u.has_pet ? "Yes" : "No",
-      u.pet_details || '',
-      u.is_legacy_bachelor ? "Yes" : "No",
-      u.exemption_ref || '',
-      u.created_at || ''
-    ]);
+    const rows = usersList.map(u => {
+      // Format family members cleanly
+      let familyFormatted = '';
+      if (u.family_member_names) {
+        try {
+          const family = typeof u.family_member_names === 'string' 
+            ? JSON.parse(u.family_member_names) 
+            : u.family_member_names;
+          if (Array.isArray(family)) {
+            familyFormatted = family.map(f => {
+              if (typeof f === 'object' && f !== null) {
+                const parts = [];
+                if (f.name) parts.push(f.name);
+                if (f.gender) parts.push(f.gender);
+                if (f.phone) parts.push(f.phone);
+                return parts.join(' - ');
+              }
+              return f.toString();
+            }).join('; ');
+          } else {
+            familyFormatted = u.family_member_names;
+          }
+        } catch (e) {
+          familyFormatted = u.family_member_names;
+        }
+      }
+
+      // Format vehicles cleanly
+      let vehiclesFormatted = '';
+      if (u.vehicles) {
+        try {
+          const vehiclesList = typeof u.vehicles === 'string' 
+            ? JSON.parse(u.vehicles) 
+            : u.vehicles;
+          if (Array.isArray(vehiclesList)) {
+            vehiclesFormatted = vehiclesList.map(v => {
+              if (typeof v === 'object' && v !== null) {
+                return `${v.type || 'Vehicle'}: ${v.number || ''} (Sticker: ${v.sticker ? 'Yes' : 'No'})`;
+              }
+              return v.toString();
+            }).join('; ');
+          } else {
+            vehiclesFormatted = u.vehicles;
+          }
+        } catch (e) {
+          vehiclesFormatted = u.vehicles;
+        }
+      }
+
+      return [
+        u.name || '',
+        u.email || '',
+        u.role || '',
+        u.gender || '',
+        u.flat_no || '',
+        u.phone || '',
+        u.occupancy_status || 'Self-Occupied',
+        u.owner_name || '',
+        u.owner_phone || '',
+        u.aadhaar_number || '',
+        u.family_members !== undefined && u.family_members !== null ? u.family_members.toString() : '0',
+        familyFormatted,
+        vehiclesFormatted,
+        u.move_in_date || '',
+        u.lease_duration || '',
+        u.emergency_contact_name || '',
+        u.emergency_contact_phone || '',
+        u.profile_picture ? 'Yes' : 'No', // Avoid dumping large base64 image data URL in CSV
+        u.has_pet ? "Yes" : "No",
+        u.pet_details || '',
+        u.is_legacy_bachelor ? "Yes" : "No",
+        u.exemption_ref || '',
+        u.created_at || ''
+      ];
+    });
 
     const csvString = [
       headers.join(","),
