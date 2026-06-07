@@ -811,9 +811,9 @@ export const Directory = () => {
     filteredUsers = usersList.filter(user => {
       const matchesSearch = userMatchesSearch(user, searchQuery);
 
-      // If 'Pending' filter is active, only show unapproved users
+      // If 'Pending' filter is active, only show unapproved users who are not checked out
       if (activeRoleFilter === 'Pending') {
-        return matchesSearch && user.is_approved === false;
+        return matchesSearch && user.is_approved === false && user.occupancy_status !== 'Vacant';
       }
 
       const matchesApproved = user.is_approved !== false;
@@ -896,20 +896,7 @@ export const Directory = () => {
   const totalPages = Math.ceil(sortedUsers.length / effectiveItemsPerPage) || 1;
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  const getRoleHindi = (role) => {
-    switch (role) {
-      case 'Admin':
-        return 'मुख्य एडमिन (Admin)';
-      case 'Committee':
-        return 'समिति सदस्य (Committee)';
-      case 'Security':
-        return 'सुरक्षा गार्ड (Security)';
-      case 'Resident':
-      default:
-        return 'निवासी (Resident)';
-    }
-  };
+  // Note: getRoleLabel() from i18n.js is imported and used directly
 
   return (
     <div className={`flex-1 p-6 text-left flex flex-col gap-6 mx-auto w-full transition-all duration-300 ${viewMode === 'table' ? 'max-w-7xl' : 'max-w-4xl'
@@ -1960,7 +1947,7 @@ export const Directory = () => {
                             item.role === 'Security' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20' :
                               'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
                           }`}>
-                          {getRoleHindi(item.role)}
+                          {getRoleLabel(item.role)}
                         </span>
                       </div>
 
@@ -2226,7 +2213,7 @@ export const Directory = () => {
                                   </span>
                                   {item.role !== 'Resident' && (
                                     <span className="text-[8px] px-1.5 py-0.5 rounded bg-white/5 text-slate-400 font-bold uppercase tracking-wider w-fit mt-0.5">
-                                      {getRoleHindi(item.role)}
+                                      {getRoleLabel(item.role)}
                                     </span>
                                   )}
                                 </div>
@@ -3260,7 +3247,7 @@ export const Directory = () => {
               </div>
               <div>
                 <h3 className="text-base font-extrabold text-white tracking-wide">{selectedUser.name}</h3>
-                <p className="text-xs text-slate-400">{getRoleHindi(selectedUser.role)} | {selectedUser.email}</p>
+                <p className="text-xs text-slate-400">{getRoleLabel(selectedUser.role)} | {selectedUser.email}</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-sm text-left">

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,7 +9,7 @@
    Fallback: system-ui → sans-serif (safe for both scripts)
    Critical: Devanagari must be listed BEFORE generic fallbacks
    ─────────────────────────────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 
 
 
